@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+if (localStorage.getItem("loggedIn") !== "true") {
+    window.location.href = "../resume-analyzer-login/index.html";
+}
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Analyzer</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+</head>
+<body>
+
+<div class="main">
+
+    <!-- LEFT PANEL -->
+    <div class="sidebar">
+        <h2>AI Resume Analyzer</h2>
+
+        <div class="profile">
+           <img id="profileImage" src="logo.png">
+           <input type="file" id="imageUpload" hidden>
+           <button onclick="changePhoto()">Change Photo</button>
+
+           <h3 id="userName">Mahajaya S N</h3>
+           <p id="userEmail">mahajay@gmail.com</p>
+           <p id="userDOB">01-01-2005</p>
+
+            <div class="skills-section">
+                <div id="skillsContainer" class="skills"></div>
+                <h4>Languages</h4>
+                <div class="language-section">
+                    <div id="languageContainer" class="skills"></div>
+                    <div class="skill-input-box">
+                        <select id="languageSelect">
+                            <option value="">Select Language</option>
+                            <option>Python</option>
+                            <option>Java</option>
+                            <option>C</option>
+                            <option>C++</option>
+                            <option>JavaScript</option>
+                            <option>HTML</option>
+                            <option>CSS</option>
+                            <option>SQL</option>
+                            <option>Go</option>
+                            <option>Rust</option>
+                        </select>
+                        <button onclick="addLanguage()">Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="editProfile()">Edit Profile</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+
+        <div class="upload">
+            <h3>Upload Resume</h3>
+            <div class="upload-box">
+                <input type="file" id="resumeInput" accept=".pdf,.doc,.docx" hidden>
+                <div class="box" onclick="uploadResume()">
+                    Drag & Drop or Click to Upload
+                </div>
+                <p id="fileName">No file selected</p>
+            </div>
+
+            <h3>Job Description</h3>
+            <textarea id="jobDesc" placeholder="Paste the job description here..."></textarea>
+
+            <button id="analyzeBtn" onclick="analyzeResume()">Analyze</button>
+
+            <div id="loadingBox" style="display:none; text-align:center; margin-top:12px;">
+                <div class="spinner"></div>
+                <p style="color:#2bbbad; font-size:0.82rem; margin-top:8px;">Analyzing your resume...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="content">
+        <h2>Resume Analysis Results</h2>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Matching Skills</h3>
+                <div class="circle blue" id="matchCircle">—</div>
+                <p id="matchText">Upload resume to analyze</p>
+            </div>
+            <div class="card">
+                <h3>Missing Skills</h3>
+                <div class="circle red" id="missingCircle">—</div>
+                <p id="missingText">Upload resume to analyze</p>
+            </div>
+            <div class="card">
+                <h3>Efficiency</h3>
+                <div class="circle green" id="efficiencyCircle">—</div>
+                <p id="efficiencyText">Upload resume to analyze</p>
+            </div>
+        </div>
+
+        <div class="lists">
+            <div class="list">
+                <h3>Matching Skills</h3>
+                <ul id="matchList"><li style="color:#aaa;">Results will appear here</li></ul>
+            </div>
+            <div class="list">
+                <h3>Missing Skills</h3>
+                <ul id="missingList"><li style="color:#aaa;">Results will appear here</li></ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p id="feedbackText">Upload your resume and paste a job description, then click Analyze.</p>
+        </div>
+
+        <!-- SUGGESTIONS SECTION -->
+        <div id="suggestionsSection" style="display:none; margin-top:20px;">
+
+            <div class="lists">
+                <div class="list" style="width:100%;">
+                    <h3>💼 Job Roles That Match You</h3>
+                    <ul id="jobRolesList"></ul>
+                </div>
+            </div>
+
+            <div class="lists" style="margin-top:16px;">
+                <div class="list" style="width:100%;">
+                    <h3>📚 Courses & Certifications to Learn Missing Skills</h3>
+                    <ul id="coursesList"></ul>
+                </div>
+            </div>
+
+            <div class="lists" style="margin-top:16px;">
+                <div class="list" style="width:100%;">
+                    <h3>🚀 Career Path Suggestions</h3>
+                    <ul id="careerPathList"></ul>
+                </div>
+            </div>
+
+            <div class="lists" style="margin-top:16px;">
+                <div class="list" style="width:100%;">
+                    <h3>✍️ Resume Writing Tips</h3>
+                    <ul id="resumeTipsList"></ul>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<style>
+.spinner {
+    width: 32px; height: 32px;
+    border: 4px solid #e0f7f5;
+    border-top: 4px solid #2bbbad;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+
+// ✅ LOAD PROFILE DATA
+window.onload = function () {
+    let name  = localStorage.getItem("userName");
+    let email = localStorage.getItem("userEmail");
+    let dob   = localStorage.getItem("userDOB");
+    let image = localStorage.getItem("profileImage");
+
+    if (!name  || name.length < 3)      name  = "Mahajaya S N";
+    if (!email || !email.includes("@")) email = "mahajay@gmail.com";
+    if (!dob   || dob.length < 5)       dob   = "01-01-2005";
+
+    document.getElementById("userName").innerText  = name;
+    document.getElementById("userEmail").innerText = email;
+    document.getElementById("userDOB").innerText   = dob;
+
+    if (image) document.getElementById("profileImage").src = image;
+
+    loadLanguages();
+};
+
+// ✅ ANALYZE
+async function analyzeResume() {
+    const resumeFile = document.getElementById("resumeInput").files[0];
+    const jobDesc    = document.getElementById("jobDesc").value.trim();
+
+    if (!resumeFile) { alert("Please upload your resume first."); return; }
+    if (!jobDesc)    { alert("Please paste the job description."); return; }
+
+    document.getElementById("loadingBox").style.display = "block";
+    document.getElementById("analyzeBtn").disabled = true;
+
+    try {
+        const formData = new FormData();
+        formData.append("resume", resumeFile);
+        formData.append("jobText", jobDesc);
+
+        const response = await fetch("http://localhost:3000/analyze", {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) throw new Error("Server error: " + response.status);
+
+        const data = await response.json();
+        localStorage.setItem("analysisResult", JSON.stringify(data));
+        displayResults(data);
+
+    } catch (err) {
+        alert("Error: " + err.message + "\n\nMake sure server.py is running!");
+        console.error(err);
+    } finally {
+        document.getElementById("loadingBox").style.display = "none";
+        document.getElementById("analyzeBtn").disabled = false;
+    }
+}
+
+// ✅ DISPLAY RESULTS
+function displayResults(data) {
+    const matchPercent   = data.matchPercent   || data.score || 0;
+    const missingPercent = data.missingPercent || (100 - matchPercent);
+    const efficiency     = data.efficiencyPercent || matchPercent;
+    const matchingSkills = data.matchingSkills || data.matched || [];
+    const missingSkills  = data.missingSkills  || data.missing || [];
+
+    document.getElementById("matchCircle").innerText      = matchPercent + "%";
+    document.getElementById("missingCircle").innerText    = missingPercent + "%";
+    document.getElementById("efficiencyCircle").innerText = efficiency + "%";
+
+    document.getElementById("matchText").innerText    = matchingSkills.length + " skills matched";
+    document.getElementById("missingText").innerText  = missingSkills.length + " skills to improve";
+    document.getElementById("efficiencyText").innerText = efficiency >= 80 ? "Great match!" :
+                                                          efficiency >= 50 ? "Good match" : "Needs improvement";
+
+    const matchList = document.getElementById("matchList");
+    matchList.innerHTML = "";
+    matchingSkills.length === 0
+        ? matchList.innerHTML = "<li style='color:#aaa;'>No matching skills found</li>"
+        : matchingSkills.forEach(s => { const li = document.createElement("li"); li.innerText = s; matchList.appendChild(li); });
+
+    const missingList = document.getElementById("missingList");
+    missingList.innerHTML = "";
+    missingSkills.length === 0
+        ? missingList.innerHTML = "<li style='color:#aaa;'>No missing skills — perfect match!</li>"
+        : missingSkills.forEach(s => { const li = document.createElement("li"); li.innerText = s; missingList.appendChild(li); });
+
+    document.getElementById("feedbackText").innerText = data.feedback ||
+        (matchPercent >= 80 ? "🔥 Excellent! Your resume is highly matched." :
+         matchPercent >= 50 ? "👍 Good match, but you can improve." :
+                              "⚠️ Needs improvement. Add more relevant skills.");
+
+    showSuggestions(matchingSkills, missingSkills, matchPercent);
+window.location.href = "analysis.html";
+}
+
+// ✅ SUGGESTIONS
+function showSuggestions(matchingSkills, missingSkills, matchPercent) {
+    document.getElementById("suggestionsSection").style.display = "block";
+    const skills  = matchingSkills.map(s => s.toLowerCase());
+    const missing = missingSkills.map(s => s.toLowerCase());
+
+    // Job Roles
+    const jobRoles = [];
+    if (skills.some(s => ["python","machine learning","nlp","deep learning","ai"].includes(s)))
+        jobRoles.push("🤖 AI/ML Engineer", "📊 Data Scientist", "🔬 NLP Engineer");
+    if (skills.some(s => ["html","css","javascript","react","node"].includes(s)))
+        jobRoles.push("🌐 Frontend Developer", "💻 Full Stack Developer");
+    if (skills.some(s => ["sql","database","mongodb","mysql"].includes(s)))
+        jobRoles.push("🗄️ Database Administrator", "📈 Data Analyst");
+    if (skills.some(s => ["java","c++","c#","kotlin"].includes(s)))
+        jobRoles.push("⚙️ Backend Developer", "📱 Android Developer");
+    if (jobRoles.length === 0)
+        jobRoles.push("💼 Software Developer", "🖥️ IT Support Specialist");
+
+    const jobList = document.getElementById("jobRolesList");
+    jobList.innerHTML = "";
+    jobRoles.forEach(r => { const li = document.createElement("li"); li.innerText = r; jobList.appendChild(li); });
+
+    // Courses
+    const courses = [];
+    if (missing.some(s => s.includes("machine learning"))) courses.push("📘 Machine Learning by Andrew Ng — Coursera");
+    if (missing.some(s => s.includes("deep learning")))    courses.push("🧠 Deep Learning Specialization — deeplearning.ai");
+    if (missing.some(s => s.includes("python")))           courses.push("🐍 Python for Everybody — Coursera");
+    if (missing.some(s => s.includes("docker")))           courses.push("🐳 Docker & Kubernetes — Udemy");
+    if (missing.some(s => s.includes("sql")))              courses.push("🗄️ SQL for Data Science — Coursera");
+    if (missing.some(s => s.includes("react") || s.includes("javascript"))) courses.push("⚛️ React - The Complete Guide — Udemy");
+    if (missing.some(s => s.includes("aws") || s.includes("cloud")))        courses.push("☁️ AWS Certified Cloud Practitioner");
+    if (courses.length === 0) {
+        courses.push("🎯 Google IT Support Certificate — Coursera");
+        courses.push("📊 IBM Data Science Certificate — Coursera");
+    }
+
+    const courseList = document.getElementById("coursesList");
+    courseList.innerHTML = "";
+    courses.forEach(c => { const li = document.createElement("li"); li.innerText = c; courseList.appendChild(li); });
+
+    // Career Path
+    const careerPaths = matchPercent >= 80
+        ? ["🌟 Ready for senior roles!", "📈 Specialize deeper in your domain.", "🎓 Pursue advanced certifications."]
+        : matchPercent >= 50
+        ? ["📚 Keep learning missing skills.", "🛠️ Build 2-3 strong projects.", "💼 Apply for junior/mid-level roles.", "🤝 Join open source projects."]
+        : ["🔰 Start with fundamentals.", "📖 Follow a structured learning path (roadmap.sh).", "🏗️ Build small projects.", "🧑‍💻 Consider internships."];
+
+    const careerList = document.getElementById("careerPathList");
+    careerList.innerHTML = "";
+    careerPaths.forEach(p => { const li = document.createElement("li"); li.innerText = p; careerList.appendChild(li); });
+
+    // Resume Tips
+    const tips = [
+        "✅ Use action verbs: 'Built', 'Developed', 'Led', 'Optimized'.",
+        "📏 Keep resume to 1 page if under 5 years experience.",
+        "🎯 Tailor resume for each job — match keywords from job description.",
+        "📊 Add measurable results — e.g. 'Improved performance by 30%'.",
+        "🔗 Include links to GitHub, LinkedIn, or portfolio.",
+        "📝 Use clean, simple format — avoid fancy tables or graphics.",
+        "🚫 Proofread carefully — avoid spelling mistakes.",
+        "💡 Add a strong summary at the top matching the job role."
+    ];
+
+    const tipsList = document.getElementById("resumeTipsList");
+    tipsList.innerHTML = "";
+    tips.forEach(t => { const li = document.createElement("li"); li.innerText = t; tipsList.appendChild(li); });
+}
+
+// ✅ LANGUAGES
+function loadLanguages() {
+    let languages = JSON.parse(localStorage.getItem("languages")) || [];
+    let container = document.getElementById("languageContainer");
+    container.innerHTML = "";
+    languages.forEach((lang, index) => {
+        let span = document.createElement("span");
+        span.innerHTML = `${lang} <button onclick="deleteLanguage(${index})">❌</button>`;
+        container.appendChild(span);
+    });
+}
+function addLanguage() {
+    let select = document.getElementById("languageSelect");
+    let value = select.value;
+    if (!value) return;
+    let languages = JSON.parse(localStorage.getItem("languages")) || [];
+    if (!languages.includes(value)) { languages.push(value); localStorage.setItem("languages", JSON.stringify(languages)); }
+    loadLanguages();
+    select.value = "";
+}
+function deleteLanguage(index) {
+    let languages = JSON.parse(localStorage.getItem("languages")) || [];
+    languages.splice(index, 1);
+    localStorage.setItem("languages", JSON.stringify(languages));
+    loadLanguages();
+}
+
+// ✅ EDIT PROFILE
+function editProfile() {
+    let name  = prompt("Enter your name:");
+    let email = prompt("Enter your email:");
+    let dob   = prompt("Enter your DOB:");
+    if (name)  localStorage.setItem("userName",  name);
+    if (email) localStorage.setItem("userEmail", email);
+    if (dob)   localStorage.setItem("userDOB",   dob);
+    location.reload();
+}
+
+// ✅ CHANGE PHOTO
+function changePhoto() { document.getElementById("imageUpload").click(); }
+document.getElementById("imageUpload").addEventListener("change", function () {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function () { localStorage.setItem("profileImage", reader.result); location.reload(); };
+        reader.readAsDataURL(file);
+    }
+});
+
+// ✅ LOGOUT
+function logout() {
+    localStorage.removeItem("loggedIn");
+    window.location.href = "../resume-analyzer-login/index.html";
+}
+
+// ✅ UPLOAD RESUME
+function uploadResume() { document.getElementById("resumeInput").click(); }
+document.getElementById("resumeInput").addEventListener("change", function () {
+    const file = this.files[0];
+    if (file) document.getElementById("fileName").innerText = "Uploaded: " + file.name;
+});
+
+</script>
+</body>
+</html>

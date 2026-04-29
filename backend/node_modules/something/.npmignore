@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.swp
+*.swo
+src/demo.coffee
+.DS_Store

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Resume Analyzer</title>
+</head>
+<body>
+
+<h2>Upload Resume</h2>
+
+<form id="form">
+  <input type="file" name="resume" accept=".pdf" required /><br><br>
+  <textarea name="jobText" placeholder="Paste job description" rows="6" cols="50"></textarea><br><br>
+  <button type="submit">Analyze</button>
+</form>
+
+<pre id="result"></pre>
+
+<script>
+document.getElementById("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  document.getElementById("result").innerText = "Analyzing...";
+
+  const formData = new FormData(e.target);
+
+  try {
+    const res = await fetch("http://localhost:3000/analyze", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+    document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+  } catch (err) {
+    document.getElementById("result").innerText = "Error: Make sure server.py is running!";
+  }
+});
+</script>
+
+</body>
+</html>

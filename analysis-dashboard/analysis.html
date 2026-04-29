@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Analysis Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 16px;
+}
+.page {
+    background: #fff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 640px;
+    padding: 24px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 6px;
+}
+.back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: #333;
+    padding: 4px;
+}
+.header-text h1 { font-size: 1.25rem; font-weight: 700; color: #111; }
+.header-text p { font-size: 0.78rem; color: #888; margin-top: 2px; }
+.score-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+}
+.score-card {
+    border: 1.5px solid #eee;
+    border-radius: 14px;
+    padding: 16px 10px;
+    text-align: center;
+}
+.score-card h3 { font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 12px; }
+.donut-wrap {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 10px;
+}
+.donut-wrap svg { transform: rotate(-90deg); width: 90px; height: 90px; }
+.donut-bg { fill: none; stroke: #f0f0f0; stroke-width: 8; }
+.donut-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dasharray 1s ease; }
+.donut-fill.blue  { stroke: #2563eb; }
+.donut-fill.red   { stroke: #dc2626; }
+.donut-fill.green { stroke: #16a34a; }
+.donut-label {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111;
+}
+.score-card .sub { font-size: 0.72rem; color: #666; }
+.score-card .sub.green { color: #16a34a; font-weight: 600; }
+.skill-lists {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.skill-box { border: 1.5px solid #eee; border-radius: 14px; padding: 16px; }
+.skill-box-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.skill-box-header .icon { font-size: 1rem; }
+.skill-box-header h3 { font-size: 0.85rem; font-weight: 700; color: #111; flex: 1; }
+.skill-count {
+    background: #f0f0f0;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    color: #555;
+}
+.skill-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f5f5f5;
+    font-size: 0.82rem;
+    color: #333;
+    font-weight: 500;
+}
+.skill-item:last-child { border-bottom: none; }
+.skill-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.skill-dot.green { background: #16a34a; }
+.skill-dot.red   { background: #dc2626; }
+.missing-skill-block { margin-bottom: 10px; }
+.missing-skill-tag {
+    display: inline-block;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+}
+.suggestion-box {
+    background: #fffbeb;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+.suggestion-box .bulb { font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+.suggestion-box strong { display: block; font-size: 0.75rem; font-weight: 700; color: #333; margin-bottom: 2px; }
+.suggestion-box p { font-size: 0.73rem; color: #666; line-height: 1.5; }
+.feedback-box {
+    border: 1.5px solid #e0f2fe;
+    background: #f0f9ff;
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+.feedback-box .check-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    color: #2563eb;
+}
+.feedback-box strong { display: block; font-size: 0.85rem; font-weight: 700; color: #111; margin-bottom: 4px; }
+.feedback-box p { font-size: 0.78rem; color: #555; line-height: 1.5; }
+.reupload-btn {
+    width: 100%;
+    padding: 14px;
+    border: 1.5px solid #ddd;
+    border-radius: 12px;
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    margin-top: 4px;
+}
+.reupload-btn:hover { background: #f5f5f5; border-color: #bbb; }
+.reupload-btn svg { width: 16px; height: 16px; stroke: #333; }
+.placeholder { color: #aaa; font-size: 0.82rem; padding: 8px 0; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <div class="header-text">
+            <h1>Resume Analysis Results</h1>
+            <p>AI-powered analysis of your resume against the job description</p>
+        </div>
+    </div>
+
+    <div class="score-cards">
+        <div class="score-card">
+            <h3>Matching Skills</h3>
+            <div class="donut-wrap">
+                <svg viewBox="0 0 90 90">
+                    <circle class="donut-bg" cx="45" cy="45" r="36"/>
+                    <circle class="donut-fill blue" id="donutMatch" cx="45" cy="45" r="36" stroke-dasharray="0 226"/>
+                </svg>
+                <div class="donut-label" id="matchPct">—</div>
+            </div>
+            <p class="sub" id="matchSub">Upload resume</p>
+        </div>
+        <div class="score-card">
+            <h3>Missing Skills</h3>
+            <div class="donut-wrap">
+                <svg viewBox="0 0 90 90">
+                    <circle class="donut-bg" cx="45" cy="45" r="36"/>
+                    <circle class="donut-fill red" id="donutMissing" cx="45" cy="45" r="36" stroke-dasharray="0 226"/>
+                </svg>
+                <div class="donut-label" id="missingPct">—</div>
+            </div>
+            <p class="sub" id="missingSub">Upload resume</p>
+        </div>
+        <div class="score-card">
+            <h3>Efficiency</h3>
+            <div class="donut-wrap">
+                <svg viewBox="0 0 90 90">
+                    <circle class="donut-bg" cx="45" cy="45" r="36"/>
+                    <circle class="donut-fill green" id="donutEff" cx="45" cy="45" r="36" stroke-dasharray="0 226"/>
+                </svg>
+                <div class="donut-label" id="effPct">—</div>
+            </div>
+            <p class="sub green" id="effSub">Upload resume</p>
+        </div>
+    </div>
+
+    <div class="skill-lists">
+        <div class="skill-box">
+            <div class="skill-box-header">
+                <span class="icon">✅</span>
+                <h3>Matching Skills</h3>
+                <span class="skill-count" id="matchCount">0</span>
+            </div>
+            <div id="matchingList"><p class="placeholder">Results will appear here</p></div>
+        </div>
+        <div class="skill-box">
+            <div class="skill-box-header">
+                <span class="icon">⚠️</span>
+                <h3>Missing Skills</h3>
+                <span class="skill-count" id="missingCount">0</span>
+            </div>
+            <div id="missingList"><p class="placeholder">Results will appear here</p></div>
+        </div>
+    </div>
+
+    <div class="feedback-box">
+        <div class="check-icon">✓</div>
+        <div>
+            <strong id="feedbackTitle">Waiting for analysis...</strong>
+            <p id="feedbackBody">Upload your resume and paste a job description to get started.</p>
+        </div>
+    </div>
+
+    <button class="reupload-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Re-upload Resume
+    </button>
+
+</div>
+
+<script>
+const CIRCUMFERENCE = 2 * Math.PI * 36;
+
+function setDonut(id, percent) {
+    const circle = document.getElementById(id);
+    const fill = (percent / 100) * CIRCUMFERENCE;
+    circle.style.strokeDasharray = `${fill} ${CIRCUMFERENCE}`;
+}
+
+window.onload = function () {
+    const data = JSON.parse(localStorage.getItem("analysisResult"));
+    if (!data) return;
+
+    const matchPct   = data.matchPercent   || data.score || 0;
+    const missingPct = data.missingPercent || (100 - matchPct);
+    const effPct     = data.efficiencyPercent || matchPct;
+    const matched    = data.matchingSkills || data.matched || [];
+    const missing    = data.missingSkills  || data.missing || [];
+
+    setDonut("donutMatch",   matchPct);
+    setDonut("donutMissing", missingPct);
+    setDonut("donutEff",     effPct);
+
+    document.getElementById("matchPct").innerText   = matchPct + "%";
+    document.getElementById("missingPct").innerText = missingPct + "%";
+    document.getElementById("effPct").innerText     = effPct + "%";
+    document.getElementById("matchSub").innerText   = matched.length + " of " + (matched.length + missing.length) + " skills found";
+    document.getElementById("missingSub").innerText = missing.length + " skills to improve";
+    document.getElementById("effSub").innerText     = effPct >= 80 ? "Good match" : effPct >= 50 ? "Fair match" : "Needs work";
+    document.getElementById("matchCount").innerText   = matched.length;
+    document.getElementById("missingCount").innerText = missing.length;
+
+    const matchList = document.getElementById("matchingList");
+    matchList.innerHTML = "";
+    if (matched.length === 0) {
+        matchList.innerHTML = "<p class='placeholder'>No matching skills</p>";
+    } else {
+        matched.forEach(skill => {
+            matchList.innerHTML += `<div class="skill-item"><span class="skill-dot green"></span>${skill}</div>`;
+        });
+    }
+
+    const missingList = document.getElementById("missingList");
+    missingList.innerHTML = "";
+    if (missing.length === 0) {
+        missingList.innerHTML = "<p class='placeholder'>Perfect match! 🎉</p>";
+    } else {
+        missing.forEach(skill => {
+            const suggestion = getSuggestion(skill);
+            missingList.innerHTML += `
+                <div class="missing-skill-block">
+                    <span class="missing-skill-tag">${skill}</span>
+                    <div class="suggestion-box">
+                        <span class="bulb">💡</span>
+                        <div>
+                            <strong>Suggestion to Improve:</strong>
+                            <p>${suggestion}</p>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    const isGood = matchPct >= 70;
+    document.getElementById("feedbackTitle").innerText = isGood
+        ? "Good job! Your resume has a strong foundation."
+        : "Your resume needs some improvement.";
+    document.getElementById("feedbackBody").innerText = data.feedback ||
+        (isGood
+            ? "Consider adding the missing skills to increase your match score and align better with the job requirements."
+            : "Focus on adding the missing skills and tailoring your resume to the job description.");
+};
+
+function getSuggestion(skill) {
+    const s = skill.toLowerCase();
+    if (s.includes("deep learning") || s.includes("neural"))
+        return "Add projects or coursework involving deep learning frameworks such as TensorFlow or PyTorch.";
+    if (s.includes("docker") || s.includes("container"))
+        return "Include experience with containerization tools like Docker. Mention any relevant projects or certifications.";
+    if (s.includes("machine learning") || s.includes("ml"))
+        return "Showcase ML projects on GitHub and add relevant Coursera or Udemy certifications to your resume.";
+    if (s.includes("sql") || s.includes("database"))
+        return "Add database projects or mention SQL usage in past internships or academic projects.";
+    if (s.includes("python"))
+        return "Highlight Python projects, scripts, or automation work you have done in any context.";
+    if (s.includes("react") || s.includes("javascript"))
+        return "Build a small React project and add it to your GitHub portfolio to demonstrate frontend skills.";
+    if (s.includes("aws") || s.includes("cloud"))
+        return "Consider the AWS Cloud Practitioner certification — it is beginner-friendly and widely recognized.";
+    if (s.includes("communication"))
+        return "Mention presentations, teamwork, or leadership roles in projects or extracurricular activities.";
+    return `Research and add hands-on experience with ${skill} through projects, courses, or certifications.`;
+}
+
+function goBack() {
+    window.location.href = "index.html";
+}
+</script>
+</body>
+</html>
