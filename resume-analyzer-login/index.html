@@ -178,9 +178,9 @@ form a:hover { text-decoration: underline; }
     <form id="signUpForm">
       <h1>Create Account</h1>
       <div class="social-container">
-        <a href="#"><i class="fab fa-facebook-f"></i></a>
-        <a href="#"><i class="fab fa-google-plus-g"></i></a>
-        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://www.facebook.com" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://github.com" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+        <a href="https://www.linkedin.com" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
       </div>
       <span>or use your email for registration</span>
       <input type="text" id="regName" placeholder="Name" />
@@ -195,9 +195,9 @@ form a:hover { text-decoration: underline; }
     <form id="signInForm">
       <h1>Sign in</h1>
       <div class="social-container">
-        <a href="#"><i class="fab fa-facebook-f"></i></a>
-        <a href="#"><i class="fab fa-google-plus-g"></i></a>
-        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://www.facebook.com" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://github.com" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+        <a href="https://www.linkedin.com" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
       </div>
       <span>or use your account</span>
       <input type="email" id="loginEmail" placeholder="Email" />
@@ -234,8 +234,8 @@ document.getElementById('signIn').addEventListener('click', () => {
     document.getElementById('container').classList.remove("right-panel-active");
 });
 
-// SIGN UP
-document.getElementById('signUpForm').addEventListener('submit', function(e) {
+// SIGN UP (MONGODB INTEGRATED)
+document.getElementById('signUpForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const name     = document.getElementById('regName').value.trim();
     const email    = document.getElementById('regEmail').value.trim();
@@ -245,33 +245,58 @@ document.getElementById('signUpForm').addEventListener('submit', function(e) {
     if (!email || !email.includes("@"))  { alert("Enter a valid email."); return; }
     if (!password || password.length < 6){ alert("Password must be at least 6 characters."); return; }
 
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-    if (users.find(u => u.email === email)) { alert("Email already registered. Please sign in."); return; }
+    try {
+        const response = await fetch("http://localhost:3000/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password })
+        });
 
-    users.push({ name, email, password });
-    localStorage.setItem("users", JSON.stringify(users));
-    alert("Account created successfully! Please sign in.");
-    document.getElementById('container').classList.remove("right-panel-active");
+        const data = await response.json();
+        if (!response.ok) {
+            alert(data.error || "Registration failed.");
+            return;
+        }
+
+        alert("Account created successfully in MongoDB! Please sign in.");
+        document.getElementById('container').classList.remove("right-panel-active");
+    } catch (err) {
+        alert("Error connecting to server: " + err.message);
+    }
 });
 
-// SIGN IN
-document.getElementById('signInForm').addEventListener('submit', function(e) {
+// SIGN IN (MONGODB INTEGRATED)
+document.getElementById('signInForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const email    = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
 
     if (!email || !password) { alert("Enter email and password."); return; }
 
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find(u => u.email === email && u.password === password);
+    try {
+        const response = await fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
 
-    if (user) {
+        const data = await response.json();
+        if (!response.ok) {
+            alert(data.error || "Invalid login credentials.");
+            return;
+        }
+
         localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("userName",  user.name);
-        localStorage.setItem("userEmail", user.email);
+        localStorage.setItem("userName",  data.name);
+        localStorage.setItem("userEmail", data.email);
+        if (data.role) localStorage.setItem("userRole", data.role);
+        if (data.dob) localStorage.setItem("userDOB", data.dob);
+        if (data.profileImage) localStorage.setItem("profileImage", data.profileImage);
+        if (data.history) localStorage.setItem("analysisHistory", JSON.stringify(data.history));
+
         window.location.href = "../analysis-dashboard/index.html";
-    } else {
-        alert("Invalid email or password. Please try again.");
+    } catch (err) {
+        alert("Error connecting to server: " + err.message);
     }
 });
 </script>

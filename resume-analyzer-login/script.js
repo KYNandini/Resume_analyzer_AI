@@ -7,11 +7,9 @@ signUpButton.addEventListener('click', () => {
 container.classList.add("right-panel-active");
 });
 
-```
 signInButton.addEventListener('click', () => {
     container.classList.remove("right-panel-active");
 });
-```
 
 }
 
@@ -21,10 +19,9 @@ signInButton.addEventListener('click', () => {
 const signUpForm = document.querySelector(".sign-up-container form");
 
 if (signUpForm) {
-signUpForm.addEventListener("submit", function(e) {
-e.preventDefault();
+signUpForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
 
-```
     const name = signUpForm.querySelector('input[type="text"]').value.trim();
     const email = signUpForm.querySelector('input[type="email"]').value.trim();
     const password = signUpForm.querySelector('input[type="password"]').value.trim();
@@ -33,20 +30,26 @@ e.preventDefault();
     if (!email.includes("@")) return alert("Enter valid email");
     if (password.length < 6) return alert("Password must be at least 6 characters");
 
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-
-    if (users.find(u => u.email === email)) {
-        return alert("Email already registered");
+    try {
+        const res = await fetch("http://127.0.0.1:3000/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) {
+            return alert(data.error || "Failed to sign up");
+        }
+        
+        alert("Account created successfully!");
+        container.classList.remove("right-panel-active");
+    } catch (error) {
+        console.error(error);
+        alert("Server error. Ensure backend is running.");
     }
-
-    users.push({ name, email, password });
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert("Account created successfully!");
-    container.classList.remove("right-panel-active");
 });
-```
-
 }
 
 // =====================
@@ -55,28 +58,37 @@ e.preventDefault();
 const signInForm = document.querySelector(".sign-in-container form");
 
 if (signInForm) {
-signInForm.addEventListener("submit", function(e) {
-e.preventDefault();
+signInForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
 
-```
     const email = signInForm.querySelector('input[type="email"]').value.trim();
     const password = signInForm.querySelector('input[type="password"]').value.trim();
 
     if (!email || !password) return alert("Enter email and password");
 
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-
-    const user = users.find(u => u.email === email && u.password === password);
-
-    if (!user) return alert("Invalid login");
-
-    localStorage.setItem("loggedIn", "true");
-    localStorage.setItem("userName", user.name);
-
-    window.location.href = "../analysis-dashboard/index.html";
+    try {
+        const res = await fetch("http://127.0.0.1:3000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) {
+            return alert(data.error || "Invalid login credentials");
+        }
+        
+        localStorage.setItem("loggedIn", "true");
+        localStorage.setItem("userName", data.name);
+        localStorage.setItem("userEmail", email);
+        
+        window.location.href = "../analysis-dashboard/index.html";
+    } catch (error) {
+        console.error(error);
+        alert("Server error. Ensure backend is running.");
+    }
 });
-```
-
 }
 
 // =====================
@@ -86,7 +98,6 @@ function showSuggestions(matchingSkills, missingSkills, matchPercent) {
 const section = document.getElementById("suggestionsSection");
 if (!section) return;
 
-```
 section.style.display = "block";
 
 const jobList = document.getElementById("jobRolesList");
@@ -119,7 +130,6 @@ async function analyzeResume() {
 const fileInput = document.getElementById("resume");
 const jobText = document.getElementById("jobText").value;
 
-```
 // Validate file
 if (!fileInput || !fileInput.files[0]) {
     alert("Please upload a resume first");
@@ -133,6 +143,11 @@ if (loader) loader.style.display = "block";
 const formData = new FormData();
 formData.append("resume", fileInput.files[0]);
 formData.append("jobText", jobText);
+
+const userEmail = localStorage.getItem("userEmail");
+if (userEmail) {
+    formData.append("email", userEmail);
+}
 
 try {
     const res = await fetch("http://127.0.0.1:3000/analyze", {
@@ -202,6 +217,5 @@ try {
 } finally {
     if (loader) loader.style.display = "none";
 }
-```
 
 }
