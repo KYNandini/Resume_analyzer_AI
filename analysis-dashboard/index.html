@@ -40,10 +40,10 @@ if (localStorage.getItem("loggedIn") !== "true") {
                     <img id="profileImage" src="logo.png" alt="Profile" onclick="changePhoto()" title="Click to change photo">
                     <input type="file" id="imageUpload" hidden>
                     <div class="profile-info">
-                        <h3 id="userName">Mahajaya S N</h3>
-                        <p id="userRole">💻 Senior Software Engineer</p>
-                        <p id="userEmail">mahajay@gmail.com</p>
-                        <p id="userDOB">01-01-2005</p>
+                        <h3 id="userName">---</h3>
+                        <p id="userRole">💻 ---</p>
+                        <p id="userEmail">---</p>
+                        <p id="userDOB">---</p>
                     </div>
                 </div>
                 <div class="profile-actions">
@@ -130,7 +130,7 @@ if (localStorage.getItem("loggedIn") !== "true") {
     <div class="content">
         <div class="welcome-banner">
             <div class="bg-glow"></div>
-            <h1>👋 Welcome, <span id="welcomeUserName">Mahajaya</span>!</h1>
+            <h1>👋 Welcome, <span id="welcomeUserName">---</span>!</h1>
             <p>Optimize your resume for applicant tracking systems (ATS) and align your skills with your dream job in seconds.</p>
         </div>
 
@@ -211,9 +211,41 @@ let pendingProfileImage = null;
 
 // ✅ LOAD PROFILE DATA & ANALYSIS HISTORY
 window.onload = async function () {
+    // Render profile details from localStorage instantly
+    function displayProfile() {
+        let name  = localStorage.getItem("userName");
+        let role  = localStorage.getItem("userRole");
+        let email = localStorage.getItem("userEmail");
+        let dob   = localStorage.getItem("userDOB");
+        let image = localStorage.getItem("profileImage");
+
+        if (!name  || name === "---" || name.trim() === "") name = "User Name";
+        if (!role  || role === "---" || role.trim() === "") role = "Senior Software Engineer";
+        if (!email || email === "---" || !email.includes("@")) email = "user@example.com";
+        if (!dob   || dob === "---" || dob.length < 5)      dob  = "01-01-2005";
+
+        document.getElementById("userName").innerText  = name;
+        document.getElementById("userRole").innerText  = "💻 " + role.replace("💻 ", "");
+        
+        const welcomeEl = document.getElementById("welcomeUserName");
+        if (welcomeEl) {
+            welcomeEl.innerText = name.split(" ")[0];
+        }
+        
+        document.getElementById("userEmail").innerText = email;
+        document.getElementById("userDOB").innerText   = dob;
+
+        if (!image || image.trim() === "" || image === "---") {
+            image = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
+        }
+        document.getElementById("profileImage").src = image;
+    }
+
+    displayProfile();
+    renderAnalysisHistory();
+
+    // Fetch latest profile & history from MongoDB in the background
     let email = localStorage.getItem("userEmail");
-    
-    // Fetch latest profile & history from MongoDB
     if (email) {
         try {
             const res = await fetch(`http://localhost:3000/get_profile?email=${email}`);
@@ -224,32 +256,15 @@ window.onload = async function () {
                 if (data.dob)  localStorage.setItem("userDOB", data.dob);
                 if (data.profileImage) localStorage.setItem("profileImage", data.profileImage);
                 if (data.history) localStorage.setItem("analysisHistory", JSON.stringify(data.history));
+                
+                // Re-render display with fresh data from database
+                displayProfile();
+                renderAnalysisHistory();
             }
         } catch (err) {
             console.error("Error fetching MongoDB profile:", err);
         }
     }
-
-    let name  = localStorage.getItem("userName");
-    let role  = localStorage.getItem("userRole");
-    email     = localStorage.getItem("userEmail");
-    let dob   = localStorage.getItem("userDOB");
-    let image = localStorage.getItem("profileImage");
-
-    if (!name  || name.length < 3)      name  = "Mahajaya S N";
-    if (!role  || role.length < 2)      role  = "Senior Software Engineer";
-    if (!email || !email.includes("@")) email = "mahajay@gmail.com";
-    if (!dob   || dob.length < 5)       dob   = "01-01-2005";
-
-    document.getElementById("userName").innerText  = name;
-    document.getElementById("userRole").innerText  = "💻 " + role.replace("💻 ", "");
-    document.getElementById("welcomeUserName").innerText = name.split(" ")[0];
-    document.getElementById("userEmail").innerText = email;
-    document.getElementById("userDOB").innerText   = dob;
-
-    if (image) document.getElementById("profileImage").src = image;
-
-    renderAnalysisHistory();
 };
 
 // ✅ UPLOAD RESUME (NATIVE LABEL CLICK & DRAG-AND-DROP)
@@ -367,7 +382,32 @@ function openHistoryFile(id) {
     if (item && item.fileDataUrl) {
         const newWindow = window.open();
         if (newWindow) {
-            newWindow.document.write(`<iframe src="${item.fileDataUrl}" class="resume-preview-iframe" allowfullscreen></iframe>`);
+            newWindow.document.write(`
+                <html>
+                <head>
+                    <title>${item.fileName || "Resume Preview"}</title>
+                    <style>
+                        html, body {
+                            margin: 0;
+                            padding: 0;
+                            width: 100%;
+                            height: 100%;
+                            overflow: hidden;
+                            background-color: #f4f4f9;
+                        }
+                        iframe {
+                            width: 100%;
+                            height: 100%;
+                            border: none;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <iframe src="${item.fileDataUrl}" allowfullscreen></iframe>
+                </body>
+                </html>
+            `);
+            newWindow.document.close();
         } else {
             const a = document.createElement("a");
             a.href = item.fileDataUrl;
@@ -491,9 +531,7 @@ function editProfile() {
     document.getElementById("editName").value  = localStorage.getItem("userName")  || "Mahajaya S N";
     document.getElementById("editRole").value  = localStorage.getItem("userRole")  || "Senior Software Engineer";
     document.getElementById("editEmail").value = localStorage.getItem("userEmail") || "mahajay@gmail.com";
-    document.getElementById("editDOB").value   = localStorage.getItem("userDOB")   || "01-01-2005";
-
-    const currentImg = localStorage.getItem("profileImage") || "logo.png";
+    const currentImg = localStorage.getItem("profileImage") || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(localStorage.getItem("userName") || "Mahajaya S N")}`;
     document.getElementById("editProfilePreview").src = currentImg;
     pendingProfileImage = null;
 }
@@ -530,10 +568,13 @@ async function saveProfile() {
     if (pendingProfileImage) localStorage.setItem("profileImage", pendingProfileImage);
 
     // Update display instantly
-    document.getElementById("userName").innerText  = name || "Mahajaya S N";
+    document.getElementById("userName").innerText  = name || "User Name";
     document.getElementById("userRole").innerText  = "💻 " + (role || "Senior Software Engineer").replace("💻 ", "");
-    document.getElementById("welcomeUserName").innerText = (name || "Mahajaya").split(" ")[0];
-    document.getElementById("userEmail").innerText = email || "mahajay@gmail.com";
+    const welcomeEl = document.getElementById("welcomeUserName");
+    if (welcomeEl) {
+        welcomeEl.innerText = (name || "User Name").split(" ")[0];
+    }
+    document.getElementById("userEmail").innerText = email || "user@example.com";
     document.getElementById("userDOB").innerText   = dob || "01-01-2005";
 
     if (pendingProfileImage) {
@@ -587,7 +628,7 @@ document.getElementById("imageUpload").addEventListener("change", function () {
 
 // ✅ LOGOUT
 function logout() {
-    localStorage.removeItem("loggedIn");
+    localStorage.clear();
     window.location.href = "../resume-analyzer-login/index.html";
 }
 

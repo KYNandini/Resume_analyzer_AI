@@ -74,16 +74,18 @@ def signup():
     if users_collection.find_one({"email": email}):
         return jsonify({"error": "Email already registered"}), 400
         
+    import urllib.parse
     hashed_password = generate_password_hash(password)
     
     # Create user document with default profile fields & empty history
+    safe_name = urllib.parse.quote(name)
     user_doc = {
         "name": name,
         "email": email,
         "password": hashed_password,
         "role": "Senior Software Engineer",
         "dob": "01-01-2005",
-        "profileImage": "",
+        "profileImage": f"https://api.dicebear.com/7.x/initials/svg?seed={safe_name}",
         "history": []
     }
     users_collection.insert_one(user_doc)

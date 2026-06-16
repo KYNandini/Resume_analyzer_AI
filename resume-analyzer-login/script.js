@@ -79,9 +79,14 @@ signInForm.addEventListener("submit", async function(e) {
             return alert(data.error || "Invalid login credentials");
         }
         
+        localStorage.clear();
         localStorage.setItem("loggedIn", "true");
         localStorage.setItem("userName", data.name);
         localStorage.setItem("userEmail", email);
+        localStorage.setItem("userRole", data.role || "Senior Software Engineer");
+        localStorage.setItem("userDOB", data.dob || "01-01-2005");
+        localStorage.setItem("profileImage", data.profileImage || "");
+        localStorage.setItem("analysisHistory", JSON.stringify(data.history || []));
         
         window.location.href = "../analysis-dashboard/index.html";
     } catch (error) {
@@ -119,7 +124,6 @@ if (jobList.innerHTML === "") {
 (missingSkills || []).forEach(skill => {
     courseList.innerHTML += `<li>Learn ${skill} (Udemy / Coursera)</li>`;
 });
-```
 
 }
 

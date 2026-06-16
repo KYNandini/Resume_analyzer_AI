@@ -7,8 +7,28 @@ from sentence_transformers import SentenceTransformer, util
 nlp = spacy.load("en_core_web_sm")
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
-resume_text = sys.argv[1]
-job_text = sys.argv[2]
+import os
+
+resume_arg = sys.argv[1]
+job_arg = sys.argv[2]
+
+if os.path.isfile(resume_arg):
+    try:
+        with open(resume_arg, "r", encoding="utf-8") as f:
+            resume_text = f.read()
+    except Exception:
+        resume_text = resume_arg
+else:
+    resume_text = resume_arg
+
+if os.path.isfile(job_arg):
+    try:
+        with open(job_arg, "r", encoding="utf-8") as f:
+            job_text = f.read()
+    except Exception:
+        job_text = job_arg
+else:
+    job_text = job_arg
 
 resume_doc = nlp(resume_text.lower())
 job_doc = nlp(job_text.lower())
