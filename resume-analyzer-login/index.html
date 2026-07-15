@@ -54,6 +54,8 @@ form {
   display: flex;
   flex-direction: column;
   padding: 0 44px;
+  height: 100%;
+  justify-content: center;
   width: 100%;
   align-items: center;
   text-align: center;
@@ -165,6 +167,28 @@ form a:hover { text-decoration: underline; }
   z-index: 999;
   pointer-events: none;
 }
+#signupFields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+#otpSection {
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+#otpSection p {
+  font-size: 0.85rem;
+  margin-top: 10px;
+  color: #555;
+}
+#backToSignupBtn {
+  margin-top: 10px;
+}
 </style>
 </head>
 <body>
@@ -178,15 +202,24 @@ form a:hover { text-decoration: underline; }
     <form id="signUpForm">
       <h1>Create Account</h1>
       <div class="social-container">
-        <a href="https://www.facebook.com" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://github.com" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
-        <a href="https://www.linkedin.com" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="fab fa-github"></i></a>
+        <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
       </div>
       <span>or use your email for registration</span>
-      <input type="text" id="regName" placeholder="Name" />
-      <input type="email" id="regEmail" placeholder="Email" />
-      <input type="password" id="regPassword" placeholder="Password" />
-      <button type="submit">Sign Up</button>
+      <div id="signupFields">
+        <input type="text" id="regName" placeholder="Name" />
+        <input type="email" id="regEmail" placeholder="Email" />
+        <input type="password" id="regPassword" placeholder="Password" />
+        <button type="submit" id="sendOtpBtn">Send OTP</button>
+      </div>
+      
+      <div id="otpSection">
+        <p>Enter the 6-digit OTP sent to your email.</p>
+        <input type="text" id="regOtp" placeholder="6-digit OTP" maxlength="6" />
+        <button type="button" id="verifyOtpBtn">Verify & Register</button>
+        <a href="#" id="backToSignupBtn">&larr; Back to Signup</a>
+      </div>
     </form>
   </div>
 
@@ -195,9 +228,9 @@ form a:hover { text-decoration: underline; }
     <form id="signInForm">
       <h1>Sign in</h1>
       <div class="social-container">
-        <a href="https://www.facebook.com" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://github.com" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
-        <a href="https://www.linkedin.com" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="fab fa-github"></i></a>
+        <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
       </div>
       <span>or use your account</span>
       <input type="email" id="loginEmail" placeholder="Email" />
@@ -233,6 +266,11 @@ document.getElementById('signUp').addEventListener('click', () => {
 document.getElementById('signIn').addEventListener('click', () => {
     document.getElementById('container').classList.remove("right-panel-active");
 });
+document.getElementById('backToSignupBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById("otpSection").style.display = "none";
+    document.getElementById("signupFields").style.display = "flex";
+});
 
 // SIGN UP (MONGODB INTEGRATED)
 document.getElementById('signUpForm').addEventListener('submit', async function(e) {
@@ -246,10 +284,46 @@ document.getElementById('signUpForm').addEventListener('submit', async function(
     if (!password || password.length < 6){ alert("Password must be at least 6 characters."); return; }
 
     try {
-        const response = await fetch("http://localhost:3000/signup", {
+        const response = await fetch("http://localhost:3000/send-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            alert(data.error || "Failed to send OTP.");
+            return;
+        }
+
+        alert("OTP sent to your email!");
+        document.getElementById("signupFields").style.display = "none";
+        document.getElementById("otpSection").style.display = "flex";
+        
+        // Show test email link if using Ethereal
+        if (data.previewUrl) {
+            let p = document.createElement('p');
+            p.style.fontSize = "0.75rem";
+            p.style.marginTop = "5px";
+            p.innerHTML = `⚠️ <a href="${data.previewUrl}" target="_blank" style="color:#2bbbad; font-weight:bold;">Click here to view your OTP email</a> (Testing Mode)`;
+            document.getElementById("otpSection").appendChild(p);
+        }
+    } catch (err) {
+        alert("Error connecting to server: " + err.message);
+    }
+});
+
+document.getElementById('verifyOtpBtn').addEventListener('click', async function() {
+    const email = document.getElementById('regEmail').value.trim();
+    const otp = document.getElementById('regOtp').value.trim();
+
+    if (!otp || otp.length !== 6) { alert("Enter a valid 6-digit OTP."); return; }
+
+    try {
+        const response = await fetch("http://localhost:3000/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, otp })
         });
 
         const data = await response.json();
@@ -258,7 +332,12 @@ document.getElementById('signUpForm').addEventListener('submit', async function(
             return;
         }
 
-        alert("Account created successfully in MongoDB! Please sign in.");
+        alert("Account created successfully! Please sign in.");
+        
+        // Reset form
+        document.getElementById('signUpForm').reset();
+        document.getElementById("signupFields").style.display = "flex";
+        document.getElementById("otpSection").style.display = "none";
         document.getElementById('container').classList.remove("right-panel-active");
     } catch (err) {
         alert("Error connecting to server: " + err.message);

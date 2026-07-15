@@ -5,6 +5,7 @@
     "express": "^5.2.1",
     "mongoose": "^8.3.4",
     "multer": "^2.1.1",
+    "nodemailer": "^9.0.3",
     "pdf-parse": "^2.4.5",
     "something": "^0.0.1"
   }

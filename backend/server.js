@@ -7,9 +7,41 @@ const path = require("path");
 const { exec } = require("child_process");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
-require("dotenv").config();
+const nodemailer = require("nodemailer");
+require("dotenv").config({ path: path.join(__dirname, ".env"), override: true });
 
 const app = express();
+
+// Nodemailer configuration
+let transporter;
+async function initMailer() {
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS && process.env.EMAIL_USER !== "your-email@gmail.com") {
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+    console.log("Using Gmail SMTP");
+  } else {
+    console.log("No EMAIL_USER in .env. Falling back to Ethereal Email for testing...");
+    let testAccount = await nodemailer.createTestAccount();
+    transporter = nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+    console.log("Ethereal Email initialized.");
+  }
+}
+initMailer();
+
+
 
 // CORS middleware configurations
 app.use(cors({
@@ -22,7 +54,7 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.json({ limit: "50mb" }));
 
 // MongoDB connection
-const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/resume_analyzer";
+const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/resumeanalyzer";
 mongoose.connect(mongoUri)
   .then(() => console.log("Connected to MongoDB via Mongoose successfully!"))
   .catch((err) => console.error("Could not connect to MongoDB:", err));
@@ -39,14 +71,25 @@ const userSchema = new mongoose.Schema({
 });
 
 const resumeSchema = new mongoose.Schema({
-  email: String,
-  filename: String,
+  email: { type: String, required: true },
+  filename: { type: String, required: true },
   file_data: Buffer,
+  jobDescription: { type: String, default: "" },
+  analysisResult: { type: Object, default: {} },
   timestamp: { type: Date, default: Date.now }
+});
+
+const otpSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  otp: { type: String, required: true },
+  name: { type: String, required: true },
+  password: { type: String, required: true },
+  expiresAt: { type: Date, default: () => new Date(Date.now() + 5 * 60 * 1000) }
 });
 
 const User = mongoose.model("User", userSchema);
 const Resume = mongoose.model("Resume", resumeSchema);
+const Otp = mongoose.model("Otp", otpSchema);
 
 // Password Hashing and Checking helpers (Compatible with Flask's werkzeug pbkdf2:sha256)
 function generatePassword(password) {
@@ -81,8 +124,8 @@ const upload = multer({ dest: "uploads/" });
 
 // Routes
 
-// 1. Signup
-app.post("/signup", async (req, res) => {
+// 1. Send OTP for Signup
+app.post("/send-otp", async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -94,10 +137,102 @@ app.post("/signup", async (req, res) => {
       return res.status(400).json({ error: "Email already registered" });
     }
 
-    const hashedPassword = generatePassword(password);
-    const safeName = encodeURIComponent(name);
-    const userDoc = new User({
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Delete any existing OTP for this email, then create fresh
+    await Otp.deleteOne({ email });
+    const otpDoc = new Otp({
+      email,
+      otp,
       name,
+      password,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+    });
+    try {
+      await otpDoc.save();
+      console.log("OTP saved to DB for:", email, "OTP:", otp);
+    } catch (saveErr) {
+      console.error("❌ CRITICAL: OTP save failed:", saveErr.message, saveErr.code);
+      return res.status(500).json({ error: "Failed to save OTP: " + saveErr.message });
+    }
+
+    // Send email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your OTP for Resume Analyzer AI",
+      text: `Your One Time Password (OTP) for registration is: ${otp}\nThis code will expire in 5 minutes.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #2bbbad; margin: 0; font-size: 24px; font-weight: 800;">Resume Analyzer AI</h2>
+          </div>
+          <div style="padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #f1f5f9;">
+            <h3 style="color: #1a1a2e; margin-top: 0; font-size: 18px;">Welcome, ${name}!</h3>
+            <p style="color: #475569; font-size: 15px; line-height: 1.6;">Thank you for registering with us. Please use the following One Time Password (OTP) to complete your sign-up process:</p>
+            <div style="background: #ffffff; padding: 20px; text-align: center; border-radius: 8px; margin: 24px 0; border: 2px dashed #2bbbad;">
+              <span style="font-size: 36px; font-weight: bold; color: #2bbbad; letter-spacing: 8px; display: block; margin-left: 8px;">${otp}</span>
+            </div>
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 0;">This code will expire in <strong>5 minutes</strong>. If you didn't request this code, you can safely ignore this email.</p>
+          </div>
+        </div>
+      `
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json({ error: "Failed to send OTP email" });
+      }
+      
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) {
+        console.log("OTP Email sent! Preview URL: %s", previewUrl);
+      } else {
+        console.log("OTP Email successfully sent to:", email);
+      }
+      
+      return res.status(200).json({ 
+          message: "OTP sent successfully", 
+          previewUrl: previewUrl || null 
+      });
+    });
+  } catch (error) {
+    console.error("Send OTP error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 1.5 Verify OTP and Complete Signup
+app.post("/signup", async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ error: "Missing email or OTP" });
+  }
+
+  try {
+    const storedData = await Otp.findOne({ email });
+    console.log("Signup attempt - email:", email, "otp entered:", otp, "storedData:", storedData);
+    if (!storedData) {
+      return res.status(400).json({ error: "No pending signup found for this email, or OTP has expired." });
+    }
+
+    // Check manual expiry (5 minutes)
+    if (storedData.expiresAt && new Date() > storedData.expiresAt) {
+      await Otp.deleteOne({ email });
+      return res.status(400).json({ error: "OTP has expired. Please request a new one." });
+    }
+
+    if (storedData.otp !== otp.trim()) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Proceed with registration
+    const hashedPassword = generatePassword(storedData.password);
+    const safeName = encodeURIComponent(storedData.name);
+    const userDoc = new User({
+      name: storedData.name,
       email,
       password: hashedPassword,
       role: "Senior Software Engineer",
@@ -107,6 +242,8 @@ app.post("/signup", async (req, res) => {
     });
 
     await userDoc.save();
+    console.log("✅ User registered and saved to MongoDB:", email);
+    await Otp.deleteOne({ email }); // Clear OTP after success
     return res.status(201).json({ message: "Account created successfully" });
   } catch (error) {
     console.error("Signup error:", error);
@@ -240,14 +377,20 @@ app.post("/analyze", upload.single("resume"), async (req, res) => {
   try {
     const fileBuffer = fs.readFileSync(req.file.path);
     
-    // Store raw binary resume in MongoDB resumes collection
+    // Store raw binary resume + job description + analysis metadata in MongoDB
     if (email) {
       const resumeDoc = new Resume({
         email: email,
         filename: req.file.originalname,
-        file_data: fileBuffer
+        file_data: fileBuffer,
+        jobDescription: jobText,
+        analysisResult: {}
       });
-      await resumeDoc.save().catch(e => console.error("Error saving resume binary to DB:", e));
+      await resumeDoc.save()
+        .then(() => console.log("✅ Resume saved to MongoDB for:", email, "|", req.file.originalname))
+        .catch(e => console.error("❌ Error saving resume to DB:", e));
+    } else {
+      console.log("⚠️ No email provided - resume NOT saved to MongoDB");
     }
 
     // Extract text from PDF

@@ -48,6 +48,7 @@ html, body {
     font-weight: 800;
     background: linear-gradient(135deg, #0d9488, #0284c7);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     display: flex;
     align-items: center;

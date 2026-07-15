@@ -6,6 +6,37 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import os
 from dotenv import load_dotenv
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import threading
+
+def send_welcome_email(to_email, user_name):
+    sender_email = os.getenv("EMAIL_USER")
+    sender_pass = os.getenv("EMAIL_PASS")
+    
+    if not sender_email or not sender_pass or sender_email == "your-email@gmail.com":
+        print("Email configuration missing or using placeholders. Skipping email sending.")
+        return
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = to_email
+        msg['Subject'] = "Welcome to Resume Analyzer AI!"
+        
+        body = f"<h2>Welcome {user_name}!</h2><p>Thank you for signing up for Resume Analyzer AI.</p><p>We are excited to help you optimize your resume and land your dream job!</p><br><p>Best Regards,</p><p>The Resume Analyzer AI Team</p>"
+        
+        msg.attach(MIMEText(body, 'html'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, sender_pass)
+        server.sendmail(sender_email, to_email, msg.as_string())
+        server.quit()
+        print(f"Welcome email sent successfully to {to_email}")
+    except Exception as e:
+        print(f"Failed to send email to {to_email}: {str(e)}")
 
 # Import the upgraded analyzer engine
 from analyzer import extract_skills, match_skills, get_gemini_suggestions
@@ -20,7 +51,7 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 try:
     mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
     client = MongoClient(mongo_uri)
-    db = client["resume_analyzer"]
+    db = client["resumeanalyzer"]
     users_collection = db["users"]
     resumes_collection = db["resumes"]
     # Test connection
@@ -70,6 +101,9 @@ def signup():
         "history": []
     }
     users_collection.insert_one(user_doc)
+
+    # Send welcome email in a separate thread so it doesn't block the response
+    threading.Thread(target=send_welcome_email, args=(email, name)).start()
 
     return jsonify({"message": "Account created successfully"}), 201
 
