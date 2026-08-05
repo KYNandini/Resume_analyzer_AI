@@ -428,33 +428,7 @@ app.post("/analyze", upload.single("resume"), async (req, res) => {
         }
 
         try {
-          const parsedResult = JSON.parse(stdout);
-          const score = parsedResult.score || 0;
-          const matched = parsedResult.matched || [];
-          const missing = parsedResult.missing || [];
-
-          // Format analysis result exactly as the frontend dashboard expects it
-          const matchPercent = score;
-          const missingPercent = 100 - matchPercent;
-          const efficiencyPercent = Math.min(matchPercent + 10, 100);
-
-          const suggestionsObj = {};
-          missing.forEach((skill, idx) => {
-            if (idx < 5) {
-              suggestionsObj[skill] = `Add projects related to ${skill}`;
-            }
-          });
-
-          const responseData = {
-            matchPercent: matchPercent,
-            missingPercent: missingPercent,
-            efficiencyPercent: efficiencyPercent,
-            matchingSkills: matched,
-            missingSkills: missing,
-            totalSkills: matched.length + missing.length,
-            matchedCount: matched.length,
-            suggestions: suggestionsObj
-          };
+          const responseData = JSON.parse(stdout);
 
           // Save to user's history in MongoDB if email is provided
           if (email) {

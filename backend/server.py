@@ -10,6 +10,10 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import threading
+import random
+
+# Temporary in-memory store for password-reset OTPs: {email: {otp, expires}}
+_reset_otps = {}
 
 def send_welcome_email(to_email, user_name):
     sender_email = os.getenv("EMAIL_USER")
@@ -287,6 +291,124 @@ def delete_history():
         )
         return jsonify({"message": "History item deleted successfully from MongoDB"}), 200
     return jsonify({"error": "Missing email or id"}), 400
+
+
+@app.route("/forgot-password", methods=["POST", "OPTIONS"])
+def forgot_password():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid data format"}), 400
+
+    email = data.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    user = users_collection.find_one({"email": {"$regex": f"^{email}$", "$options": "i"}})
+    if not user:
+        # Generic message to prevent email enumeration
+        return jsonify({"message": "If this email is registered, an OTP has been sent."}), 200
+
+    otp = str(random.randint(100000, 999999))
+    expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+    _reset_otps[email] = {"otp": otp, "expires": expires}
+
+    sender_email = os.getenv("EMAIL_USER")
+    sender_pass = os.getenv("EMAIL_PASS")
+
+    def send_reset_otp():
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = sender_email
+            msg['To'] = user["email"]
+            msg['Subject'] = "Password Reset OTP – Resume Analyzer AI"
+            body = f"""
+            <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:30px;border:1px solid #e0e0e0;border-radius:10px;">
+              <h2 style="color:#00a896;">Password Reset Request</h2>
+              <p>Hi <strong>{user.get('name','there')}</strong>,</p>
+              <p>Use the OTP below to reset your password. It is valid for <strong>10 minutes</strong>.</p>
+              <div style="font-size:2rem;font-weight:bold;letter-spacing:8px;text-align:center;
+                          background:#f0f2f5;padding:16px;border-radius:8px;margin:20px 0;color:#1a1a2e;">
+                {otp}
+              </div>
+              <p style="color:#888;font-size:0.82rem;">If you did not request this, please ignore this email.</p>
+              <p>— The Resume Analyzer AI Team</p>
+            </div>
+            """
+            msg.attach(MIMEText(body, 'html'))
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(sender_email, sender_pass)
+            server.sendmail(sender_email, user["email"], msg.as_string())
+            server.quit()
+            print(f"Password reset OTP sent to {user['email']}")
+        except Exception as e:
+            print(f"Failed to send reset OTP: {e}")
+
+    threading.Thread(target=send_reset_otp).start()
+    return jsonify({"message": "If this email is registered, an OTP has been sent."}), 200
+
+
+@app.route("/verify-reset-otp", methods=["POST", "OPTIONS"])
+def verify_reset_otp():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid data format"}), 400
+
+    email = data.get("email", "").strip().lower()
+    otp = data.get("otp", "").strip()
+
+    if not email or not otp:
+        return jsonify({"error": "Email and OTP are required"}), 400
+
+    record = _reset_otps.get(email)
+    if not record:
+        return jsonify({"error": "No OTP was requested for this email"}), 400
+    if datetime.datetime.utcnow() > record["expires"]:
+        del _reset_otps[email]
+        return jsonify({"error": "OTP has expired. Please request a new one."}), 400
+    if record["otp"] != otp:
+        return jsonify({"error": "Incorrect OTP. Please try again."}), 400
+
+    return jsonify({"message": "OTP verified successfully"}), 200
+
+
+@app.route("/reset-password", methods=["POST", "OPTIONS"])
+def reset_password():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid data format"}), 400
+
+    email = data.get("email", "").strip().lower()
+    otp = data.get("otp", "").strip()
+    new_password = data.get("newPassword", "").strip()
+
+    if not email or not otp or not new_password:
+        return jsonify({"error": "Email, OTP, and new password are required"}), 400
+    if len(new_password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters"}), 400
+
+    record = _reset_otps.get(email)
+    if not record:
+        return jsonify({"error": "No OTP was requested for this email"}), 400
+    if datetime.datetime.utcnow() > record["expires"]:
+        del _reset_otps[email]
+        return jsonify({"error": "OTP has expired. Please request a new one."}), 400
+    if record["otp"] != otp:
+        return jsonify({"error": "Incorrect OTP. Please try again."}), 400
+
+    hashed = generate_password_hash(new_password)
+    users_collection.update_one(
+        {"email": {"$regex": f"^{email}$", "$options": "i"}},
+        {"$set": {"password": hashed}}
+    )
+    del _reset_otps[email]
+    return jsonify({"message": "Password reset successfully!"}), 200
 
 
 if __name__ == "__main__":

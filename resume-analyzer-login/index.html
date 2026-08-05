@@ -1,373 +1,914 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resume Analyser – Register / Login</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: #f0f2f5;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  font-family: 'Montserrat', sans-serif;
-}
-.container {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
-  position: relative;
-  overflow: hidden;
-  width: 900px;
-  max-width: 100%;
-  min-height: 560px;
-}
-.form-container {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 50%;
-  transition: all 0.6s ease-in-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.sign-in-container { left: 0; z-index: 2; }
-.sign-up-container { left: 0; opacity: 0; z-index: 1; }
-.container.right-panel-active .sign-in-container { transform: translateX(100%); }
-.container.right-panel-active .sign-up-container {
-  transform: translateX(100%);
-  opacity: 1;
-  z-index: 5;
-  animation: show 0.6s;
-}
-@keyframes show {
-  0%, 49.99% { opacity: 0; z-index: 1; }
-  50%, 100%  { opacity: 1; z-index: 5; }
-}
-form {
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  padding: 0 44px;
-  height: 100%;
-  justify-content: center;
-  width: 100%;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-}
-form h1 { font-size: 1.6rem; font-weight: 800; color: #1a1a2e; margin-bottom: 4px; }
-form span { font-size: 0.72rem; color: #999; letter-spacing: 0.02em; }
-input {
-  background: #f0f2f5;
-  border: 1.5px solid transparent;
-  border-radius: 8px;
-  padding: 12px 16px;
-  width: 100%;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.85rem;
-  color: #333;
-  outline: none;
-  transition: border-color 0.25s, box-shadow 0.25s;
-}
-input:focus {
-  border-color: #2bbbad;
-  box-shadow: 0 0 0 3px rgba(43,187,173,0.15);
-}
-button {
-  margin-top: 8px;
-  border-radius: 22px;
-  border: none;
-  padding: 12px 46px;
-  background: linear-gradient(135deg, #2bbbad, #00a896);
-  color: white;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  letter-spacing: 0.06em;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(43,187,173,0.35); }
-.ghost {
-  background: transparent;
-  border: 2px solid white;
-  color: white;
-  margin-top: 14px;
-}
-.ghost:hover { background: rgba(255,255,255,0.15); box-shadow: none; transform: translateY(-1px); }
-form a { font-size: 0.76rem; color: #2bbbad; text-decoration: none; }
-form a:hover { text-decoration: underline; }
-.social-container { display: flex; justify-content: center; gap: 10px; margin: 4px 0; }
-.social-container a {
-  border: 1.5px solid #ddd;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  width: 40px;
-  color: #555;
-  font-size: 15px;
-  text-decoration: none;
-  transition: all 0.25s;
-}
-.social-container a:hover { background: #2bbbad; color: white; border-color: #2bbbad; }
-.overlay-container {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 50%;
-  height: 100%;
-  overflow: hidden;
-  transition: transform 0.6s ease-in-out;
-  z-index: 100;
-}
-.container.right-panel-active .overlay-container { transform: translateX(-100%); }
-.overlay {
-  background: linear-gradient(135deg, #2bbbad 0%, #0099b4 100%);
-  position: relative;
-  left: -100%;
-  height: 100%;
-  width: 200%;
-  transform: translateX(0);
-  transition: transform 0.6s ease-in-out;
-}
-.container.right-panel-active .overlay { transform: translateX(50%); }
-.overlay-panel {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 0 48px;
-  text-align: center;
-  height: 100%;
-  width: 50%;
-  color: white;
-}
-.overlay-panel h1 { font-size: 1.55rem; font-weight: 800; margin: 14px 0 10px; }
-.overlay-panel p { font-size: 0.82rem; line-height: 1.6; opacity: 0.9; }
-.overlay-left { transform: translateX(-20%); transition: transform 0.6s ease-in-out; }
-.overlay-right { right: 0; transform: translateX(0); transition: transform 0.6s ease-in-out; }
-.container.right-panel-active .overlay-left { transform: translateX(0); }
-.container.right-panel-active .overlay-right { transform: translateX(20%); }
-.logo-fixed {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  width: 120px;
-  height: auto;
-  border-radius: 8px;
-  z-index: 999;
-  pointer-events: none;
-}
-#signupFields {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-}
-#otpSection {
-  display: none;
-  width: 100%;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-}
-#otpSection p {
-  font-size: 0.85rem;
-  margin-top: 10px;
-  color: #555;
-}
-#backToSignupBtn {
-  margin-top: 10px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Analyser – Register / Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+      position: relative;
+      overflow: hidden;
+      width: 900px;
+      max-width: 100%;
+      min-height: 560px;
+    }
+
+    .form-container {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 50%;
+      transition: all 0.6s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sign-in-container {
+      left: 0;
+      z-index: 2;
+    }
+
+    .sign-up-container {
+      left: 0;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    .container.right-panel-active .sign-in-container {
+      transform: translateX(100%);
+    }
+
+    .container.right-panel-active .sign-up-container {
+      transform: translateX(100%);
+      opacity: 1;
+      z-index: 5;
+      animation: show 0.6s;
+    }
+
+    @keyframes show {
+
+      0%,
+      49.99% {
+        opacity: 0;
+        z-index: 1;
+      }
+
+      50%,
+      100% {
+        opacity: 1;
+        z-index: 5;
+      }
+    }
+
+    form {
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 0 44px;
+      height: 100%;
+      justify-content: center;
+      width: 100%;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+    }
+
+    form h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+
+    form span {
+      font-size: 0.72rem;
+      color: #999;
+      letter-spacing: 0.02em;
+    }
+
+    input {
+      background: #f0f2f5;
+      border: 1.5px solid transparent;
+      border-radius: 8px;
+      padding: 12px 16px;
+      width: 100%;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      color: #333;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    input:focus {
+      border-color: #2bbbad;
+      box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.15);
+    }
+
+    button {
+      margin-top: 8px;
+      border-radius: 22px;
+      border: none;
+      padding: 12px 46px;
+      background: linear-gradient(135deg, #2bbbad, #00a896);
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(43, 187, 173, 0.35);
+    }
+
+    .ghost {
+      background: transparent;
+      border: 2px solid white;
+      color: white;
+      margin-top: 14px;
+    }
+
+    .ghost:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+      transform: translateY(-1px);
+    }
+
+    form a {
+      font-size: 0.76rem;
+      color: #2bbbad;
+      text-decoration: none;
+    }
+
+    form a:hover {
+      text-decoration: underline;
+    }
+
+    .social-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 4px 0;
+    }
+
+    .social-container a {
+      border: 1.5px solid #ddd;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 40px;
+      width: 40px;
+      color: #555;
+      font-size: 15px;
+      text-decoration: none;
+      transition: all 0.25s;
+    }
+
+    .social-container a:hover {
+      background: #2bbbad;
+      color: white;
+      border-color: #2bbbad;
+    }
+
+    .overlay-container {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 50%;
+      height: 100%;
+      overflow: hidden;
+      transition: transform 0.6s ease-in-out;
+      z-index: 100;
+    }
+
+    .container.right-panel-active .overlay-container {
+      transform: translateX(-100%);
+    }
+
+    .overlay {
+      background: linear-gradient(135deg, #2bbbad 0%, #0099b4 100%);
+      position: relative;
+      left: -100%;
+      height: 100%;
+      width: 200%;
+      transform: translateX(0);
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .container.right-panel-active .overlay {
+      transform: translateX(50%);
+    }
+
+    .overlay-panel {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0 48px;
+      text-align: center;
+      height: 100%;
+      width: 50%;
+      color: white;
+    }
+
+    .overlay-panel h1 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      margin: 14px 0 10px;
+    }
+
+    .overlay-panel p {
+      font-size: 0.82rem;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+
+    .overlay-left {
+      transform: translateX(-20%);
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .overlay-right {
+      right: 0;
+      transform: translateX(0);
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .container.right-panel-active .overlay-left {
+      transform: translateX(0);
+    }
+
+    .container.right-panel-active .overlay-right {
+      transform: translateX(20%);
+    }
+
+    .logo-fixed {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      width: 120px;
+      height: auto;
+      border-radius: 8px;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    #signupFields {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #otpSection {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #otpSection p {
+      font-size: 0.85rem;
+      margin-top: 10px;
+      color: #555;
+    }
+
+    #backToSignupBtn {
+      margin-top: 10px;
+    }
+
+    /* ── Forgot Password Modal ── */
+    .fp-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+      z-index: 9000;
+      justify-content: center;
+      align-items: center;
+      animation: fpFadeIn 0.25s ease;
+    }
+    .fp-overlay.active { display: flex; }
+    @keyframes fpFadeIn {
+      from { opacity:0; }
+      to   { opacity:1; }
+    }
+    .fp-modal {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+      padding: 40px 36px 32px;
+      width: 380px;
+      max-width: 95vw;
+      position: relative;
+      animation: fpSlideUp 0.3s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes fpSlideUp {
+      from { opacity:0; transform:translateY(30px) scale(0.96); }
+      to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+    .fp-modal h2 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+    }
+    .fp-modal p.fp-sub {
+      font-size: 0.78rem;
+      color: #888;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .fp-modal .fp-close {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      color: #aaa;
+      cursor: pointer;
+      padding: 4px;
+      margin: 0;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .fp-modal .fp-close:hover { color: #333; box-shadow: none; transform: none; }
+    .fp-modal input {
+      background: #f0f2f5;
+      border: 1.5px solid transparent;
+      border-radius: 8px;
+      padding: 12px 16px;
+      width: 100%;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      color: #333;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .fp-modal input:focus {
+      border-color: #2bbbad;
+      box-shadow: 0 0 0 3px rgba(43,187,173,0.15);
+    }
+    .fp-btn {
+      width: 100%;
+      border-radius: 22px;
+      border: none;
+      padding: 12px;
+      background: linear-gradient(135deg, #2bbbad, #00a896);
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 4px;
+    }
+    .fp-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(43,187,173,0.35);
+    }
+    .fp-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none; }
+    .fp-step { display: none; }
+    .fp-step.active { display: block; }
+    .fp-msg {
+      font-size: 0.78rem;
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: none;
+      text-align: center;
+    }
+    .fp-msg.error { background:#ffeaea; color:#c0392b; display:block; }
+    .fp-msg.success { background:#e6faf8; color:#00897b; display:block; }
+    .fp-steps-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+    .fp-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ddd;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .fp-dot.active { background: #2bbbad; transform: scale(1.3); }
+    .fp-back {
+      background: none;
+      border: none;
+      color: #2bbbad;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.76rem;
+      cursor: pointer;
+      padding: 0;
+      margin: 10px 0 0;
+      display: block;
+      text-align: center;
+      width: 100%;
+      box-shadow: none;
+      transform: none;
+      letter-spacing: 0;
+      font-weight: 600;
+    }
+    .fp-back:hover { text-decoration: underline; box-shadow: none; transform: none; }
+    .otp-inputs {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .otp-inputs input {
+      width: 44px;
+      height: 52px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      padding: 0;
+      margin-bottom: 0;
+      border-radius: 8px;
+      border: 2px solid #ddd;
+      background: #f0f2f5;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .otp-inputs input:focus {
+      border-color: #2bbbad;
+      box-shadow: 0 0 0 3px rgba(43,187,173,0.15);
+    }
+    .pw-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .pw-wrap input { margin-bottom: 0; padding-right: 42px; }
+    .pw-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.95rem;
+      box-shadow: none;
+      margin: 0;
+      line-height: 1;
+    }
+    .pw-toggle:hover { color: #2bbbad; box-shadow: none; transform: translateY(-50%); }
+  </style>
 </head>
+
 <body>
 
-<div class="container" id="container">
+  <div class="container" id="container">
 
-  <img src="logo.png" class="logo-fixed" alt="Resume Analyser Logo">
+    <img src="logo.png" class="logo-fixed" alt="Resume Analyser Logo">
 
-  <!-- SIGN UP -->
-  <div class="form-container sign-up-container">
-    <form id="signUpForm">
-      <h1>Create Account</h1>
-      <div class="social-container">
-        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="fab fa-github"></i></a>
-        <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+    <!-- SIGN UP -->
+    <div class="form-container sign-up-container">
+      <form id="signUpForm">
+        <h1>Create Account</h1>
+        <div class="social-container">
+          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i
+              class="fab fa-facebook-f"></i></a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub"><i
+              class="fab fa-github"></i></a>
+          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i
+              class="fab fa-linkedin-in"></i></a>
+        </div>
+        <span>or use your email for registration</span>
+        <div id="signupFields">
+          <input type="text" id="regName" placeholder="Name" />
+          <input type="email" id="regEmail" placeholder="Email" />
+          <input type="password" id="regPassword" placeholder="Password" />
+          <button type="submit" id="sendOtpBtn">Send OTP</button>
+        </div>
+
+        <div id="otpSection">
+          <p>Enter the 6-digit OTP sent to your email.</p>
+          <input type="text" id="regOtp" placeholder="6-digit OTP" maxlength="6" />
+          <button type="button" id="verifyOtpBtn">Verify & Register</button>
+          <a href="#" id="backToSignupBtn">&larr; Back to Signup</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- SIGN IN -->
+    <div class="form-container sign-in-container">
+      <form id="signInForm">
+        <h1>Sign in</h1>
+        <div class="social-container">
+          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i
+              class="fab fa-facebook-f"></i></a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub"><i
+              class="fab fa-github"></i></a>
+          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i
+              class="fab fa-linkedin-in"></i></a>
+        </div>
+        <span>or use your account</span>
+        <input type="email" id="loginEmail" placeholder="Email" />
+        <input type="password" id="loginPassword" placeholder="Password" />
+        <a href="#" id="forgotPasswordLink">Forgot your password?</a>
+        <button type="submit">Sign In</button>
+      </form>
+    </div>
+
+    <!-- OVERLAY -->
+    <div class="overlay-container">
+      <div class="overlay">
+        <div class="overlay-panel overlay-left">
+          <h1>Welcome Back!</h1>
+          <p>To keep connected with us please login with your personal info</p>
+          <button class="ghost" id="signIn" type="button">Sign In</button>
+        </div>
+        <div class="overlay-panel overlay-right">
+          <h1>Hello, Friend!</h1>
+          <p>Enter your personal details and start your journey with us</p>
+          <button class="ghost" id="signUp" type="button">Sign Up</button>
+        </div>
       </div>
-      <span>or use your email for registration</span>
-      <div id="signupFields">
-        <input type="text" id="regName" placeholder="Name" />
-        <input type="email" id="regEmail" placeholder="Email" />
-        <input type="password" id="regPassword" placeholder="Password" />
-        <button type="submit" id="sendOtpBtn">Send OTP</button>
-      </div>
-      
-      <div id="otpSection">
-        <p>Enter the 6-digit OTP sent to your email.</p>
-        <input type="text" id="regOtp" placeholder="6-digit OTP" maxlength="6" />
-        <button type="button" id="verifyOtpBtn">Verify & Register</button>
-        <a href="#" id="backToSignupBtn">&larr; Back to Signup</a>
-      </div>
-    </form>
+    </div>
+
   </div>
 
-  <!-- SIGN IN -->
-  <div class="form-container sign-in-container">
-    <form id="signInForm">
-      <h1>Sign in</h1>
-      <div class="social-container">
-        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="fab fa-github"></i></a>
-        <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-      </div>
-      <span>or use your account</span>
-      <input type="email" id="loginEmail" placeholder="Email" />
-      <input type="password" id="loginPassword" placeholder="Password" />
-      <a href="#">Forgot your password?</a>
-      <button type="submit">Sign In</button>
-    </form>
-  </div>
+  <!-- ── FORGOT PASSWORD MODAL ── -->
+  <div class="fp-overlay" id="fpOverlay">
+    <div class="fp-modal" id="fpModal">
+      <button class="fp-close" id="fpClose" title="Close">&times;</button>
 
-  <!-- OVERLAY -->
-  <div class="overlay-container">
-    <div class="overlay">
-      <div class="overlay-panel overlay-left">
-        <h1>Welcome Back!</h1>
-        <p>To keep connected with us please login with your personal info</p>
-        <button class="ghost" id="signIn" type="button">Sign In</button>
+      <!-- Step indicator -->
+      <div class="fp-steps-indicator">
+        <div class="fp-dot active" id="fpDot1"></div>
+        <div class="fp-dot" id="fpDot2"></div>
+        <div class="fp-dot" id="fpDot3"></div>
       </div>
-      <div class="overlay-panel overlay-right">
-        <h1>Hello, Friend!</h1>
-        <p>Enter your personal details and start your journey with us</p>
-        <button class="ghost" id="signUp" type="button">Sign Up</button>
+
+      <!-- STEP 1: Enter email -->
+      <div class="fp-step active" id="fpStep1">
+        <h2>Forgot Password?</h2>
+        <p class="fp-sub">Enter the email address linked to your account and we'll send you a reset OTP.</p>
+        <input type="email" id="fpEmail" placeholder="Your email address" autocomplete="email" />
+        <button class="fp-btn" id="fpSendOtp">Send OTP</button>
+        <div class="fp-msg" id="fpMsg1"></div>
       </div>
+
+      <!-- STEP 2: Enter OTP -->
+      <div class="fp-step" id="fpStep2">
+        <h2>Enter OTP</h2>
+        <p class="fp-sub" id="fpOtpHint">Enter the 6-digit code sent to your email. It expires in 10 minutes.</p>
+        <div class="otp-inputs" id="fpOtpInputs">
+          <input type="text" maxlength="1" class="fp-otp-digit" id="fpOtp0" inputmode="numeric" pattern="[0-9]">
+          <input type="text" maxlength="1" class="fp-otp-digit" id="fpOtp1" inputmode="numeric" pattern="[0-9]">
+          <input type="text" maxlength="1" class="fp-otp-digit" id="fpOtp2" inputmode="numeric" pattern="[0-9]">
+          <input type="text" maxlength="1" class="fp-otp-digit" id="fpOtp3" inputmode="numeric" pattern="[0-9]">
+          <input type="text" maxlength="1" class="fp-otp-digit" id="fpOtp4" inputmode="numeric" pattern="[0-9]">
+          <input type="text" maxlength="1" class="fp-otp-digit" id="fpOtp5" inputmode="numeric" pattern="[0-9]">
+        </div>
+        <button class="fp-btn" id="fpVerifyOtp">Verify OTP</button>
+        <div class="fp-msg" id="fpMsg2"></div>
+        <button class="fp-back" id="fpBackToEmail">&larr; Change email</button>
+      </div>
+
+      <!-- STEP 3: Set new password -->
+      <div class="fp-step" id="fpStep3">
+        <h2>New Password</h2>
+        <p class="fp-sub">Choose a strong new password (at least 6 characters).</p>
+        <div class="pw-wrap">
+          <input type="password" id="fpNewPw" placeholder="New password" autocomplete="new-password" />
+          <button type="button" class="pw-toggle" id="fpToggle1" tabindex="-1"><i class="fa fa-eye"></i></button>
+        </div>
+        <div class="pw-wrap">
+          <input type="password" id="fpConfirmPw" placeholder="Confirm new password" autocomplete="new-password" />
+          <button type="button" class="pw-toggle" id="fpToggle2" tabindex="-1"><i class="fa fa-eye"></i></button>
+        </div>
+        <button class="fp-btn" id="fpResetPw">Reset Password</button>
+        <div class="fp-msg" id="fpMsg3"></div>
+      </div>
+
     </div>
   </div>
 
-</div>
+  <script>
+    // PANEL TOGGLE
+    document.getElementById('signUp').addEventListener('click', () => {
+      document.getElementById('container').classList.add("right-panel-active");
+    });
+    document.getElementById('signIn').addEventListener('click', () => {
+      document.getElementById('container').classList.remove("right-panel-active");
+    });
+    document.getElementById('backToSignupBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById("otpSection").style.display = "none";
+      document.getElementById("signupFields").style.display = "flex";
+    });
 
-<script>
-// PANEL TOGGLE
-document.getElementById('signUp').addEventListener('click', () => {
-    document.getElementById('container').classList.add("right-panel-active");
-});
-document.getElementById('signIn').addEventListener('click', () => {
-    document.getElementById('container').classList.remove("right-panel-active");
-});
-document.getElementById('backToSignupBtn').addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById("otpSection").style.display = "none";
-    document.getElementById("signupFields").style.display = "flex";
-});
+    // ── FORGOT PASSWORD MODAL LOGIC ──────────────────────────────────────
+    const fpOverlay    = document.getElementById('fpOverlay');
+    const fpModal      = document.getElementById('fpModal');
+    const fpClose      = document.getElementById('fpClose');
+    const fpEmailInput = document.getElementById('fpEmail');
+    let fpVerifiedEmail = '';
 
-// SIGN UP (MONGODB INTEGRATED)
-document.getElementById('signUpForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const name     = document.getElementById('regName').value.trim();
-    const email    = document.getElementById('regEmail').value.trim();
-    const password = document.getElementById('regPassword').value.trim();
+    function fpShowStep(n) {
+      [1,2,3].forEach(i => {
+        document.getElementById(`fpStep${i}`).classList.toggle('active', i === n);
+        document.getElementById(`fpDot${i}`).classList.toggle('active', i === n);
+      });
+      clearFpMsgs();
+    }
+    function clearFpMsgs() {
+      ['fpMsg1','fpMsg2','fpMsg3'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = '';
+        el.className = 'fp-msg';
+      });
+    }
+    function fpMsg(id, text, type) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = `fp-msg ${type}`;
+    }
+    function openFpModal() {
+      fpOverlay.classList.add('active');
+      fpShowStep(1);
+      fpEmailInput.value = '';
+      clearFpDigits();
+      document.getElementById('fpNewPw').value = '';
+      document.getElementById('fpConfirmPw').value = '';
+      fpVerifiedEmail = '';
+      setTimeout(() => fpEmailInput.focus(), 100);
+    }
+    function closeFpModal() {
+      fpOverlay.classList.remove('active');
+    }
+    function clearFpDigits() {
+      document.querySelectorAll('.fp-otp-digit').forEach(i => i.value = '');
+    }
+    function getFpOtp() {
+      return Array.from(document.querySelectorAll('.fp-otp-digit')).map(i => i.value).join('');
+    }
 
-    if (!name || name.length < 2)        { alert("Enter a valid name."); return; }
-    if (!email || !email.includes("@"))  { alert("Enter a valid email."); return; }
-    if (!password || password.length < 6){ alert("Password must be at least 6 characters."); return; }
+    // Open/close handlers
+    document.getElementById('forgotPasswordLink').addEventListener('click', e => {
+      e.preventDefault();
+      openFpModal();
+    });
+    fpClose.addEventListener('click', closeFpModal);
+    fpOverlay.addEventListener('click', e => { if (e.target === fpOverlay) closeFpModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFpModal(); });
 
-    try {
+    // OTP box: auto-advance on digit input, backspace to go back
+    document.querySelectorAll('.fp-otp-digit').forEach((input, idx, all) => {
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/[^0-9]/g,'').slice(-1);
+        if (input.value && idx < all.length - 1) all[idx+1].focus();
+      });
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !input.value && idx > 0) all[idx-1].focus();
+      });
+      input.addEventListener('paste', e => {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g,'').slice(0,6);
+        [...pasted].forEach((ch, i) => { if (all[i]) all[i].value = ch; });
+        const next = all[Math.min(pasted.length, 5)];
+        if (next) next.focus();
+      });
+    });
+
+    // Password visibility toggles
+    document.getElementById('fpToggle1').addEventListener('click', () => {
+      const inp = document.getElementById('fpNewPw');
+      const icon = document.querySelector('#fpToggle1 i');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      icon.className = inp.type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
+    });
+    document.getElementById('fpToggle2').addEventListener('click', () => {
+      const inp = document.getElementById('fpConfirmPw');
+      const icon = document.querySelector('#fpToggle2 i');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      icon.className = inp.type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
+    });
+
+    // STEP 1: Send OTP
+    document.getElementById('fpSendOtp').addEventListener('click', async () => {
+      const email = fpEmailInput.value.trim();
+      if (!email || !email.includes('@')) { fpMsg('fpMsg1','Please enter a valid email address.','error'); return; }
+      const btn = document.getElementById('fpSendOtp');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        const res = await fetch('http://localhost:3000/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) { fpMsg('fpMsg1', data.error || 'Something went wrong.', 'error'); return; }
+        fpVerifiedEmail = email;
+        document.getElementById('fpOtpHint').textContent =
+          `Enter the 6-digit code sent to ${email}. It expires in 10 minutes.`;
+        fpShowStep(2);
+        setTimeout(() => document.getElementById('fpOtp0').focus(), 100);
+      } catch (err) {
+        fpMsg('fpMsg1', 'Cannot reach server. Is the backend running?', 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Send OTP';
+      }
+    });
+    fpEmailInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('fpSendOtp').click(); });
+
+    // STEP 2: Verify OTP
+    document.getElementById('fpVerifyOtp').addEventListener('click', async () => {
+      const otp = getFpOtp();
+      if (otp.length !== 6) { fpMsg('fpMsg2','Please enter all 6 digits.','error'); return; }
+      const btn = document.getElementById('fpVerifyOtp');
+      btn.disabled = true; btn.textContent = 'Verifying...';
+      try {
+        // Lightweight check: send email+otp to backend with a dummy password
+        // We do a pre-check by calling reset-password with a sentinel flag
+        const res = await fetch('http://localhost:3000/verify-reset-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: fpVerifiedEmail, otp })
+        });
+        const data = await res.json();
+        if (!res.ok) { fpMsg('fpMsg2', data.error || 'Invalid OTP.', 'error'); return; }
+        fpShowStep(3);
+        setTimeout(() => document.getElementById('fpNewPw').focus(), 100);
+      } catch (err) {
+        fpMsg('fpMsg2', 'Cannot reach server.', 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Verify OTP';
+      }
+    });
+
+    document.getElementById('fpBackToEmail').addEventListener('click', () => {
+      clearFpDigits();
+      fpShowStep(1);
+    });
+
+    // STEP 3: Reset password
+    document.getElementById('fpResetPw').addEventListener('click', async () => {
+      const newPw = document.getElementById('fpNewPw').value.trim();
+      const confirmPw = document.getElementById('fpConfirmPw').value.trim();
+      const otp = getFpOtp();
+      if (newPw.length < 6) { fpMsg('fpMsg3','Password must be at least 6 characters.','error'); return; }
+      if (newPw !== confirmPw) { fpMsg('fpMsg3','Passwords do not match.','error'); return; }
+      const btn = document.getElementById('fpResetPw');
+      btn.disabled = true; btn.textContent = 'Resetting...';
+      try {
+        const res = await fetch('http://localhost:3000/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: fpVerifiedEmail, otp, newPassword: newPw })
+        });
+        const data = await res.json();
+        if (!res.ok) { fpMsg('fpMsg3', data.error || 'Reset failed.', 'error'); return; }
+        fpMsg('fpMsg3', '✅ Password reset! Redirecting to sign in…', 'success');
+        setTimeout(() => {
+          closeFpModal();
+          document.getElementById('container').classList.remove('right-panel-active');
+          document.getElementById('loginEmail').value = fpVerifiedEmail;
+          document.getElementById('loginPassword').value = '';
+          document.getElementById('loginPassword').focus();
+        }, 1800);
+      } catch (err) {
+        fpMsg('fpMsg3', 'Cannot reach server.', 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Reset Password';
+      }
+    });
+    // ── END FORGOT PASSWORD LOGIC ─────────────────────────────────────────
+
+    // SIGN UP (MONGODB INTEGRATED)
+    document.getElementById('signUpForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value.trim();
+
+      if (!name || name.length < 2) { alert("Enter a valid name."); return; }
+      if (!email || !email.includes("@")) { alert("Enter a valid email."); return; }
+      if (!password || password.length < 6) { alert("Password must be at least 6 characters."); return; }
+
+      try {
         const response = await fetch("http://localhost:3000/send-otp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, email, password })
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password })
         });
 
         const data = await response.json();
         if (!response.ok) {
-            alert(data.error || "Failed to send OTP.");
-            return;
+          alert(data.error || "Failed to send OTP.");
+          return;
         }
 
         alert("OTP sent to your email!");
         document.getElementById("signupFields").style.display = "none";
         document.getElementById("otpSection").style.display = "flex";
-        
+
         // Show test email link if using Ethereal
         if (data.previewUrl) {
-            let p = document.createElement('p');
-            p.style.fontSize = "0.75rem";
-            p.style.marginTop = "5px";
-            p.innerHTML = `⚠️ <a href="${data.previewUrl}" target="_blank" style="color:#2bbbad; font-weight:bold;">Click here to view your OTP email</a> (Testing Mode)`;
-            document.getElementById("otpSection").appendChild(p);
+          let p = document.createElement('p');
+          p.style.fontSize = "0.75rem";
+          p.style.marginTop = "5px";
+          p.innerHTML = `⚠️ <a href="${data.previewUrl}" target="_blank" style="color:#2bbbad; font-weight:bold;">Click here to view your OTP email</a> (Testing Mode)`;
+          document.getElementById("otpSection").appendChild(p);
         }
-    } catch (err) {
+      } catch (err) {
         alert("Error connecting to server: " + err.message);
-    }
-});
+      }
+    });
 
-document.getElementById('verifyOtpBtn').addEventListener('click', async function() {
-    const email = document.getElementById('regEmail').value.trim();
-    const otp = document.getElementById('regOtp').value.trim();
+    document.getElementById('verifyOtpBtn').addEventListener('click', async function () {
+      const email = document.getElementById('regEmail').value.trim();
+      const otp = document.getElementById('regOtp').value.trim();
 
-    if (!otp || otp.length !== 6) { alert("Enter a valid 6-digit OTP."); return; }
+      if (!otp || otp.length !== 6) { alert("Enter a valid 6-digit OTP."); return; }
 
-    try {
+      try {
         const response = await fetch("http://localhost:3000/signup", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, otp })
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, otp })
         });
 
         const data = await response.json();
         if (!response.ok) {
-            alert(data.error || "Registration failed.");
-            return;
+          alert(data.error || "Registration failed.");
+          return;
         }
 
         alert("Account created successfully! Please sign in.");
-        
+
         // Reset form
         document.getElementById('signUpForm').reset();
         document.getElementById("signupFields").style.display = "flex";
         document.getElementById("otpSection").style.display = "none";
         document.getElementById('container').classList.remove("right-panel-active");
-    } catch (err) {
+      } catch (err) {
         alert("Error connecting to server: " + err.message);
-    }
-});
+      }
+    });
 
-// SIGN IN (MONGODB INTEGRATED)
-document.getElementById('signInForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const email    = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
+    // SIGN IN (MONGODB INTEGRATED)
+    document.getElementById('signInForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
 
-    if (!email || !password) { alert("Enter email and password."); return; }
+      if (!email || !password) { alert("Enter email and password."); return; }
 
-    try {
+      try {
         const response = await fetch("http://localhost:3000/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
         });
 
         const data = await response.json();
         if (!response.ok) {
-            alert(data.error || "Invalid login credentials.");
-            return;
+          alert(data.error || "Invalid login credentials.");
+          return;
         }
 
         localStorage.clear();
         localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("userName",  data.name);
+        localStorage.setItem("userName", data.name);
         localStorage.setItem("userEmail", data.email);
         localStorage.setItem("userRole", data.role || "Senior Software Engineer");
         localStorage.setItem("userDOB", data.dob || "01-01-2005");
@@ -375,11 +916,12 @@ document.getElementById('signInForm').addEventListener('submit', async function(
         localStorage.setItem("analysisHistory", JSON.stringify(data.history || []));
 
         window.location.href = "../analysis-dashboard/index.html";
-    } catch (err) {
+      } catch (err) {
         alert("Error connecting to server: " + err.message);
-    }
-});
-</script>
+      }
+    });
+  </script>
 
 </body>
+
 </html>

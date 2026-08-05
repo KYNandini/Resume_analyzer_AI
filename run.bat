@@ -1,28 +1,28 @@
 @echo off
+
 echo Starting Resume Analyzer AI...
 
-:: Start backend in a new command window
-echo Launching Express Backend Server...
-start "Resume Analyzer Backend" cmd /k "node backend/server.js"
+:: Start backend (Node.js) in a new command window
+start "" cmd /c "node backend/server.js"
 
-:: Start frontend in a new command window
-echo Launching Frontend Server...
-start "Resume Analyzer Frontend" cmd /c "python -m http.server 8000"
+:: Start frontend (Python simple HTTP server) in a new command window
+start "" cmd /c "python -m http.server 8000"
 
-echo Waiting for servers to start...
-timeout /t 3 >nul
+:: Wait briefly for servers to start
+ping -n 3 127.0.0.1 >nul
 
-echo Opening browser...
-start http://localhost:8000/resume-analyzer-login/index.html
+:: Open the login page in default browser
+start "" http://localhost:8000/resume-analyzer-login/index.html
 
-echo.
-echo ========================================================
-echo Resume Analyzer AI is running!
-echo.
+:: Inform user
+echo =========================================================
+
+echo Resume Analyzer AI is running 🚀
+
 echo  - Frontend: http://localhost:8000/resume-analyzer-login/index.html
-echo  - Backend:  http://localhost:3000
-echo ========================================================
-echo.
-echo To stop the servers, close the command prompt windows that popped up.
-echo.
-pause
+
+echo  - Backend: http://localhost:3000
+
+echo =========================================================
+
+exit /b
