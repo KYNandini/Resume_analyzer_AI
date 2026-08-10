@@ -199,6 +199,9 @@ def analyze():
     if not resume_file or not job_text:
         return jsonify({"error": "Resume and job description are required"}), 400
 
+    if not resume_file.filename.lower().endswith(".pdf"):
+        return jsonify({"error": "Please upload a valid PDF document (.pdf). Image files (like JPEG or PNG) are not supported for text parsing."}), 400
+
     try:
         file_bytes = resume_file.read()
 

@@ -367,8 +367,8 @@ app.post("/analyze", upload.single("resume"), async (req, res) => {
   console.log("BODY:", req.body);
   console.log("FILE:", req.file);
 
-  if (!req.file || !req.file.mimetype.includes("pdf")) {
-    return res.status(400).send("Please upload a PDF file");
+  if (!req.file || (!req.file.mimetype.includes("pdf") && !req.file.originalname.toLowerCase().endsWith(".pdf"))) {
+    return res.status(400).send("Please upload a valid PDF document (.pdf). Image files (like JPEG or PNG) are not supported for text parsing.");
   }
 
   const jobText = req.body.jobText || "";
@@ -473,6 +473,95 @@ app.post("/analyze", upload.single("resume"), async (req, res) => {
     // Cleanup uploaded PDF multer file in case of error
     try { fs.unlinkSync(req.file.path); } catch (_) {}
     return res.status(500).send("Error processing upload");
+  }
+});
+
+// In-memory store for password-reset OTPs (email -> { otp, expiresAt })
+const resetOtpStore = new Map();
+
+// 7. Forgot Password – send reset OTP
+app.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Email required" });
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "No account found with that email" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    resetOtpStore.set(email, { otp, expiresAt: Date.now() + 10 * 60 * 1000 });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset OTP – Resume Analyzer AI",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:30px;border:1px solid #e2e8f0;border-radius:14px;">
+          <h2 style="color:#2bbbad;">Resume Analyzer AI – Password Reset</h2>
+          <p>Use the OTP below to reset your password. It expires in <strong>10 minutes</strong>.</p>
+          <div style="text-align:center;padding:20px;background:#f8fafc;border-radius:8px;border:2px dashed #2bbbad;margin:20px 0;">
+            <span style="font-size:36px;font-weight:bold;color:#2bbbad;letter-spacing:8px;">${otp}</span>
+          </div>
+          <p style="color:#94a3b8;font-size:13px;">If you did not request this, ignore this email.</p>
+        </div>`
+    };
+
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error("Error sending reset OTP:", err);
+        return res.status(500).json({ error: "Failed to send OTP email" });
+      }
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) console.log("Reset OTP preview:", previewUrl);
+      return res.json({ message: "OTP sent", previewUrl: previewUrl || null });
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 8. Verify Reset OTP (pre-check before setting new password)
+app.post("/verify-reset-otp", async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) return res.status(400).json({ error: "Email and OTP required" });
+
+  const record = resetOtpStore.get(email);
+  if (!record) return res.status(400).json({ error: "No OTP request found for this email" });
+  if (Date.now() > record.expiresAt) {
+    resetOtpStore.delete(email);
+    return res.status(400).json({ error: "OTP has expired. Please request a new one." });
+  }
+  if (record.otp !== otp.trim()) return res.status(400).json({ error: "Invalid OTP" });
+
+  return res.json({ message: "OTP verified" });
+});
+
+// 9. Reset Password
+app.post("/reset-password", async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  if (!email || !otp || !newPassword) return res.status(400).json({ error: "Missing required fields" });
+  if (newPassword.length < 6) return res.status(400).json({ error: "Password must be at least 6 characters" });
+
+  const record = resetOtpStore.get(email);
+  if (!record) return res.status(400).json({ error: "No OTP request found for this email" });
+  if (Date.now() > record.expiresAt) {
+    resetOtpStore.delete(email);
+    return res.status(400).json({ error: "OTP has expired. Please request a new one." });
+  }
+  if (record.otp !== otp.trim()) return res.status(400).json({ error: "Invalid OTP" });
+
+  try {
+    const hashedPassword = generatePassword(newPassword);
+    const user = await User.findOneAndUpdate({ email }, { $set: { password: hashedPassword } }, { new: true });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    resetOtpStore.delete(email); // Clear OTP after successful reset
+    console.log("✅ Password reset for:", email);
+    return res.json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

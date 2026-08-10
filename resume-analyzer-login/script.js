@@ -3,14 +3,15 @@ const signInButton = document.getElementById('signIn');
 const container = document.getElementById('container');
 
 if (signUpButton && signInButton && container) {
-signUpButton.addEventListener('click', () => {
-container.classList.add("right-panel-active");
-});
+  signUpButton.addEventListener('click', () => {
+    container.classList.add("right-panel-active");
+    document.body.classList.add("register-mode");
+  });
 
-signInButton.addEventListener('click', () => {
+  signInButton.addEventListener('click', () => {
     container.classList.remove("right-panel-active");
-});
-
+    document.body.classList.remove("register-mode");
+  });
 }
 
 // =====================

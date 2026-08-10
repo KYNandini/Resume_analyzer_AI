@@ -9,7 +9,7 @@ if (localStorage.getItem("loggedIn") !== "true") {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Resume Analyzer</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=7">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 </head>
 <body>
@@ -276,6 +276,17 @@ function uploadResume() {
 function handleFileChange(input) {
     const file = input.files[0];
     if (file) {
+        if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
+            alert("⚠️ Invalid file format!\n\nPlease upload a PDF document (.pdf). Image files (such as JPEG/PNG) cannot be parsed for text.");
+            input.value = "";
+            document.getElementById("fileName").innerHTML = `<span style="color: #ef4444; font-weight: 600;">❌ Invalid file: PDF required</span>`;
+            const dropBox = document.getElementById("dropBoxContainer");
+            if (dropBox) {
+                dropBox.style.borderColor = "#ef4444";
+                dropBox.style.background = "#fef2f2";
+            }
+            return;
+        }
         const fileSize = (file.size / (1024 * 1024)).toFixed(2);
         document.getElementById("fileName").innerHTML = `<span class="uploaded-file-text">✅ Uploaded: ${file.name} (${fileSize} MB)</span>`;
         const dropBox = document.getElementById("dropBoxContainer");
@@ -461,6 +472,10 @@ async function analyzeResume() {
     const jobDesc    = document.getElementById("jobDesc").value.trim();
 
     if (!resumeFile) { alert("Please upload your resume first."); return; }
+    if (!resumeFile.name.toLowerCase().endsWith(".pdf") && resumeFile.type !== "application/pdf") {
+        alert("⚠️ Invalid file format!\n\nPlease upload a PDF document (.pdf). Image files (like JPEG or PNG) cannot be parsed for text.");
+        return;
+    }
     if (!jobDesc)    { alert("Please paste the job description."); return; }
 
     document.getElementById("loadingBox").style.display = "block";
@@ -483,7 +498,13 @@ async function analyzeResume() {
             body: formData
         });
 
-        if (!response.ok) throw new Error("Server error: " + response.status);
+        if (!response.ok) {
+            let errorText = "";
+            try {
+                errorText = await response.text();
+            } catch (_) {}
+            throw new Error(errorText || ("Server error: " + response.status));
+        }
 
         const data = await response.json();
         localStorage.setItem("analysisResult", JSON.stringify(data));
@@ -510,7 +531,7 @@ async function analyzeResume() {
         displayResults(data);
 
     } catch (err) {
-        alert("Error: " + err.message + "\n\nMake sure server.py is running!");
+        alert("Error: " + err.message);
         console.error(err);
     } finally {
         document.getElementById("loadingBox").style.display = "none";

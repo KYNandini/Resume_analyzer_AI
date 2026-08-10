@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resume Analyser – Register / Login</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  <!-- Fonts: using system font stack — no internet required -->
   <style>
     * {
       box-sizing: border-box;
@@ -14,24 +14,37 @@
       padding: 0;
     }
 
+    html {
+      font-size: 13px;
+    }
+
     body {
-      background: #f0f2f5;
+      background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url("https://tse4.mm.bing.net/th/id/OIP.jRvweB9Pv9F4wsW_0rXQowHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3") no-repeat center center fixed;
+      background-size: cover;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      transition: background-image 0.5s ease-in-out;
+    }
+
+    body.register-mode {
+      background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url("./register_bg.png") no-repeat center center fixed;
+      background-size: cover;
     }
 
     .container {
       background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
       position: relative;
       overflow: hidden;
-      width: 900px;
-      max-width: 100%;
-      min-height: 560px;
+      width: 780px;
+      max-width: 92vw;
+      height: 480px;
+      max-height: 85vh;
+      min-height: 440px;
     }
 
     .form-container {
@@ -86,20 +99,20 @@
       background: #fff;
       display: flex;
       flex-direction: column;
-      padding: 0 44px;
+      padding: 0 32px;
       height: 100%;
       justify-content: center;
       width: 100%;
       align-items: center;
       text-align: center;
-      gap: 10px;
+      gap: 6px;
     }
 
     form h1 {
-      font-size: 1.6rem;
+      font-size: 1.25rem;
       font-weight: 800;
       color: #1a1a2e;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     form span {
@@ -112,10 +125,10 @@
       background: #f0f2f5;
       border: 1.5px solid transparent;
       border-radius: 8px;
-      padding: 12px 16px;
+      padding: 8px 12px;
       width: 100%;
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       color: #333;
       outline: none;
       transition: border-color 0.25s, box-shadow 0.25s;
@@ -127,17 +140,17 @@
     }
 
     button {
-      margin-top: 8px;
-      border-radius: 22px;
+      margin-top: 5px;
+      border-radius: 18px;
       border: none;
-      padding: 12px 46px;
+      padding: 8px 32px;
       background: linear-gradient(135deg, #2bbbad, #00a896);
       color: white;
       font-family: 'Montserrat', sans-serif;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       cursor: pointer;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
       transition: transform 0.2s, box-shadow 0.2s;
     }
 
@@ -150,7 +163,7 @@
       background: transparent;
       border: 2px solid white;
       color: white;
-      margin-top: 14px;
+      margin-top: 10px;
     }
 
     .ghost:hover {
@@ -160,7 +173,7 @@
     }
 
     form a {
-      font-size: 0.76rem;
+      font-size: 0.72rem;
       color: #2bbbad;
       text-decoration: none;
     }
@@ -173,7 +186,7 @@
       display: flex;
       justify-content: center;
       gap: 10px;
-      margin: 4px 0;
+      margin: 2px 0;
     }
 
     .social-container a {
@@ -182,10 +195,10 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 40px;
-      width: 40px;
+      height: 35px;
+      width: 35px;
       color: #555;
-      font-size: 15px;
+      font-size: 14px;
       text-decoration: none;
       transition: all 0.25s;
     }
@@ -231,7 +244,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 0 48px;
+      padding: 0 35px;
       text-align: center;
       height: 100%;
       width: 50%;
@@ -239,14 +252,14 @@
     }
 
     .overlay-panel h1 {
-      font-size: 1.55rem;
+      font-size: 1.25rem;
       font-weight: 800;
-      margin: 14px 0 10px;
+      margin: 8px 0 5px;
     }
 
     .overlay-panel p {
-      font-size: 0.82rem;
-      line-height: 1.6;
+      font-size: 0.78rem;
+      line-height: 1.45;
       opacity: 0.9;
     }
 
@@ -271,11 +284,11 @@
 
     .logo-fixed {
       position: absolute;
-      top: 18px;
-      left: 18px;
-      width: 120px;
+      top: 14px;
+      left: 14px;
+      width: 100px;
       height: auto;
-      border-radius: 8px;
+      border-radius: 6px;
       z-index: 999;
       pointer-events: none;
     }
@@ -311,7 +324,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.45);
+      background: rgba(0, 0, 0, 0.45);
       -webkit-backdrop-filter: blur(4px);
       backdrop-filter: blur(4px);
       z-index: 9000;
@@ -319,37 +332,58 @@
       align-items: center;
       animation: fpFadeIn 0.25s ease;
     }
-    .fp-overlay.active { display: flex; }
-    @keyframes fpFadeIn {
-      from { opacity:0; }
-      to   { opacity:1; }
+
+    .fp-overlay.active {
+      display: flex;
     }
+
+    @keyframes fpFadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
     .fp-modal {
       background: #fff;
       border-radius: 16px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
       padding: 40px 36px 32px;
       width: 380px;
       max-width: 95vw;
       position: relative;
-      animation: fpSlideUp 0.3s cubic-bezier(.34,1.56,.64,1);
+      animation: fpSlideUp 0.3s cubic-bezier(.34, 1.56, .64, 1);
     }
+
     @keyframes fpSlideUp {
-      from { opacity:0; transform:translateY(30px) scale(0.96); }
-      to   { opacity:1; transform:translateY(0) scale(1); }
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
+
     .fp-modal h2 {
       font-size: 1.3rem;
       font-weight: 800;
       color: #1a1a2e;
       margin-bottom: 6px;
     }
+
     .fp-modal p.fp-sub {
       font-size: 0.78rem;
       color: #888;
       margin-bottom: 20px;
       line-height: 1.5;
     }
+
     .fp-modal .fp-close {
       position: absolute;
       top: 14px;
@@ -364,7 +398,13 @@
       line-height: 1;
       transition: color 0.2s;
     }
-    .fp-modal .fp-close:hover { color: #333; box-shadow: none; transform: none; }
+
+    .fp-modal .fp-close:hover {
+      color: #333;
+      box-shadow: none;
+      transform: none;
+    }
+
     .fp-modal input {
       background: #f0f2f5;
       border: 1.5px solid transparent;
@@ -378,10 +418,12 @@
       margin-bottom: 12px;
       transition: border-color 0.25s, box-shadow 0.25s;
     }
+
     .fp-modal input:focus {
       border-color: #2bbbad;
-      box-shadow: 0 0 0 3px rgba(43,187,173,0.15);
+      box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.15);
     }
+
     .fp-btn {
       width: 100%;
       border-radius: 22px;
@@ -397,13 +439,27 @@
       transition: transform 0.2s, box-shadow 0.2s;
       margin-top: 4px;
     }
+
     .fp-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(43,187,173,0.35);
+      box-shadow: 0 8px 20px rgba(43, 187, 173, 0.35);
     }
-    .fp-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none; }
-    .fp-step { display: none; }
-    .fp-step.active { display: block; }
+
+    .fp-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .fp-step {
+      display: none;
+    }
+
+    .fp-step.active {
+      display: block;
+    }
+
     .fp-msg {
       font-size: 0.78rem;
       margin-top: 10px;
@@ -412,21 +468,39 @@
       display: none;
       text-align: center;
     }
-    .fp-msg.error { background:#ffeaea; color:#c0392b; display:block; }
-    .fp-msg.success { background:#e6faf8; color:#00897b; display:block; }
+
+    .fp-msg.error {
+      background: #ffeaea;
+      color: #c0392b;
+      display: block;
+    }
+
+    .fp-msg.success {
+      background: #e6faf8;
+      color: #00897b;
+      display: block;
+    }
+
     .fp-steps-indicator {
       display: flex;
       justify-content: center;
       gap: 8px;
       margin-bottom: 22px;
     }
+
     .fp-dot {
-      width: 8px; height: 8px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: #ddd;
       transition: background 0.3s, transform 0.3s;
     }
-    .fp-dot.active { background: #2bbbad; transform: scale(1.3); }
+
+    .fp-dot.active {
+      background: #2bbbad;
+      transform: scale(1.3);
+    }
+
     .fp-back {
       background: none;
       border: none;
@@ -444,13 +518,20 @@
       letter-spacing: 0;
       font-weight: 600;
     }
-    .fp-back:hover { text-decoration: underline; box-shadow: none; transform: none; }
+
+    .fp-back:hover {
+      text-decoration: underline;
+      box-shadow: none;
+      transform: none;
+    }
+
     .otp-inputs {
       display: flex;
       gap: 8px;
       justify-content: center;
       margin-bottom: 12px;
     }
+
     .otp-inputs input {
       width: 44px;
       height: 52px;
@@ -464,15 +545,22 @@
       background: #f0f2f5;
       transition: border-color 0.25s, box-shadow 0.25s;
     }
+
     .otp-inputs input:focus {
       border-color: #2bbbad;
-      box-shadow: 0 0 0 3px rgba(43,187,173,0.15);
+      box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.15);
     }
+
     .pw-wrap {
       position: relative;
       margin-bottom: 12px;
     }
-    .pw-wrap input { margin-bottom: 0; padding-right: 42px; }
+
+    .pw-wrap input {
+      margin-bottom: 0;
+      padding-right: 42px;
+    }
+
     .pw-toggle {
       position: absolute;
       right: 12px;
@@ -488,7 +576,12 @@
       margin: 0;
       line-height: 1;
     }
-    .pw-toggle:hover { color: #2bbbad; box-shadow: none; transform: translateY(-50%); }
+
+    .pw-toggle:hover {
+      color: #2bbbad;
+      box-shadow: none;
+      transform: translateY(-50%);
+    }
   </style>
 </head>
 
@@ -626,9 +719,11 @@
     // PANEL TOGGLE
     document.getElementById('signUp').addEventListener('click', () => {
       document.getElementById('container').classList.add("right-panel-active");
+      document.body.classList.add("register-mode");
     });
     document.getElementById('signIn').addEventListener('click', () => {
       document.getElementById('container').classList.remove("right-panel-active");
+      document.body.classList.remove("register-mode");
     });
     document.getElementById('backToSignupBtn').addEventListener('click', (e) => {
       e.preventDefault();
@@ -637,21 +732,21 @@
     });
 
     // ── FORGOT PASSWORD MODAL LOGIC ──────────────────────────────────────
-    const fpOverlay    = document.getElementById('fpOverlay');
-    const fpModal      = document.getElementById('fpModal');
-    const fpClose      = document.getElementById('fpClose');
+    const fpOverlay = document.getElementById('fpOverlay');
+    const fpModal = document.getElementById('fpModal');
+    const fpClose = document.getElementById('fpClose');
     const fpEmailInput = document.getElementById('fpEmail');
     let fpVerifiedEmail = '';
 
     function fpShowStep(n) {
-      [1,2,3].forEach(i => {
+      [1, 2, 3].forEach(i => {
         document.getElementById(`fpStep${i}`).classList.toggle('active', i === n);
         document.getElementById(`fpDot${i}`).classList.toggle('active', i === n);
       });
       clearFpMsgs();
     }
     function clearFpMsgs() {
-      ['fpMsg1','fpMsg2','fpMsg3'].forEach(id => {
+      ['fpMsg1', 'fpMsg2', 'fpMsg3'].forEach(id => {
         const el = document.getElementById(id);
         el.textContent = '';
         el.className = 'fp-msg';
@@ -694,15 +789,15 @@
     // OTP box: auto-advance on digit input, backspace to go back
     document.querySelectorAll('.fp-otp-digit').forEach((input, idx, all) => {
       input.addEventListener('input', () => {
-        input.value = input.value.replace(/[^0-9]/g,'').slice(-1);
-        if (input.value && idx < all.length - 1) all[idx+1].focus();
+        input.value = input.value.replace(/[^0-9]/g, '').slice(-1);
+        if (input.value && idx < all.length - 1) all[idx + 1].focus();
       });
       input.addEventListener('keydown', e => {
-        if (e.key === 'Backspace' && !input.value && idx > 0) all[idx-1].focus();
+        if (e.key === 'Backspace' && !input.value && idx > 0) all[idx - 1].focus();
       });
       input.addEventListener('paste', e => {
         e.preventDefault();
-        const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g,'').slice(0,6);
+        const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 6);
         [...pasted].forEach((ch, i) => { if (all[i]) all[i].value = ch; });
         const next = all[Math.min(pasted.length, 5)];
         if (next) next.focus();
@@ -726,7 +821,7 @@
     // STEP 1: Send OTP
     document.getElementById('fpSendOtp').addEventListener('click', async () => {
       const email = fpEmailInput.value.trim();
-      if (!email || !email.includes('@')) { fpMsg('fpMsg1','Please enter a valid email address.','error'); return; }
+      if (!email || !email.includes('@')) { fpMsg('fpMsg1', 'Please enter a valid email address.', 'error'); return; }
       const btn = document.getElementById('fpSendOtp');
       btn.disabled = true; btn.textContent = 'Sending...';
       try {
@@ -753,7 +848,7 @@
     // STEP 2: Verify OTP
     document.getElementById('fpVerifyOtp').addEventListener('click', async () => {
       const otp = getFpOtp();
-      if (otp.length !== 6) { fpMsg('fpMsg2','Please enter all 6 digits.','error'); return; }
+      if (otp.length !== 6) { fpMsg('fpMsg2', 'Please enter all 6 digits.', 'error'); return; }
       const btn = document.getElementById('fpVerifyOtp');
       btn.disabled = true; btn.textContent = 'Verifying...';
       try {
@@ -785,8 +880,8 @@
       const newPw = document.getElementById('fpNewPw').value.trim();
       const confirmPw = document.getElementById('fpConfirmPw').value.trim();
       const otp = getFpOtp();
-      if (newPw.length < 6) { fpMsg('fpMsg3','Password must be at least 6 characters.','error'); return; }
-      if (newPw !== confirmPw) { fpMsg('fpMsg3','Passwords do not match.','error'); return; }
+      if (newPw.length < 6) { fpMsg('fpMsg3', 'Password must be at least 6 characters.', 'error'); return; }
+      if (newPw !== confirmPw) { fpMsg('fpMsg3', 'Passwords do not match.', 'error'); return; }
       const btn = document.getElementById('fpResetPw');
       btn.disabled = true; btn.textContent = 'Resetting...';
       try {
@@ -801,6 +896,7 @@
         setTimeout(() => {
           closeFpModal();
           document.getElementById('container').classList.remove('right-panel-active');
+          document.body.classList.remove('register-mode');
           document.getElementById('loginEmail').value = fpVerifiedEmail;
           document.getElementById('loginPassword').value = '';
           document.getElementById('loginPassword').focus();
@@ -880,6 +976,7 @@
         document.getElementById("signupFields").style.display = "flex";
         document.getElementById("otpSection").style.display = "none";
         document.getElementById('container').classList.remove("right-panel-active");
+        document.body.classList.remove("register-mode");
       } catch (err) {
         alert("Error connecting to server: " + err.message);
       }

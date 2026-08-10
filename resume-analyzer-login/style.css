@@ -1,27 +1,36 @@
-@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+/* Fonts: using system font stack — no internet required */
 
 * {
 	box-sizing: border-box;
 }
 
 body {
-	background: #f6f5f7;
+	background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url("https://tse4.mm.bing.net/th/id/OIP.jRvweB9Pv9F4wsW_0rXQowHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3") no-repeat center center fixed;
+	background-size: cover;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	height: 100vh;
 	font-family: 'Montserrat', sans-serif;
+	transition: background-image 0.5s ease-in-out;
+}
+
+body.register-mode {
+	background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url("./register_bg.png") no-repeat center center fixed;
+	background-size: cover;
 }
 
 .container {
 	background: #fff;
-	border-radius: 10px;
-	box-shadow: 0 14px 28px rgba(0,0,0,0.25);
+	border-radius: 16px;
+	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
 	position: relative;
 	overflow: hidden;
-	width: 900px;
-	max-width: 100%;
-	min-height: 550px;
+	width: 780px;
+	max-width: 92vw;
+	height: 480px;
+	max-height: 85vh;
+	min-height: 440px;
 }
 
 .form-container {
