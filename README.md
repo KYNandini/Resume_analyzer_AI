@@ -2,7 +2,7 @@
 
 An intelligent web application that helps candidates align their resumes with job descriptions. The tool uses Natural Language Processing (NLP) to analyze your resume against a target job description and provides actionable insights, such as match percentage, missing skills, and suggestions for improvement.
 
-## ✨ Features
+## ✨ Features ##
 
 - **User Authentication:** Simple login and registration system.
 - **PDF Resume Parsing:** Extracts text and skills seamlessly from uploaded PDF resumes.
