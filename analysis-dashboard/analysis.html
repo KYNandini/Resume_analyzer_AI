@@ -1,16 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume Analysis Results – AI Resume Analyzer</title>
-    <meta name="description" content="View your AI-powered resume analysis results with semantic skill matching, missing skills, and personalized improvement suggestions.">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="description"
+        content="View your AI-powered resume analysis results with semantic skill matching, missing skills, and personalized improvement suggestions.">
+    <!-- Fonts: using system font stack — no internet required -->
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        html, body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        html {
+            font-size: clamp(13px, 1.3vw, 18px);
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             background: #f0f2f5;
             height: 100vh;
             width: 100%;
@@ -22,7 +32,7 @@
             display: flex;
             align-items: flex-start;
             gap: 20px;
-            max-width: 1420px;
+            max-width: 100%;
             margin: 0 auto;
             padding: 18px 20px;
             height: 100vh;
@@ -36,19 +46,28 @@
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 22px;
-            padding: 22px 20px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            padding: 14px 14px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 8px;
             height: 100%;
-            overflow-y: auto;
+            overflow: hidden;
             flex-shrink: 0;
         }
 
-        .left-panel::-webkit-scrollbar { width: 6px; }
-        .left-panel::-webkit-scrollbar-track { background: transparent; }
-        .left-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .left-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .left-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
 
         .header {
             display: flex;
@@ -61,131 +80,277 @@
             background: #f1f5f9;
             border: 1px solid #cbd5e1;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: #0f172a;
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
             flex-shrink: 0;
         }
-        .back-btn:hover { background: #e2e8f0; transform: translateX(-2px); }
 
-        .header-text h1 { font-size: 1.25rem; font-weight: 800; color: #0f172a; line-height: 1.2; }
-        .header-text p  { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
+        .back-btn:hover {
+            background: #e2e8f0;
+            transform: translateX(-2px);
+        }
+
+        .header-text h1 {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .header-text p {
+            font-size: 0.68rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
 
         /* Score donuts */
         .score-cards {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 6px;
             flex-shrink: 0;
         }
 
         .score-card {
             background: #f8fafc;
             border: 1px solid #f1f5f9;
-            border-radius: 16px;
-            padding: 14px 8px;
+            border-radius: 14px;
+            padding: 8px 6px;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
 
-        .score-card h3 { font-size: 0.72rem; font-weight: 700; color: #334155; }
+        .score-card h3 {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #334155;
+        }
 
         .donut-wrap {
             position: relative;
-            width: 78px; height: 78px;
-            margin: 4px auto;
+            width: 80px;
+            height: 80px;
+            margin: 2px auto;
         }
-        .donut-wrap svg { transform: rotate(-90deg); width: 78px; height: 78px; }
-        .donut-bg   { fill: none; stroke: #e2e8f0; stroke-width: 8; }
-        .donut-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1); }
-        .donut-fill.blue  { stroke: #2563eb; }
-        .donut-fill.red   { stroke: #ef4444; }
-        .donut-fill.green { stroke: #10b981; }
+
+        .donut-wrap svg {
+            transform: rotate(-90deg);
+            width: 80px;
+            height: 80px;
+        }
+
+        .donut-bg {
+            fill: none;
+            stroke: #e2e8f0;
+            stroke-width: 8;
+        }
+
+        .donut-fill {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dasharray 1.2s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .donut-fill.blue {
+            stroke: #2563eb;
+        }
+
+        .donut-fill.red {
+            stroke: #ef4444;
+        }
+
+        .donut-fill.green {
+            stroke: #10b981;
+        }
+
         .donut-label {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%,-50%);
-            font-size: 1rem; font-weight: 800; color: #0f172a;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #0f172a;
         }
-        .score-card .sub { font-size: 0.68rem; color: #64748b; font-weight: 600; }
-        .score-card .sub.green { color: #10b981; font-weight: 700; }
+
+        .score-card .sub {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .score-card .sub.green {
+            color: #10b981;
+            font-weight: 700;
+        }
 
         /* AI Model badge */
         .model-badge {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: linear-gradient(135deg, #ede9fe, #dbeafe);
             border: 1px solid #c4b5fd;
-            border-radius: 12px;
-            padding: 10px 14px;
+            border-radius: 10px;
+            padding: 6px 10px;
             flex-shrink: 0;
         }
-        .model-badge .badge-icon { font-size: 1.2rem; }
-        .model-badge .badge-text { font-size: 0.75rem; }
-        .model-badge .badge-text strong { display: block; font-weight: 700; color: #4c1d95; font-size: 0.78rem; }
-        .model-badge .badge-text span   { color: #6d28d9; }
+
+        .model-badge .badge-icon {
+            font-size: 0.95rem;
+        }
+
+        .model-badge .badge-text {
+            font-size: 0.62rem;
+        }
+
+        .model-badge .badge-text strong {
+            display: block;
+            font-weight: 700;
+            color: #4c1d95;
+            font-size: 0.65rem;
+        }
+
+        .model-badge .badge-text span {
+            color: #6d28d9;
+        }
 
         /* Feedback */
         .feedback-box {
             border: 1px solid #cbd5e1;
             background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            border-radius: 16px;
-            padding: 18px;
+            border-radius: 12px;
+            padding: 10px 12px;
             display: flex;
-            gap: 12px;
+            gap: 8px;
             align-items: flex-start;
             flex-shrink: 0;
         }
+
         .feedback-box .check-icon {
-            width: 30px; height: 30px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background: #dcfce7;
             color: #15803d;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.9rem; font-weight: bold; flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            flex-shrink: 0;
         }
-        .feedback-box strong { display: block; font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 5px; }
-        .feedback-box p      { font-size: 0.78rem; color: #475569; line-height: 1.55; }
+
+        .feedback-box strong {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 3px;
+        }
+
+        .feedback-box p {
+            font-size: 0.62rem;
+            color: #475569;
+            line-height: 1.4;
+        }
 
         /* Category breakdown */
-        .category-section { flex-shrink: 0; }
+        .category-section {
+            flex-shrink: 0;
+        }
+
         .section-label {
-            font-size: 0.78rem; font-weight: 700; color: #64748b;
-            text-transform: uppercase; letter-spacing: 0.05em;
-            margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
+
         .cat-bar-row {
-            display: flex; align-items: center; gap: 8px;
-            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
         }
-        .cat-name { font-size: 0.72rem; font-weight: 600; color: #334155; width: 90px; flex-shrink: 0; }
-        .cat-bar-bg { flex: 1; height: 7px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
-        .cat-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
-        .cat-count { font-size: 0.68rem; color: #64748b; font-weight: 600; width: 36px; text-align: right; flex-shrink: 0; }
+
+        .cat-name {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #334155;
+            width: 100px;
+            flex-shrink: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cat-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .cat-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .cat-count {
+            font-size: 0.62rem;
+            color: #64748b;
+            font-weight: 600;
+            width: 36px;
+            text-align: right;
+            flex-shrink: 0;
+        }
 
         .reupload-btn {
             width: 100%;
-            padding: 13px;
-            border: none; border-radius: 14px;
+            padding: 8px;
+            border: none;
+            border-radius: 10px;
             background: #0f172a;
-            font-family: inherit; font-size: 0.9rem; font-weight: 700; color: white;
+            font-family: inherit;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: white;
             cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
             transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(15,23,42,0.15);
+            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.15);
             flex-shrink: 0;
+            margin-top: auto;
         }
-        .reupload-btn:hover { background: #1e293b; box-shadow: 0 6px 20px rgba(15,23,42,0.25); transform: translateY(-1px); }
+
+        .reupload-btn:hover {
+            background: #1e293b;
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25);
+            transform: translateY(-1px);
+        }
 
         /* ─── RIGHT PANEL ─────────────────────────────── */
         .right-panel {
@@ -194,7 +359,7 @@
             border: 1px solid #e2e8f0;
             border-radius: 22px;
             padding: 24px 24px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
             display: flex;
             flex-direction: column;
             gap: 22px;
@@ -203,15 +368,32 @@
             flex-grow: 1;
         }
 
-        .right-panel::-webkit-scrollbar { width: 7px; }
-        .right-panel::-webkit-scrollbar-track { background: transparent; }
-        .right-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .right-panel::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .right-panel::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .right-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .right-panel::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .right-panel::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
 
         .panel-section-title {
-            font-size: 1.1rem; font-weight: 800; color: #0f172a;
-            display: flex; align-items: center; gap: 8px;
-            border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 8px;
         }
 
         /* Matched skills grid */
@@ -222,7 +404,9 @@
         }
 
         .skill-item-card {
-            display: flex; align-items: center; gap: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             background: #f8fafc;
             border: 1px solid #e8f5e9;
             padding: 11px 14px;
@@ -233,19 +417,39 @@
         }
 
         @keyframes fadeUp {
-            to { opacity: 1; transform: translateY(0); }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .skill-dot-check {
-            width: 22px; height: 22px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            background: #dcfce7; color: #15803d;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.72rem; font-weight: bold; flex-shrink: 0;
+            background: #dcfce7;
+            color: #15803d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            font-weight: bold;
+            flex-shrink: 0;
         }
 
-        .skill-info { flex: 1; min-width: 0; }
-        .skill-name { font-size: 0.85rem; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .skill-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .skill-name {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #334155;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         /* Category badge */
         .cat-badge {
@@ -260,318 +464,498 @@
 
         /* Confidence bar */
         .confidence-row {
-            display: flex; align-items: center; gap: 6px; margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 3px;
         }
-        .conf-bar-bg { flex: 1; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; }
-        .conf-bar-fill { height: 100%; border-radius: 2px; background: #10b981; }
-        .conf-label { font-size: 0.62rem; color: #64748b; font-weight: 600; }
+
+        .conf-bar-bg {
+            flex: 1;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .conf-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: #10b981;
+        }
+
+        .conf-label {
+            font-size: 0.62rem;
+            color: #64748b;
+            font-weight: 600;
+        }
 
         .match-type-tag {
-            font-size: 0.58rem; font-weight: 700;
-            padding: 1px 5px; border-radius: 4px;
-            text-transform: uppercase; letter-spacing: 0.03em;
+            font-size: 0.58rem;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
         }
-        .match-type-exact  { background: #dcfce7; color: #15803d; }
-        .match-type-semantic { background: #ede9fe; color: #6d28d9; }
+
+        .match-type-exact {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .match-type-semantic {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
 
         /* Missing skills */
-        .missing-skills-container { display: flex; flex-direction: column; gap: 14px; }
+        .missing-skills-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
 
         .missing-skill-block {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 16px;
             padding: 18px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
-            display: flex; flex-direction: column; gap: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             opacity: 0;
             transform: translateY(8px);
             animation: fadeUp 0.35s ease forwards;
         }
 
         .missing-skill-header {
-            display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .missing-skill-tag {
             display: inline-block;
-            background: #fee2e2; color: #b91c1c;
-            font-size: 0.85rem; font-weight: 700;
-            padding: 5px 13px;
-            border-radius: 20px; border: 1px solid #fecaca;
+            background: #fee2e2;
+            color: #b91c1c;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid #fecaca;
         }
 
         .priority-badge {
-            font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
         }
-        .priority-high   { background: #fee2e2; color: #b91c1c; }
-        .priority-medium { background: #fff7ed; color: #c2410c; }
-        .priority-low    { background: #f0fdf4; color: #166534; }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .priority-medium {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .priority-low {
+            background: #f0fdf4;
+            color: #166534;
+        }
 
         .suggestion-box {
-            background: #fffbeb; border: 1px solid #fde68a;
-            border-radius: 12px; padding: 12px 14px;
-            display: flex; gap: 10px; align-items: flex-start;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
         }
-        .suggestion-box .bulb { font-size: 1.1rem; flex-shrink: 0; }
-        .suggestion-box strong { display: block; font-size: 0.82rem; font-weight: 700; color: #92400e; margin-bottom: 3px; }
-        .suggestion-box p { font-size: 0.78rem; color: #b45309; line-height: 1.55; font-weight: 500; }
+
+        .suggestion-box .bulb {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .suggestion-box strong {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 3px;
+        }
+
+        .suggestion-box p {
+            font-size: 0.66rem;
+            color: #b45309;
+            line-height: 1.5;
+            font-weight: 500;
+        }
 
         .placeholder {
-            color: #94a3b8; font-size: 0.9rem; font-weight: 500;
-            padding: 12px 0; text-align: center; width: 100%;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 10px 0;
+            text-align: center;
+            width: 100%;
         }
 
         /* Category color map */
-        .cat-programming  { background: #dbeafe; color: #1d4ed8; }
-        .cat-frontend     { background: #e0f2fe; color: #0369a1; }
-        .cat-backend      { background: #ede9fe; color: #6d28d9; }
-        .cat-database     { background: #fef9c3; color: #854d0e; }
-        .cat-cloud        { background: #fff7ed; color: #c2410c; }
-        .cat-devops       { background: #f0fdf4; color: #166534; }
-        .cat-ai-ml        { background: #fdf4ff; color: #86198f; }
-        .cat-data-engineering { background: #ecfeff; color: #155e75; }
-        .cat-mobile       { background: #fdf2f8; color: #9d174d; }
-        .cat-testing      { background: #f0fdf4; color: #15803d; }
-        .cat-security     { background: #fff1f2; color: #9f1239; }
-        .cat-soft-skills  { background: #f8fafc; color: #475569; }
-        .cat-tools        { background: #f5f3ff; color: #5b21b6; }
-        .cat-architecture { background: #fefce8; color: #713f12; }
-        .cat-general      { background: #f1f5f9; color: #334155; }
-
-        @media (max-width: 1024px) {
-            html, body { overflow: auto; height: auto; }
-            .dashboard-wrapper { flex-direction: column; height: auto; overflow: visible; padding: 16px; }
-            .left-panel, .right-panel { width: 100%; height: auto; overflow: visible; }
-            .skills-grid { grid-template-columns: 1fr; }
+        .cat-programming {
+            background: #dbeafe;
+            color: #1d4ed8;
         }
 
-        #categorySection { display: none; }
-        #missingHeader { margin-top: 4px; }
+        .cat-frontend {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .cat-backend {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .cat-database {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .cat-cloud {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .cat-devops {
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .cat-ai-ml {
+            background: #fdf4ff;
+            color: #86198f;
+        }
+
+        .cat-data-engineering {
+            background: #ecfeff;
+            color: #155e75;
+        }
+
+        .cat-mobile {
+            background: #fdf2f8;
+            color: #9d174d;
+        }
+
+        .cat-testing {
+            background: #f0fdf4;
+            color: #15803d;
+        }
+
+        .cat-security {
+            background: #fff1f2;
+            color: #9f1239;
+        }
+
+        .cat-finance {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .cat-soft-skills {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .cat-tools {
+            background: #f5f3ff;
+            color: #5b21b6;
+        }
+
+        .cat-architecture {
+            background: #fefce8;
+            color: #713f12;
+        }
+
+        .cat-general {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        @media (max-width: 1024px) {
+
+            html,
+            body {
+                overflow: auto;
+                height: auto;
+            }
+
+            .dashboard-wrapper {
+                flex-direction: column;
+                height: auto;
+                overflow: visible;
+                padding: 16px;
+            }
+
+            .left-panel,
+            .right-panel {
+                width: 100%;
+                height: auto;
+                overflow: visible;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        #categorySection {
+            display: none;
+        }
+
+        #missingHeader {
+            margin-top: 4px;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="dashboard-wrapper">
+    <div class="dashboard-wrapper">
 
-    <!-- ─── LEFT PANEL ─────────────────────────────── -->
-    <div class="left-panel">
-        <div class="header">
-            <button class="back-btn" onclick="goBack()" title="Back to Dashboard" id="backBtn">←</button>
-            <div class="header-text">
-                <h1>Analysis Overview</h1>
-                <p>Semantic AI evaluation against job description</p>
-            </div>
-        </div>
-
-        <!-- Score donuts -->
-        <div class="score-cards">
-            <div class="score-card">
-                <h3>Match Score</h3>
-                <div class="donut-wrap">
-                    <svg viewBox="0 0 84 84">
-                        <circle class="donut-bg"        cx="42" cy="42" r="34"/>
-                        <circle class="donut-fill blue" cx="42" cy="42" r="34" id="donutMatch" stroke-dasharray="0 213.6"/>
-                    </svg>
-                    <div class="donut-label" id="matchPct">—</div>
+        <!-- ─── LEFT PANEL ─────────────────────────────── -->
+        <div class="left-panel">
+            <div class="header">
+                <button class="back-btn" onclick="goBack()" title="Back to Dashboard" id="backBtn">←</button>
+                <div class="header-text">
+                    <h1>Analysis Overview</h1>
+                    <p>Semantic AI evaluation against job description</p>
                 </div>
-                <p class="sub" id="matchSub">Calculating...</p>
             </div>
-            <div class="score-card">
-                <h3>Missing Skills</h3>
-                <div class="donut-wrap">
-                    <svg viewBox="0 0 84 84">
-                        <circle class="donut-bg"       cx="42" cy="42" r="34"/>
-                        <circle class="donut-fill red" cx="42" cy="42" r="34" id="donutMissing" stroke-dasharray="0 213.6"/>
-                    </svg>
-                    <div class="donut-label" id="missingPct">—</div>
+
+            <!-- Score donuts -->
+            <div class="score-cards">
+                <div class="score-card">
+                    <h3>Match Score</h3>
+                    <div class="donut-wrap">
+                        <svg viewBox="0 0 84 84">
+                            <circle class="donut-bg" cx="42" cy="42" r="34" />
+                            <circle class="donut-fill blue" cx="42" cy="42" r="34" id="donutMatch"
+                                stroke-dasharray="0 213.6" />
+                        </svg>
+                        <div class="donut-label" id="matchPct">—</div>
+                    </div>
+                    <p class="sub" id="matchSub">Calculating...</p>
                 </div>
-                <p class="sub" id="missingSub">Calculating...</p>
-            </div>
-            <div class="score-card">
-                <h3>ATS Score</h3>
-                <div class="donut-wrap">
-                    <svg viewBox="0 0 84 84">
-                        <circle class="donut-bg"         cx="42" cy="42" r="34"/>
-                        <circle class="donut-fill green" cx="42" cy="42" r="34" id="donutEff" stroke-dasharray="0 213.6"/>
-                    </svg>
-                    <div class="donut-label" id="effPct">—</div>
+                <div class="score-card">
+                    <h3>Missing Skills</h3>
+                    <div class="donut-wrap">
+                        <svg viewBox="0 0 84 84">
+                            <circle class="donut-bg" cx="42" cy="42" r="34" />
+                            <circle class="donut-fill red" cx="42" cy="42" r="34" id="donutMissing"
+                                stroke-dasharray="0 213.6" />
+                        </svg>
+                        <div class="donut-label" id="missingPct">—</div>
+                    </div>
+                    <p class="sub" id="missingSub">Calculating...</p>
                 </div>
-                <p class="sub green" id="effSub">Calculating...</p>
+                <div class="score-card">
+                    <h3>ATS Score</h3>
+                    <div class="donut-wrap">
+                        <svg viewBox="0 0 84 84">
+                            <circle class="donut-bg" cx="42" cy="42" r="34" />
+                            <circle class="donut-fill green" cx="42" cy="42" r="34" id="donutEff"
+                                stroke-dasharray="0 213.6" />
+                        </svg>
+                        <div class="donut-label" id="effPct">—</div>
+                    </div>
+                    <p class="sub green" id="effSub">Calculating...</p>
+                </div>
+            </div>
+
+
+            <!-- Overall feedback -->
+            <div class="feedback-box">
+                <div class="check-icon">✓</div>
+                <div>
+                    <strong id="feedbackTitle">Waiting for analysis...</strong>
+                    <p id="feedbackBody">Upload your resume and paste a job description to get started.</p>
+                </div>
+            </div>
+
+            <!-- Category breakdown bars -->
+            <div class="category-section" id="categorySection">
+                <div class="section-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                    Skills by Category
+                </div>
+                <div id="categoryBars"></div>
+            </div>
+
+            <button class="reupload-btn" onclick="goBack()" id="reanalyzeBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round" width="18" height="18">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Analyze Another Resume
+            </button>
+        </div>
+
+        <!-- ─── RIGHT PANEL ─────────────────────────────── -->
+        <div class="right-panel">
+            <div class="panel-section-title" id="matchHeader">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                Matching Skills Found (<span id="matchCountHeader">0</span>)
+            </div>
+            <div id="matchingList" class="skills-grid">
+                <p class="placeholder">Results will appear here</p>
+            </div>
+
+            <div class="panel-section-title" id="missingHeader">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                Missing Skills & AI Suggestions (<span id="missingCountHeader">0</span>)
+            </div>
+            <div id="missingList" class="missing-skills-container">
+                <p class="placeholder">Results will appear here</p>
             </div>
         </div>
 
-        <!-- AI Model badge -->
-        <div class="model-badge">
-            <span class="badge-icon">🤖</span>
-            <div class="badge-text">
-                <strong>Powered by all-mpnet-base-v2</strong>
-                <span>spaCy en_core_web_lg · Gemini AI suggestions</span>
-            </div>
-        </div>
-
-        <!-- Overall feedback -->
-        <div class="feedback-box">
-            <div class="check-icon">✓</div>
-            <div>
-                <strong id="feedbackTitle">Waiting for analysis...</strong>
-                <p id="feedbackBody">Upload your resume and paste a job description to get started.</p>
-            </div>
-        </div>
-
-        <!-- Category breakdown bars -->
-        <div class="category-section" id="categorySection">
-            <div class="section-label">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                Skills by Category
-            </div>
-            <div id="categoryBars"></div>
-        </div>
-
-        <button class="reupload-btn" onclick="goBack()" id="reanalyzeBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            Analyze Another Resume
-        </button>
     </div>
 
-    <!-- ─── RIGHT PANEL ─────────────────────────────── -->
-    <div class="right-panel">
-        <div class="panel-section-title" id="matchHeader">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-            Matching Skills Found (<span id="matchCountHeader">0</span>)
-        </div>
-        <div id="matchingList" class="skills-grid">
-            <p class="placeholder">Results will appear here</p>
-        </div>
+    <script>
+        const CIRCUMFERENCE = 2 * Math.PI * 34;
 
-        <div class="panel-section-title" id="missingHeader">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-            Missing Skills & AI Suggestions (<span id="missingCountHeader">0</span>)
-        </div>
-        <div id="missingList" class="missing-skills-container">
-            <p class="placeholder">Results will appear here</p>
-        </div>
-    </div>
+        function setDonut(id, percent) {
+            const el = document.getElementById(id);
+            const fill = (percent / 100) * CIRCUMFERENCE;
+            el.style.strokeDasharray = `${fill} ${CIRCUMFERENCE}`;
+        }
 
-</div>
+        function getCatClass(cat) {
+            if (!cat) return "cat-general";
+            return "cat-" + cat.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/-$/, "");
+        }
 
-<script>
-    const CIRCUMFERENCE = 2 * Math.PI * 34;
+        function getCatColor(cat) {
+            const colors = {
+                "Programming": "#2563eb",
+                "Frontend": "#0369a1",
+                "Backend": "#6d28d9",
+                "Database": "#854d0e",
+                "Cloud": "#c2410c",
+                "DevOps": "#166534",
+                "AI/ML": "#86198f",
+                "Data Engineering": "#155e75",
+                "Mobile": "#9d174d",
+                "Testing": "#15803d",
+                "Security": "#9f1239",
+                "Finance": "#047857",
+                "Soft Skills": "#475569",
+                "Tools": "#5b21b6",
+                "Architecture": "#713f12",
+            };
+            return colors[cat] || "#64748b";
+        }
 
-    function setDonut(id, percent) {
-        const el = document.getElementById(id);
-        const fill = (percent / 100) * CIRCUMFERENCE;
-        el.style.strokeDasharray = `${fill} ${CIRCUMFERENCE}`;
-    }
+        window.onload = function () {
+            const data = JSON.parse(localStorage.getItem("analysisResult"));
+            if (!data) return;
 
-    function getCatClass(cat) {
-        if (!cat) return "cat-general";
-        return "cat-" + cat.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/-$/, "");
-    }
+            const matchPct = data.matchPercent || data.score || 0;
+            const missingPct = data.missingPercent || (100 - matchPct);
+            const effPct = data.efficiencyPercent || matchPct;
+            const matched = data.matchingSkills || data.matched || [];
+            const missing = data.missingSkills || data.missing || [];
 
-    function getCatColor(cat) {
-        const colors = {
-            "Programming":       "#2563eb",
-            "Frontend":          "#0369a1",
-            "Backend":           "#6d28d9",
-            "Database":          "#854d0e",
-            "Cloud":             "#c2410c",
-            "DevOps":            "#166534",
-            "AI/ML":             "#86198f",
-            "Data Engineering":  "#155e75",
-            "Mobile":            "#9d174d",
-            "Testing":           "#15803d",
-            "Security":          "#9f1239",
-            "Soft Skills":       "#475569",
-            "Tools":             "#5b21b6",
-            "Architecture":      "#713f12",
-        };
-        return colors[cat] || "#64748b";
-    }
+            // ── Donuts ──
+            setTimeout(() => {
+                setDonut("donutMatch", matchPct);
+                setDonut("donutMissing", missingPct);
+                setDonut("donutEff", effPct);
+            }, 100);
 
-    window.onload = function () {
-        const data = JSON.parse(localStorage.getItem("analysisResult"));
-        if (!data) return;
+            document.getElementById("matchPct").innerText = matchPct + "%";
+            document.getElementById("missingPct").innerText = missingPct + "%";
+            document.getElementById("effPct").innerText = effPct + "%";
+            document.getElementById("matchSub").innerText = matched.length + " of " + (matched.length + missing.length) + " skills";
+            document.getElementById("missingSub").innerText = missing.length + " missing";
+            document.getElementById("effSub").innerText = effPct >= 80 ? "Excellent match" : effPct >= 50 ? "Fair match" : "Needs work";
+            document.getElementById("matchCountHeader").innerText = matched.length;
+            document.getElementById("missingCountHeader").innerText = missing.length;
 
-        const matchPct   = data.matchPercent   || data.score || 0;
-        const missingPct = data.missingPercent || (100 - matchPct);
-        const effPct     = data.efficiencyPercent || matchPct;
-        const matched    = data.matchingSkills || data.matched || [];
-        const missing    = data.missingSkills  || data.missing || [];
+            // ── Feedback ──
+            document.getElementById("feedbackTitle").innerText = data.overallFeedback
+                ? (matchPct >= 70 ? "Great alignment!" : matchPct >= 40 ? "Fair match found." : "Needs improvement.")
+                : (matchPct >= 70 ? "Excellent alignment! ATS-ready." : "Resume needs targeted enhancement.");
+            document.getElementById("feedbackBody").innerText = data.overallFeedback ||
+                (matchPct >= 70
+                    ? "Your skill profile strongly matches the core requirements."
+                    : "Prioritize adding the missing skills to your resume.");
 
-        // ── Donuts ──
-        setTimeout(() => {
-            setDonut("donutMatch",   matchPct);
-            setDonut("donutMissing", missingPct);
-            setDonut("donutEff",     effPct);
-        }, 100);
-
-        document.getElementById("matchPct").innerText   = matchPct + "%";
-        document.getElementById("missingPct").innerText = missingPct + "%";
-        document.getElementById("effPct").innerText     = effPct + "%";
-        document.getElementById("matchSub").innerText   = matched.length + " of " + (matched.length + missing.length) + " skills";
-        document.getElementById("missingSub").innerText = missing.length + " missing";
-        document.getElementById("effSub").innerText     = effPct >= 80 ? "Excellent match" : effPct >= 50 ? "Fair match" : "Needs work";
-        document.getElementById("matchCountHeader").innerText   = matched.length;
-        document.getElementById("missingCountHeader").innerText = missing.length;
-
-        // ── Feedback ──
-        document.getElementById("feedbackTitle").innerText = data.overallFeedback
-            ? (matchPct >= 70 ? "Great alignment!" : matchPct >= 40 ? "Fair match found." : "Needs improvement.")
-            : (matchPct >= 70 ? "Excellent alignment! ATS-ready." : "Resume needs targeted enhancement.");
-        document.getElementById("feedbackBody").innerText = data.overallFeedback ||
-            (matchPct >= 70
-                ? "Your skill profile strongly matches the core requirements."
-                : "Prioritize adding the missing skills to your resume.");
-
-        // ── Category Breakdown ──
-        if (data.categoryBreakdown && Object.keys(data.categoryBreakdown).length > 0) {
-            const catSection = document.getElementById("categorySection");
-            const catBars    = document.getElementById("categoryBars");
-            catSection.style.display = "block";
-            const cats = Object.entries(data.categoryBreakdown)
-                .filter(([,v]) => v.total > 0)
-                .sort((a, b) => b[1].total - a[1].total);
-            catBars.innerHTML = "";
-            cats.forEach(([cat, val]) => {
-                const pct = Math.round((val.matched / val.total) * 100);
-                const color = getCatColor(cat);
-                catBars.innerHTML += `
+            // ── Category Breakdown ──
+            if (data.categoryBreakdown && Object.keys(data.categoryBreakdown).length > 0) {
+                const catSection = document.getElementById("categorySection");
+                const catBars = document.getElementById("categoryBars");
+                catSection.style.display = "block";
+                const cats = Object.entries(data.categoryBreakdown)
+                    .filter(([, v]) => v.total > 0)
+                    .sort((a, b) => b[1].total - a[1].total);
+                catBars.innerHTML = "";
+                cats.forEach(([cat, val]) => {
+                    const pct = Math.round((val.matched / val.total) * 100);
+                    const color = getCatColor(cat);
+                    catBars.innerHTML += `
                     <div class="cat-bar-row">
-                        <span class="cat-name" title="${cat}">${cat.length > 12 ? cat.substring(0,12)+"…" : cat}</span>
+                        <span class="cat-name" title="${cat}">${cat.length > 12 ? cat.substring(0, 12) + "…" : cat}</span>
                         <div class="cat-bar-bg">
                             <div class="cat-bar-fill" style="width:${pct}%;background:${color}"></div>
                         </div>
                         <span class="cat-count">${val.matched}/${val.total}</span>
                     </div>`;
-            });
-        }
+                });
+            }
 
-        // ── Matched Skills ──
-        const matchList = document.getElementById("matchingList");
-        matchList.innerHTML = "";
-        if (matched.length === 0) {
-            matchList.innerHTML = "<p class='placeholder'>No matching skills found in resume.</p>";
-        } else {
-            matched.forEach((item, i) => {
-                // Support both old string format and new object format
-                const skill      = typeof item === "string" ? item : item.skill || item;
-                const category   = typeof item === "object" ? (item.category || "General") : "General";
-                const confidence = typeof item === "object" ? (item.confidence || 100) : 100;
-                const matchType  = typeof item === "object" ? (item.matchType || "exact") : "exact";
-                const catClass   = getCatClass(category);
+            // ── Matched Skills ──
+            const matchList = document.getElementById("matchingList");
+            matchList.innerHTML = "";
+            if (matched.length === 0) {
+                matchList.innerHTML = "<p class='placeholder'>No matching skills found in resume.</p>";
+            } else {
+                matched.forEach((item, i) => {
+                    // Support both old string format and new object format
+                    const skill = typeof item === "string" ? item : item.skill || item;
+                    const category = typeof item === "object" ? (item.category || "General") : "General";
+                    const confidence = typeof item === "object" ? (item.confidence || 100) : 100;
+                    const matchType = typeof item === "object" ? (item.matchType || "exact") : "exact";
+                    const catClass = getCatClass(category);
 
-                matchList.innerHTML += `
+                    matchList.innerHTML += `
                     <div class="skill-item-card" style="animation-delay:${i * 0.04}s">
                         <div class="skill-dot-check">✓</div>
                         <div class="skill-info">
@@ -580,40 +964,34 @@
                                 <span class="match-type-tag match-type-${matchType}">${matchType}</span>
                             </div>
                             <span class="cat-badge ${catClass}">${category}</span>
-                            <div class="confidence-row">
-                                <div class="conf-bar-bg">
-                                    <div class="conf-bar-fill" style="width:${confidence}%"></div>
-                                </div>
-                                <span class="conf-label">${confidence}%</span>
-                            </div>
                         </div>
                     </div>`;
-            });
-        }
+                });
+            }
 
-        // ── Missing Skills ──
-        const missingList = document.getElementById("missingList");
-        missingList.innerHTML = "";
-        if (missing.length === 0) {
-            missingList.innerHTML = "<p class='placeholder' style='color:#10b981;font-weight:700;'>🎉 Perfect match! No missing skills identified.</p>";
-        } else {
-            // Sort: High priority first
-            const sorted = [...missing].sort((a, b) => {
-                const rank = { High: 0, Medium: 1, Low: 2 };
-                const pa = typeof a === "object" ? (a.priority || "Medium") : "Medium";
-                const pb = typeof b === "object" ? (b.priority || "Medium") : "Medium";
-                return (rank[pa] || 1) - (rank[pb] || 1);
-            });
+            // ── Missing Skills ──
+            const missingList = document.getElementById("missingList");
+            missingList.innerHTML = "";
+            if (missing.length === 0) {
+                missingList.innerHTML = "<p class='placeholder' style='color:#10b981;font-weight:700;'>🎉 Perfect match! No missing skills identified.</p>";
+            } else {
+                // Sort: High priority first
+                const sorted = [...missing].sort((a, b) => {
+                    const rank = { High: 0, Medium: 1, Low: 2 };
+                    const pa = typeof a === "object" ? (a.priority || "Medium") : "Medium";
+                    const pb = typeof b === "object" ? (b.priority || "Medium") : "Medium";
+                    return (rank[pa] || 1) - (rank[pb] || 1);
+                });
 
-            sorted.forEach((item, i) => {
-                const skill      = typeof item === "string" ? item : item.skill || item;
-                const category   = typeof item === "object" ? (item.category || "General") : "General";
-                const priority   = typeof item === "object" ? (item.priority || "Medium") : "Medium";
-                const suggestion = typeof item === "object" ? (item.suggestion || getFallbackSuggestion(skill)) : getFallbackSuggestion(skill);
-                const catClass   = getCatClass(category);
-                const priClass   = "priority-" + priority.toLowerCase();
+                sorted.forEach((item, i) => {
+                    const skill = typeof item === "string" ? item : item.skill || item;
+                    const category = typeof item === "object" ? (item.category || "General") : "General";
+                    const priority = typeof item === "object" ? (item.priority || "Medium") : "Medium";
+                    const suggestion = typeof item === "object" ? (item.suggestion || getFallbackSuggestion(skill)) : getFallbackSuggestion(skill);
+                    const catClass = getCatClass(category);
+                    const priClass = "priority-" + priority.toLowerCase();
 
-                missingList.innerHTML += `
+                    missingList.innerHTML += `
                     <div class="missing-skill-block" style="animation-delay:${i * 0.05}s">
                         <div class="missing-skill-header">
                             <span class="missing-skill-tag">⚠ ${skill}</span>
@@ -630,27 +1008,28 @@
                             </div>
                         </div>
                     </div>`;
-            });
+                });
+            }
+        };
+
+        function getFallbackSuggestion(skill) {
+            const s = skill.toLowerCase();
+            if (s.includes("deep learning") || s.includes("neural")) return "Add projects or coursework involving deep learning frameworks such as TensorFlow or PyTorch.";
+            if (s.includes("docker") || s.includes("container")) return "Include Docker containerization experience. Mention any relevant projects or certifications.";
+            if (s.includes("machine learning") || s === "ml") return "Showcase ML projects on GitHub and add relevant Coursera or Udemy certifications to your resume.";
+            if (s.includes("sql") || s.includes("database")) return "Add database projects or mention SQL usage in past internships or academic projects.";
+            if (s === "python") return "Highlight Python projects, scripts, or automation work you have done in any context.";
+            if (s.includes("react") || s.includes("javascript")) return "Build a small React project and add it to your GitHub portfolio to demonstrate frontend skills.";
+            if (s.includes("aws") || s.includes("cloud")) return "Consider the AWS Cloud Practitioner certification — it is beginner-friendly and widely recognized.";
+            if (s.includes("kubernetes") || s.includes("k8s")) return "Set up a Minikube cluster locally and deploy a sample app to gain hands-on Kubernetes experience.";
+            if (s.includes("communication")) return "Mention presentations, teamwork, or leadership roles in projects or extracurricular activities.";
+            return `Research and add hands-on experience with ${skill} through projects, courses, or certifications.`;
         }
-    };
 
-    function getFallbackSuggestion(skill) {
-        const s = skill.toLowerCase();
-        if (s.includes("deep learning") || s.includes("neural")) return "Add projects or coursework involving deep learning frameworks such as TensorFlow or PyTorch.";
-        if (s.includes("docker") || s.includes("container")) return "Include Docker containerization experience. Mention any relevant projects or certifications.";
-        if (s.includes("machine learning") || s === "ml") return "Showcase ML projects on GitHub and add relevant Coursera or Udemy certifications to your resume.";
-        if (s.includes("sql") || s.includes("database")) return "Add database projects or mention SQL usage in past internships or academic projects.";
-        if (s === "python") return "Highlight Python projects, scripts, or automation work you have done in any context.";
-        if (s.includes("react") || s.includes("javascript")) return "Build a small React project and add it to your GitHub portfolio to demonstrate frontend skills.";
-        if (s.includes("aws") || s.includes("cloud")) return "Consider the AWS Cloud Practitioner certification — it is beginner-friendly and widely recognized.";
-        if (s.includes("kubernetes") || s.includes("k8s")) return "Set up a Minikube cluster locally and deploy a sample app to gain hands-on Kubernetes experience.";
-        if (s.includes("communication")) return "Mention presentations, teamwork, or leadership roles in projects or extracurricular activities.";
-        return `Research and add hands-on experience with ${skill} through projects, courses, or certifications.`;
-    }
-
-    function goBack() {
-        window.location.href = "index.html";
-    }
-</script>
+        function goBack() {
+            window.location.href = "index.html";
+        }
+    </script>
 </body>
+
 </html>

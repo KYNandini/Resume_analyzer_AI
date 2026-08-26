@@ -11,6 +11,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import threading
 import random
+import time
+from email_validator import validate_email, EmailNotValidError
 
 # Temporary in-memory store for password-reset OTPs: {email: {otp, expires}}
 _reset_otps = {}
@@ -42,6 +44,72 @@ def send_welcome_email(to_email, user_name):
     except Exception as e:
         print(f"Failed to send email to {to_email}: {str(e)}")
 
+def send_scorecard_email(to_email, user_name, result, is_daily_reminder=False):
+    sender_email = os.getenv("EMAIL_USER")
+    sender_pass = os.getenv("EMAIL_PASS")
+    
+    if not sender_email or not sender_pass or sender_email == "your-email@gmail.com":
+        print("Email configuration missing. Skipping scorecard email.")
+        return
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = to_email
+        msg['Subject'] = "Your Daily ATS Scorecard Reminder!" if is_daily_reminder else "Your Resume ATS Scorecard – Resume Analyzer AI"
+        
+        match_pct = result.get('matchPercent', 0)
+        feedback = result.get('overallFeedback', '')
+        matched = result.get('matchedCount', 0)
+        total = result.get('totalSkills', 0)
+        missing = total - matched
+        
+        missing_skills_html = ""
+        if result.get('missingSkills'):
+            skills = [s.get('skill') for s in result['missingSkills'][:5]]
+            missing_skills_html = f"<p><strong>Top Skills to Add:</strong> {', '.join(skills)}</p>"
+        
+        if is_daily_reminder:
+            header_text = "Keep Improving Your Resume!"
+            intro_text = "This is your daily reminder to keep pushing your ATS score higher! Review your missing skills below, update your resume, and re-upload the improved version to our dashboard."
+            cta_text = "Log back into your dashboard to re-upload your improved resume and track your progress!"
+        else:
+            header_text = "Your Resume Analysis is Ready!"
+            intro_text = "We've successfully analyzed your resume against the provided job description."
+            cta_text = "Log back into your dashboard to view the full detailed report, including AI-generated suggestions to improve your missing skills!"
+
+        body = f"""
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border:1px solid #ddd;border-radius:10px;">
+          <h2 style="color:#00a896;">{header_text}</h2>
+          <p>Hi <strong>{user_name}</strong>,</p>
+          <p>{intro_text}</p>
+          
+          <div style="background:#f0fdfa;border:1px solid #14b8a6;padding:15px;border-radius:8px;margin:20px 0;">
+              <h3 style="margin-top:0;color:#0f766e;text-align:center;">Current ATS Match Score: {match_pct}%</h3>
+              <p style="text-align:center;color:#0f172a;margin-bottom:0;">{feedback}</p>
+          </div>
+          
+          <p><strong>Matched Skills:</strong> {matched} / {total}</p>
+          <p><strong>Missing Skills:</strong> {missing}</p>
+          {missing_skills_html}
+          
+          <p>{cta_text}</p>
+          <br>
+          <p>— The Resume Analyzer AI Team</p>
+        </div>
+        """
+        
+        msg.attach(MIMEText(body, 'html'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, sender_pass)
+        server.sendmail(sender_email, to_email, msg.as_string())
+        server.quit()
+        print(f"Scorecard email sent successfully to {to_email}")
+    except Exception as e:
+        print(f"Failed to send scorecard email to {to_email}: {str(e)}")
+
 # Import the upgraded analyzer engine
 from analyzer import extract_skills, match_skills, get_gemini_suggestions
 
@@ -49,7 +117,7 @@ load_dotenv()
 
 app = Flask(__name__)
 # Enable comprehensive CORS for all origins and headers
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # MongoDB Setup
 try:
@@ -87,6 +155,12 @@ def signup():
 
     if not name or not email or not password:
         return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        validation = validate_email(email, check_deliverability=True)
+        email = validation.normalized
+    except EmailNotValidError as e:
+        return jsonify({"error": f"Email not found or invalid: {str(e)}"}), 400
 
     if users_collection.find_one({"email": email}):
         return jsonify({"error": "Email already registered"}), 400
@@ -127,7 +201,9 @@ def login():
         return jsonify({"error": "Missing email or password"}), 400
 
     user = users_collection.find_one({"email": email})
-    if not user or not check_password_hash(user["password"], password):
+    if not user:
+        return jsonify({"error": "Email not found"}), 404
+    if not check_password_hash(user["password"], password):
         return jsonify({"error": "Invalid login credentials"}), 401
 
     return jsonify({
@@ -178,7 +254,13 @@ def update_profile():
     update_fields = {}
     if "name" in data: update_fields["name"] = data["name"]
     if "role" in data: update_fields["role"] = data["role"]
-    if "dob" in data: update_fields["dob"] = data["dob"]
+    if "dob" in data:
+        dob_val = data["dob"]
+        import re
+        if re.match(r"^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-(19|20)\d\d$", dob_val):
+            update_fields["dob"] = dob_val
+        else:
+            return jsonify({"error": "Invalid date of birth format (must be DD-MM-YYYY)"}), 400
     if "profileImage" in data: update_fields["profileImage"] = data["profileImage"]
 
     if update_fields:
@@ -275,7 +357,36 @@ def analyze():
             {"$push": {"history": {"$each": [history_item], "$position": 0}}}
         )
 
+        user = users_collection.find_one({"email": email})
+        user_name = user.get("name", "there") if user else "there"
+        threading.Thread(target=send_scorecard_email, args=(email, user_name, result)).start()
+
     return jsonify(result)
+
+
+@app.route("/suggest-jd", methods=["POST", "OPTIONS"])
+def suggest_jd():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+
+    resume_file = request.files.get("resume")
+    if not resume_file:
+        return jsonify({"error": "Resume is required"}), 400
+
+    if not resume_file.filename.lower().endswith(".pdf"):
+        return jsonify({"error": "Please upload a valid PDF document (.pdf)."}), 400
+
+    try:
+        file_bytes = resume_file.read()
+        resume_text = extract_text_from_pdf(file_bytes)
+        
+        from suggest_jd import generate_jd
+        jd = generate_jd(resume_text)
+        
+        return jsonify({"suggestedJD": jd})
+    except Exception as e:
+        print(f"Error suggesting JD: {e}")
+        return jsonify({"error": "Failed to suggest JD"}), 500
 
 
 @app.route("/delete_history", methods=["POST", "OPTIONS"])
@@ -414,7 +525,33 @@ def reset_password():
     return jsonify({"message": "Password reset successfully!"}), 200
 
 
+def daily_reminder_job():
+    while True:
+        now = datetime.datetime.now()
+        target = now.replace(hour=21, minute=30, second=0, microsecond=0)
+        
+        if now >= target:
+            target += datetime.timedelta(days=1)
+            
+        sleep_seconds = (target - now).total_seconds()
+        print(f"Daily reminder thread sleeping until {target.strftime('%Y-%m-%d %H:%M:%S')}")
+        time.sleep(sleep_seconds)
+        
+        print("Executing daily scorecard reminders...")
+        try:
+            users = users_collection.find({})
+            for user in users:
+                history = user.get("history", [])
+                if history and len(history) > 0:
+                    latest = history[0]
+                    result = latest.get("data")
+                    if result:
+                        send_scorecard_email(user["email"], user.get("name", "there"), result, is_daily_reminder=True)
+        except Exception as e:
+            print(f"Error in daily reminder job: {e}")
+
 if __name__ == "__main__":
+    threading.Thread(target=daily_reminder_job, daemon=True).start()
     print("Loading NLP models (first start may take ~30s to download all-mpnet-base-v2)...")
     # Pre-warm models at startup to avoid first-request latency
     from analyzer import get_nlp, get_sbert

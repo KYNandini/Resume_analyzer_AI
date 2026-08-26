@@ -203,11 +203,27 @@
       transition: all 0.25s;
     }
 
-    .social-container a:hover {
-      background: #2bbbad;
+    .social-container a:hover.facebook {
+      background: #1877F2;
       color: white;
-      border-color: #2bbbad;
+      border-color: #1877F2;
     }
+
+    .social-container a:hover.github {
+      background: #333;
+      color: white;
+      border-color: #333;
+    }
+
+    .social-container a:hover.linkedin {
+      background: #0A66C2;
+      color: white;
+      border-color: #0A66C2;
+    }
+
+    .social-icon-facebook { color: #1877F2; }
+    .social-icon-github   { color: #333; }
+    .social-icon-linkedin { color: #0A66C2; }
 
     .overlay-container {
       position: absolute;
@@ -299,24 +315,6 @@
       flex-direction: column;
       gap: 10px;
       align-items: center;
-    }
-
-    #otpSection {
-      display: none;
-      width: 100%;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center;
-    }
-
-    #otpSection p {
-      font-size: 0.85rem;
-      margin-top: 10px;
-      color: #555;
-    }
-
-    #backToSignupBtn {
-      margin-top: 10px;
     }
 
     /* ── Forgot Password Modal ── */
@@ -596,26 +594,19 @@
       <form id="signUpForm">
         <h1>Create Account</h1>
         <div class="social-container">
-          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i
-              class="fab fa-facebook-f"></i></a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub"><i
-              class="fab fa-github"></i></a>
-          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i
-              class="fab fa-linkedin-in"></i></a>
+          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"
+            class="facebook"><i class="fab fa-facebook-f social-icon-facebook"></i></a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub" class="github"><i
+              class="fab fa-github social-icon-github"></i></a>
+          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"
+            class="linkedin"><i class="fab fa-linkedin-in social-icon-linkedin"></i></a>
         </div>
         <span>or use your email for registration</span>
         <div id="signupFields">
           <input type="text" id="regName" placeholder="Name" />
           <input type="email" id="regEmail" placeholder="Email" />
           <input type="password" id="regPassword" placeholder="Password" />
-          <button type="submit" id="sendOtpBtn">Send OTP</button>
-        </div>
-
-        <div id="otpSection">
-          <p>Enter the 6-digit OTP sent to your email.</p>
-          <input type="text" id="regOtp" placeholder="6-digit OTP" maxlength="6" />
-          <button type="button" id="verifyOtpBtn">Verify & Register</button>
-          <a href="#" id="backToSignupBtn">&larr; Back to Signup</a>
+          <button type="submit" id="signupBtn">Create Account</button>
         </div>
       </form>
     </div>
@@ -625,12 +616,12 @@
       <form id="signInForm">
         <h1>Sign in</h1>
         <div class="social-container">
-          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i
-              class="fab fa-facebook-f"></i></a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub"><i
-              class="fab fa-github"></i></a>
-          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i
-              class="fab fa-linkedin-in"></i></a>
+          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"
+            class="facebook"><i class="fab fa-facebook-f social-icon-facebook"></i></a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub" class="github"><i
+              class="fab fa-github social-icon-github"></i></a>
+          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"
+            class="linkedin"><i class="fab fa-linkedin-in social-icon-linkedin"></i></a>
         </div>
         <span>or use your account</span>
         <input type="email" id="loginEmail" placeholder="Email" />
@@ -724,11 +715,6 @@
     document.getElementById('signIn').addEventListener('click', () => {
       document.getElementById('container').classList.remove("right-panel-active");
       document.body.classList.remove("register-mode");
-    });
-    document.getElementById('backToSignupBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById("otpSection").style.display = "none";
-      document.getElementById("signupFields").style.display = "flex";
     });
 
     // ── FORGOT PASSWORD MODAL LOGIC ──────────────────────────────────────
@@ -909,78 +895,69 @@
     });
     // ── END FORGOT PASSWORD LOGIC ─────────────────────────────────────────
 
-    // SIGN UP (MONGODB INTEGRATED)
+    // SIGN UP – direct registration with welcome email notification
     document.getElementById('signUpForm').addEventListener('submit', async function (e) {
       e.preventDefault();
       const name = document.getElementById('regName').value.trim();
       const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value.trim();
 
-      if (!name || name.length < 2) { alert("Enter a valid name."); return; }
-      if (!email || !email.includes("@")) { alert("Enter a valid email."); return; }
-      if (!password || password.length < 6) { alert("Password must be at least 6 characters."); return; }
+      if (!name || name.length < 2) { showSignupMsg('Enter a valid name.', 'error'); return; }
+      if (!email || !email.includes('@')) { showSignupMsg('Enter a valid email.', 'error'); return; }
+      if (!password || password.length < 6) { showSignupMsg('Password must be at least 6 characters.', 'error'); return; }
+
+      const btn = document.getElementById('signupBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating account…';
 
       try {
-        const response = await fetch("http://localhost:3000/send-otp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const response = await fetch('http://localhost:3000/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password })
         });
 
         const data = await response.json();
         if (!response.ok) {
-          alert(data.error || "Failed to send OTP.");
+          showSignupMsg(data.error || 'Registration failed.', 'error');
           return;
         }
 
-        alert("OTP sent to your email!");
-        document.getElementById("signupFields").style.display = "none";
-        document.getElementById("otpSection").style.display = "flex";
-
-        // Show test email link if using Ethereal
-        if (data.previewUrl) {
-          let p = document.createElement('p');
-          p.style.fontSize = "0.75rem";
-          p.style.marginTop = "5px";
-          p.innerHTML = `⚠️ <a href="${data.previewUrl}" target="_blank" style="color:#2bbbad; font-weight:bold;">Click here to view your OTP email</a> (Testing Mode)`;
-          document.getElementById("otpSection").appendChild(p);
-        }
-      } catch (err) {
-        alert("Error connecting to server: " + err.message);
-      }
-    });
-
-    document.getElementById('verifyOtpBtn').addEventListener('click', async function () {
-      const email = document.getElementById('regEmail').value.trim();
-      const otp = document.getElementById('regOtp').value.trim();
-
-      if (!otp || otp.length !== 6) { alert("Enter a valid 6-digit OTP."); return; }
-
-      try {
-        const response = await fetch("http://localhost:3000/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, otp })
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-          alert(data.error || "Registration failed.");
-          return;
-        }
-
-        alert("Account created successfully! Please sign in.");
-
-        // Reset form
+        // Show success notification and redirect to sign in
+        showSignupMsg('✅ Account created! A welcome email has been sent. Redirecting to sign in…', 'success');
         document.getElementById('signUpForm').reset();
-        document.getElementById("signupFields").style.display = "flex";
-        document.getElementById("otpSection").style.display = "none";
-        document.getElementById('container').classList.remove("right-panel-active");
-        document.body.classList.remove("register-mode");
+        setTimeout(() => {
+          document.getElementById('container').classList.remove('right-panel-active');
+          document.body.classList.remove('register-mode');
+          removeSignupMsg();
+        }, 2800);
       } catch (err) {
-        alert("Error connecting to server: " + err.message);
+        showSignupMsg('Error connecting to server. Make sure the backend is running.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
       }
     });
+
+    // Signup inline message helpers
+    function showSignupMsg(text, type) {
+      removeSignupMsg();
+      const msg = document.createElement('div');
+      msg.id = 'signupMsg';
+      msg.textContent = text;
+      msg.style.cssText = `
+        font-size: 0.75rem; padding: 9px 14px; border-radius: 8px; width: 100%;
+        text-align: center; margin-top: 2px; line-height: 1.45; font-weight: 500;
+        background: ${type === 'success' ? '#e6faf8' : '#ffeaea'};
+        color: ${type === 'success' ? '#00897b' : '#c0392b'};
+        border: 1px solid ${type === 'success' ? '#b2dfdb' : '#f5c6cb'};
+      `;
+      document.getElementById('signupFields').appendChild(msg);
+    }
+    function removeSignupMsg() {
+      const old = document.getElementById('signupMsg');
+      if (old) old.remove();
+    }
 
     // SIGN IN (MONGODB INTEGRATED)
     document.getElementById('signInForm').addEventListener('submit', async function (e) {

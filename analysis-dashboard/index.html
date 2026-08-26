@@ -1,352 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<script>
-if (localStorage.getItem("loggedIn") !== "true") {
-    window.location.href = "../resume-analyzer-login/index.html";
-}
-</script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Resume Analyzer</title>
-<link rel="stylesheet" href="style.css?v=7">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        if (localStorage.getItem("loggedIn") !== "true") {
+            window.location.href = "../resume-analyzer-login/index.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer</title>
+    <link rel="stylesheet" href="style.css?v=15">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 </head>
+
 <body>
 
-<div class="main">
+    <div class="main">
 
-    <!-- LEFT PANEL (PERFECTLY FIXED IN SINGLE WINDOW SIZE) -->
-    <div class="sidebar">
-        <h2>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            AI Resume Analyzer
-        </h2>
-
-        <!-- COMPACT PROFILE SECTION WITH CORNER EDIT BUTTON & INLINE EDITING -->
-        <div class="profile">
-            <!-- DISPLAY MODE -->
-            <div id="profileDisplay" class="profile-display">
-                <!-- ELEGANT TOP-RIGHT EDIT BUTTON -->
-                <button class="btn-edit-corner" onclick="editProfile()" title="Edit Profile Info">✏️ Edit</button>
-
-                <div class="profile-header-compact">
-                    <img id="profileImage" src="logo.png" alt="Profile" onclick="changePhoto()" title="Click to change photo">
-                    <input type="file" id="imageUpload" hidden>
-                    <div class="profile-info">
-                        <h3 id="userName">---</h3>
-                        <p id="userRole">💻 ---</p>
-                        <p id="userEmail">---</p>
-                        <p id="userDOB">---</p>
-                    </div>
-                </div>
-                <div class="profile-actions">
-                    <button class="btn-logout" onclick="logout()">Logout</button>
-                </div>
-            </div>
-
-            <!-- EDIT MODE (INITIALLY HIDDEN) -->
-            <div id="profileEditForm" class="profile-edit-form">
-                <h4 class="edit-form-title">✏️ Edit Profile Info</h4>
-                
-                <!-- INLINE PHOTO UPLOAD PREVIEW -->
-                <div class="edit-photo-section">
-                    <img id="editProfilePreview" src="logo.png" alt="Preview">
-                    <div>
-                        <button type="button" onclick="document.getElementById('editImageUpload').click()" class="btn-change-photo-mini">📷 Change Photo</button>
-                        <input type="file" id="editImageUpload" accept="image/*" hidden onchange="handleEditImageChange(this)">
-                        <p class="photo-help-text">PNG, JPG up to 2MB</p>
-                    </div>
-                </div>
-
-                <div class="edit-inputs-wrapper">
-                    <input type="text" id="editName" class="edit-input" placeholder="Full Name">
-                    <input type="text" id="editRole" class="edit-input" placeholder="Professional Role">
-                    <input type="email" id="editEmail" class="edit-input" placeholder="Email Address">
-                    <input type="text" id="editDOB" class="edit-input" placeholder="Date of Birth (DD-MM-YYYY)">
-                </div>
-                <div class="profile-actions edit-actions">
-                    <button class="btn-save" onclick="saveProfile()">Save</button>
-                    <button class="btn-cancel" onclick="cancelEdit()">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- COMPACT UPLOAD & JOB DESCRIPTION SECTION -->
-        <div class="upload">
-            <h3>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                Upload Resume
-            </h3>
-            <div class="upload-box">
-                <input type="file" id="resumeInput" accept=".pdf,.doc,.docx" onchange="handleFileChange(this)">
-                <label for="resumeInput" class="box" id="dropBoxContainer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                        <polyline points="13 2 13 9 20 9"></polyline>
-                    </svg>
-                    <span>Drag & Drop or Click to Upload</span>
-                </label>
-                <p id="fileName">No file selected</p>
-            </div>
-
-            <h3>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- LEFT PANEL (PERFECTLY FIXED IN SINGLE WINDOW SIZE) -->
+        <div class="sidebar">
+            <h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
                     <line x1="16" y1="13" x2="8" y2="13"></line>
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                     <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                Job Description
-            </h3>
-            <textarea id="jobDesc" placeholder="Paste the target job description here..."></textarea>
+                AI Resume Analyzer
+            </h2>
 
-            <button id="analyzeBtn" onclick="analyzeResume()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
-                Analyze Resume
-            </button>
+            <!-- COMPACT PROFILE SECTION WITH CORNER EDIT BUTTON & INLINE EDITING -->
+            <div class="profile">
+                <!-- DISPLAY MODE -->
+                <div id="profileDisplay" class="profile-display">
+                    <div class="profile-header-compact">
+                        <img id="profileImage" src="logo.png" alt="Profile" onclick="changePhoto()"
+                            title="Click to change photo">
+                        <input type="file" id="imageUpload" hidden>
+                        <div class="profile-info">
+                            <h3 id="userName">---</h3>
+                            <p id="userRole">💻 ---</p>
+                            <p id="userEmail">---</p>
+                            <p id="userDOB">---</p>
+                        </div>
+                        <button class="btn-edit-icon" onclick="editProfile()" title="Edit Profile Info">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn-logout" onclick="logout()">Logout</button>
+                    </div>
+                </div>
 
-            <div id="loadingBox">
-                <div class="spinner"></div>
-                <p class="loading-text">AI is analyzing your resume...</p>
+                <!-- EDIT MODE (INITIALLY HIDDEN) -->
+                <div id="profileEditForm" class="profile-edit-form">
+                    <h4 class="edit-form-title">✏️ Edit Profile Info</h4>
+
+                    <!-- INLINE PHOTO UPLOAD PREVIEW -->
+                    <div class="edit-photo-section">
+                        <img id="editProfilePreview" src="logo.png" alt="Preview">
+                        <div>
+                            <button type="button" onclick="document.getElementById('editImageUpload').click()"
+                                class="btn-change-photo-mini">📷 Change Photo</button>
+                            <input type="file" id="editImageUpload" accept="image/*" hidden
+                                onchange="handleEditImageChange(this)">
+                            <p class="photo-help-text">PNG, JPG up to 2MB</p>
+                        </div>
+                    </div>
+
+                    <div class="edit-inputs-wrapper">
+                        <input type="text" id="editName" class="edit-input" placeholder="Full Name">
+                        <input type="text" id="editRole" class="edit-input" placeholder="Professional Role">
+                        <input type="email" id="editEmail" class="edit-input" placeholder="Email Address">
+                        <input type="text" id="editDOB" class="edit-input" placeholder="Date of Birth (DD-MM-YYYY)">
+                    </div>
+                    <div class="profile-actions edit-actions">
+                        <button class="btn-save" onclick="saveProfile()">Save</button>
+                        <button class="btn-cancel" onclick="cancelEdit()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPACT UPLOAD & JOB DESCRIPTION SECTION -->
+            <div class="upload">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Upload Resume
+                </h3>
+                <div class="upload-box">
+                    <input type="file" id="resumeInput" accept=".pdf,.doc,.docx" onchange="handleFileChange(this)">
+                    <label for="resumeInput" class="box" id="dropBoxContainer">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                            <polyline points="13 2 13 9 20 9"></polyline>
+                        </svg>
+                        <span>Upload your resume here</span>
+                    </label>
+                    <p id="fileName">No file selected</p>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h3 style="margin: 0;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Job Description
+                    </h3>
+                    <button type="button" id="suggestJdBtn" onclick="suggestJD()" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(109, 40, 217, 0.2);">
+                        ✨ Auto-Suggest
+                    </button>
+                </div>
+                <textarea id="jobDesc" placeholder="Enter the job description here..."></textarea>
+
+                <button id="analyzeBtn" onclick="analyzeResume()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Analyze
+                </button>
+
+                <div id="loadingBox">
+                    <div class="spinner"></div>
+                    <p class="loading-text">AI is analyzing your resume...</p>
+                </div>
             </div>
         </div>
+
+        <!-- RIGHT PANEL (WELCOME, RESUME HISTORY & GUIDE) -->
+        <div class="content">
+            <div class="welcome-banner">
+                <div class="bg-glow"></div>
+                <h1> Welcome, <span id="welcomeUserName">---</span>!</h1>
+                <p>Optimize your resume for applicant tracking systems (ATS) and align your skills with job description.
+                </p>
+            </div>
+
+            <!-- RESUME ANALYSIS HISTORY SECTION (3 COLUMNS) -->
+            <div class="section-title history-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Your Resume Analysis History
+            </div>
+            <div id="analysisHistoryContainer" class="history-grid"></div>
+
+
+        </div>
+
     </div>
 
-    <!-- RIGHT PANEL (WELCOME, RESUME HISTORY & GUIDE) -->
-    <div class="content">
-        <div class="welcome-banner">
-            <div class="bg-glow"></div>
-            <h1>👋 Welcome, <span id="welcomeUserName">---</span>!</h1>
-            <p>Optimize your resume for applicant tracking systems (ATS) and align your skills with your dream job in seconds.</p>
-        </div>
+    <script>
 
-        <!-- RESUME ANALYSIS HISTORY SECTION (3 COLUMNS) -->
-        <div class="section-title history-title">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-            </svg>
-            Your Resume Analysis History
-        </div>
-        <div id="analysisHistoryContainer" class="history-grid"></div>
+        let pendingProfileImage = null;
 
-        <div class="section-title guide-title">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            How AI Analyzer Works
-        </div>
+        // ✅ LOAD PROFILE DATA & ANALYSIS HISTORY
+        window.onload = async function () {
+            // Render profile details from localStorage instantly
+            function displayProfile() {
+                let name = localStorage.getItem("userName");
+                let role = localStorage.getItem("userRole");
+                let email = localStorage.getItem("userEmail");
+                let dob = localStorage.getItem("userDOB");
+                let image = localStorage.getItem("profileImage");
 
-        <div class="guide-grid">
-            <div class="guide-card">
-                <div class="icon-wrap c1">📄</div>
-                <h3>1. Smart PDF Parsing</h3>
-                <p>Our advanced NLP engine scans your uploaded resume to extract key sections, technical proficiencies, and experience.</p>
-            </div>
-            <div class="guide-card">
-                <div class="icon-wrap c2">🎯</div>
-                <h3>2. Keyword Alignment</h3>
-                <p>We match your profile against the target job description to identify essential missing skills and keywords required by employers.</p>
-            </div>
-            <div class="guide-card">
-                <div class="icon-wrap c3">💡</div>
-                <h3>3. Actionable Insights</h3>
-                <p>Get personalized recommendations, tailored courses, and resume writing tips to instantly boost your interview chances.</p>
-            </div>
-            <div class="guide-card">
-                <div class="icon-wrap c4">🚀</div>
-                <h3>4. Beat the ATS</h3>
-                <p>Achieve a high efficiency score to ensure your resume passes automated screening tools and reaches human recruiters.</p>
-            </div>
-        </div>
+                if (!name || name === "---" || name.trim() === "") name = "User Name";
+                if (!role || role === "---" || role.trim() === "") role = "Senior Software Engineer";
+                if (!email || email === "---" || !email.includes("@")) email = "user@example.com";
+                if (!dob || dob === "---" || dob.length < 5) dob = "01-01-2005";
 
-        <div class="pro-tips">
-            <h3>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-                Pro Tips for ATS Success
-            </h3>
-            <div class="tips-list">
-                <div class="tip-item">
-                    <div class="check">✓</div>
-                    <p>Use exact keyword matches from the job description for core skills.</p>
-                </div>
-                <div class="tip-item">
-                    <div class="check">✓</div>
-                    <p>Avoid complex tables, graphics, or multi-column layouts.</p>
-                </div>
-                <div class="tip-item">
-                    <div class="check">✓</div>
-                    <p>Quantify your achievements with clear metrics and percentages.</p>
-                </div>
-                <div class="tip-item">
-                    <div class="check">✓</div>
-                    <p>Use standard section headings like 'Experience' and 'Education'.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+                document.getElementById("userName").innerText = name;
+                document.getElementById("userRole").innerText = "💻 " + role.replace("💻 ", "");
 
-</div>
+                const welcomeEl = document.getElementById("welcomeUserName");
+                if (welcomeEl) {
+                    welcomeEl.innerText = name.split(" ")[0];
+                }
 
-<script>
+                document.getElementById("userEmail").innerText = email;
+                document.getElementById("userDOB").innerText = dob;
 
-let pendingProfileImage = null;
-
-// ✅ LOAD PROFILE DATA & ANALYSIS HISTORY
-window.onload = async function () {
-    // Render profile details from localStorage instantly
-    function displayProfile() {
-        let name  = localStorage.getItem("userName");
-        let role  = localStorage.getItem("userRole");
-        let email = localStorage.getItem("userEmail");
-        let dob   = localStorage.getItem("userDOB");
-        let image = localStorage.getItem("profileImage");
-
-        if (!name  || name === "---" || name.trim() === "") name = "User Name";
-        if (!role  || role === "---" || role.trim() === "") role = "Senior Software Engineer";
-        if (!email || email === "---" || !email.includes("@")) email = "user@example.com";
-        if (!dob   || dob === "---" || dob.length < 5)      dob  = "01-01-2005";
-
-        document.getElementById("userName").innerText  = name;
-        document.getElementById("userRole").innerText  = "💻 " + role.replace("💻 ", "");
-        
-        const welcomeEl = document.getElementById("welcomeUserName");
-        if (welcomeEl) {
-            welcomeEl.innerText = name.split(" ")[0];
-        }
-        
-        document.getElementById("userEmail").innerText = email;
-        document.getElementById("userDOB").innerText   = dob;
-
-        if (!image || image.trim() === "" || image === "---") {
-            image = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
-        }
-        document.getElementById("profileImage").src = image;
-    }
-
-    displayProfile();
-    renderAnalysisHistory();
-
-    // Fetch latest profile & history from MongoDB in the background
-    let email = localStorage.getItem("userEmail");
-    if (email) {
-        try {
-            const res = await fetch(`http://localhost:3000/get_profile?email=${email}`);
-            if (res.ok) {
-                const data = await res.json();
-                if (data.name) localStorage.setItem("userName", data.name);
-                if (data.role) localStorage.setItem("userRole", data.role);
-                if (data.dob)  localStorage.setItem("userDOB", data.dob);
-                if (data.profileImage) localStorage.setItem("profileImage", data.profileImage);
-                if (data.history) localStorage.setItem("analysisHistory", JSON.stringify(data.history));
-                
-                // Re-render display with fresh data from database
-                displayProfile();
-                renderAnalysisHistory();
+                if (!image || image.trim() === "" || image === "---") {
+                    image = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
+                }
+                document.getElementById("profileImage").src = image;
             }
-        } catch (err) {
-            console.error("Error fetching MongoDB profile:", err);
-        }
-    }
-};
 
-// ✅ UPLOAD RESUME (NATIVE LABEL CLICK & DRAG-AND-DROP)
-function uploadResume() {
-    const input = document.getElementById("resumeInput");
-    if (input) input.click();
-}
+            displayProfile();
+            renderAnalysisHistory();
 
-function handleFileChange(input) {
-    const file = input.files[0];
-    if (file) {
-        if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
-            alert("⚠️ Invalid file format!\n\nPlease upload a PDF document (.pdf). Image files (such as JPEG/PNG) cannot be parsed for text.");
-            input.value = "";
-            document.getElementById("fileName").innerHTML = `<span style="color: #ef4444; font-weight: 600;">❌ Invalid file: PDF required</span>`;
-            const dropBox = document.getElementById("dropBoxContainer");
-            if (dropBox) {
-                dropBox.style.borderColor = "#ef4444";
-                dropBox.style.background = "#fef2f2";
+            // Fetch latest profile & history from MongoDB in the background
+            let email = localStorage.getItem("userEmail");
+            if (email) {
+                try {
+                    const res = await fetch(`http://localhost:3000/get_profile?email=${email}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.name) localStorage.setItem("userName", data.name);
+                        if (data.role) localStorage.setItem("userRole", data.role);
+                        if (data.dob) localStorage.setItem("userDOB", data.dob);
+                        if (data.profileImage) localStorage.setItem("profileImage", data.profileImage);
+                        if (data.history) localStorage.setItem("analysisHistory", JSON.stringify(data.history));
+
+                        // Re-render display with fresh data from database
+                        displayProfile();
+                        renderAnalysisHistory();
+                    }
+                } catch (err) {
+                    console.error("Error fetching MongoDB profile:", err);
+                }
             }
-            return;
+        };
+
+        // ✅ UPLOAD RESUME (NATIVE LABEL CLICK & DRAG-AND-DROP)
+        function uploadResume() {
+            const input = document.getElementById("resumeInput");
+            if (input) input.click();
         }
-        const fileSize = (file.size / (1024 * 1024)).toFixed(2);
-        document.getElementById("fileName").innerHTML = `<span class="uploaded-file-text">✅ Uploaded: ${file.name} (${fileSize} MB)</span>`;
+
+        function handleFileChange(input) {
+            const file = input.files[0];
+            if (file) {
+                if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
+                    alert("⚠️ Invalid file format!\n\nPlease upload a PDF document (.pdf). Image files (such as JPEG/PNG) cannot be parsed for text.");
+                    input.value = "";
+                    document.getElementById("fileName").innerHTML = `<span style="color: #ef4444; font-weight: 600;">❌ Invalid file: PDF required</span>`;
+                    const dropBox = document.getElementById("dropBoxContainer");
+                    if (dropBox) {
+                        dropBox.style.borderColor = "#ef4444";
+                        dropBox.style.background = "#fef2f2";
+                    }
+                    return;
+                }
+                const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                document.getElementById("fileName").innerHTML = `<span class="uploaded-file-text">✅ Uploaded: ${file.name} (${fileSize} MB)</span>`;
+                const dropBox = document.getElementById("dropBoxContainer");
+                if (dropBox) {
+                    dropBox.style.borderColor = "#10b981";
+                    dropBox.style.background = "#ecfdf5";
+                }
+            }
+        }
+
+        // Attach Drag & Drop Listeners Directly
         const dropBox = document.getElementById("dropBoxContainer");
-        if (dropBox) {
-            dropBox.style.borderColor = "#10b981";
-            dropBox.style.background = "#ecfdf5";
+        const resumeInput = document.getElementById("resumeInput");
+
+        if (dropBox && resumeInput) {
+            dropBox.addEventListener("dragover", function (e) {
+                e.preventDefault(); e.stopPropagation();
+                this.style.borderColor = "#0d9488"; this.style.background = "#ccfbf1";
+            });
+            dropBox.addEventListener("dragleave", function (e) {
+                e.preventDefault(); e.stopPropagation();
+                this.style.borderColor = "#99f6e4"; this.style.background = "#f0fdfa";
+            });
+            dropBox.addEventListener("drop", function (e) {
+                e.preventDefault(); e.stopPropagation();
+                this.style.borderColor = "#99f6e4"; this.style.background = "#f0fdfa";
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    resumeInput.files = e.dataTransfer.files;
+                    handleFileChange(resumeInput);
+                }
+            });
         }
-    }
-}
 
-// Attach Drag & Drop Listeners Directly
-const dropBox = document.getElementById("dropBoxContainer");
-const resumeInput = document.getElementById("resumeInput");
+        // ✅ RENDER ANALYSIS HISTORY
+        function renderAnalysisHistory() {
+            const container = document.getElementById("analysisHistoryContainer");
+            let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
 
-if (dropBox && resumeInput) {
-    dropBox.addEventListener("dragover", function(e) {
-        e.preventDefault(); e.stopPropagation();
-        this.style.borderColor = "#0d9488"; this.style.background = "#ccfbf1";
-    });
-    dropBox.addEventListener("dragleave", function(e) {
-        e.preventDefault(); e.stopPropagation();
-        this.style.borderColor = "#99f6e4"; this.style.background = "#f0fdfa";
-    });
-    dropBox.addEventListener("drop", function(e) {
-        e.preventDefault(); e.stopPropagation();
-        this.style.borderColor = "#99f6e4"; this.style.background = "#f0fdfa";
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            resumeInput.files = e.dataTransfer.files;
-            handleFileChange(resumeInput);
-        }
-    });
-}
-
-// ✅ RENDER ANALYSIS HISTORY
-function renderAnalysisHistory() {
-    const container = document.getElementById("analysisHistoryContainer");
-    let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
-
-    if (history.length === 0) {
-        container.innerHTML = `
+            if (history.length === 0) {
+                container.innerHTML = `
             <div class="empty-history-box">
                 <p class="empty-history-title">📂 No Resumes Analyzed Yet</p>
                 <p class="empty-history-subtitle">Upload your resume and paste a job description in the left panel to see AI insights here!</p>
             </div>
         `;
-        return;
-    }
+                return;
+            }
 
-    container.innerHTML = history.map((item) => {
-        const matchPct = item.data.matchPercent || item.data.score || 0;
-        const effPct   = item.data.efficiencyPercent || matchPct;
-        const matched  = item.data.matchingSkills || item.data.matched || [];
-        const missing  = item.data.missingSkills || item.data.missing || [];
-        const fileType = item.fileType || (item.fileName ? item.fileName.split('.').pop().toUpperCase() : "PDF");
-        const fileSize = item.fileSize || "1.8 MB";
+            container.innerHTML = history.map((item) => {
+                const matchPct = item.data.matchPercent || item.data.score || 0;
+                const effPct = item.data.efficiencyPercent || matchPct;
+                const matched = item.data.matchingSkills || item.data.matched || [];
+                const missing = item.data.missingSkills || item.data.missing || [];
+                const fileType = item.fileType || (item.fileName ? item.fileName.split('.').pop().toUpperCase() : "PDF");
+                const fileSize = item.fileSize || "1.8 MB";
 
-        return `
+                return `
             <div class="history-card">
                 <div class="history-header">
-                    <div class="file-format-badge ${fileType.toLowerCase() === 'docx' || fileType.toLowerCase() === 'doc' ? 'docx' : 'pdf'}">${fileType}</div>
                     <span class="history-score ${matchPct >= 70 ? 'good' : 'warning'}">${matchPct}% Match</span>
                 </div>
 
@@ -382,18 +344,18 @@ function renderAnalysisHistory() {
                 </div>
             </div>
         `;
-    }).join("");
-}
+            }).join("");
+        }
 
-// ✅ OPEN UPLOADED RESUME FILE
-function openHistoryFile(id) {
-    let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
-    let item = history.find(h => h.id === id);
+        // ✅ OPEN UPLOADED RESUME FILE
+        function openHistoryFile(id) {
+            let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
+            let item = history.find(h => h.id === id);
 
-    if (item && item.fileDataUrl) {
-        const newWindow = window.open();
-        if (newWindow) {
-            newWindow.document.write(`
+            if (item && item.fileDataUrl) {
+                const newWindow = window.open();
+                if (newWindow) {
+                    newWindow.document.write(`
                 <html>
                 <head>
                     <title>${item.fileName || "Resume Preview"}</title>
@@ -418,241 +380,297 @@ function openHistoryFile(id) {
                 </body>
                 </html>
             `);
-            newWindow.document.close();
-        } else {
-            const a = document.createElement("a");
-            a.href = item.fileDataUrl;
-            a.download = item.fileName || "Resume.pdf";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-    } else {
-        alert("File data not found. Please re-upload this resume to view.");
-    }
-}
-
-// ✅ VIEW HISTORICAL REPORT
-function viewHistoricalReport(id) {
-    let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
-    let item = history.find(h => h.id === id);
-
-    if (item && item.data) {
-        localStorage.setItem("analysisResult", JSON.stringify(item.data));
-        window.location.href = "analysis.html";
-    } else {
-        alert("Report data not found.");
-    }
-}
-
-// ✅ DELETE HISTORY ITEM (MONGODB INTEGRATED)
-async function deleteHistoryItem(id) {
-    let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
-    history = history.filter(h => h.id !== id);
-    localStorage.setItem("analysisHistory", JSON.stringify(history));
-    renderAnalysisHistory();
-
-    const email = localStorage.getItem("userEmail");
-    if (email) {
-        try {
-            await fetch("http://localhost:3000/delete_history", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email, id: id })
-            });
-        } catch (err) {
-            console.error("Error deleting MongoDB history item:", err);
-        }
-    }
-}
-
-// ✅ ANALYZE (MONGODB INTEGRATED)
-async function analyzeResume() {
-    const resumeFile = document.getElementById("resumeInput").files[0];
-    const jobDesc    = document.getElementById("jobDesc").value.trim();
-
-    if (!resumeFile) { alert("Please upload your resume first."); return; }
-    if (!resumeFile.name.toLowerCase().endsWith(".pdf") && resumeFile.type !== "application/pdf") {
-        alert("⚠️ Invalid file format!\n\nPlease upload a PDF document (.pdf). Image files (like JPEG or PNG) cannot be parsed for text.");
-        return;
-    }
-    if (!jobDesc)    { alert("Please paste the job description."); return; }
-
-    document.getElementById("loadingBox").style.display = "block";
-    document.getElementById("analyzeBtn").disabled = true;
-
-    try {
-        const reader = new FileReader();
-        const fileDataUrl = await new Promise((resolve) => {
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(resumeFile);
-        });
-
-        const formData = new FormData();
-        formData.append("resume", resumeFile);
-        formData.append("jobText", jobDesc);
-        formData.append("email", localStorage.getItem("userEmail") || "mahajay@gmail.com");
-
-        const response = await fetch("http://localhost:3000/analyze", {
-            method: "POST",
-            body: formData
-        });
-
-        if (!response.ok) {
-            let errorText = "";
-            try {
-                errorText = await response.text();
-            } catch (_) {}
-            throw new Error(errorText || ("Server error: " + response.status));
+                    newWindow.document.close();
+                } else {
+                    const a = document.createElement("a");
+                    a.href = item.fileDataUrl;
+                    a.download = item.fileName || "Resume.pdf";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            } else {
+                alert("File data not found. Please re-upload this resume to view.");
+            }
         }
 
-        const data = await response.json();
-        localStorage.setItem("analysisResult", JSON.stringify(data));
+        // ✅ VIEW HISTORICAL REPORT
+        function viewHistoricalReport(id) {
+            let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
+            let item = history.find(h => h.id === id);
 
-        // Save to History locally instantly
-        let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
-        const firstLineJob = jobDesc.split("\n")[0].substring(0, 50) + (jobDesc.length > 50 ? "..." : "");
+            if (item && item.data) {
+                localStorage.setItem("analysisResult", JSON.stringify(item.data));
+                window.location.href = "analysis.html";
+            } else {
+                alert("Report data not found.");
+            }
+        }
 
-        const newEntry = {
-            id: "hist-" + Date.now(),
-            timestamp: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }),
-            fileName: resumeFile ? resumeFile.name : "Uploaded_Resume.pdf",
-            fileSize: resumeFile ? (resumeFile.size / (1024 * 1024)).toFixed(2) + " MB" : "1.8 MB",
-            fileType: resumeFile ? resumeFile.name.split('.').pop().toUpperCase() : "PDF",
-            fileDataUrl: fileDataUrl,
-            jobTitle: firstLineJob || "Target Job Description",
-            isSample: false,
-            data: data
-        };
+        // ✅ DELETE HISTORY ITEM (MONGODB INTEGRATED)
+        async function deleteHistoryItem(id) {
+            let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem("analysisHistory", JSON.stringify(history));
+            renderAnalysisHistory();
 
-        history.unshift(newEntry);
-        localStorage.setItem("analysisHistory", JSON.stringify(history));
-
-        displayResults(data);
-
-    } catch (err) {
-        alert("Error: " + err.message);
-        console.error(err);
-    } finally {
-        document.getElementById("loadingBox").style.display = "none";
-        document.getElementById("analyzeBtn").disabled = false;
-    }
-}
-
-function displayResults(data) {
-    renderAnalysisHistory();
-    window.location.href = "analysis.html";
-}
-
-// ✅ TOGGLE INLINE EDIT FORM & PHOTO UPLOAD
-function editProfile() {
-    document.getElementById("profileDisplay").style.display = "none";
-    document.getElementById("profileEditForm").style.display = "block";
-
-    document.getElementById("editName").value  = localStorage.getItem("userName")  || "Mahajaya S N";
-    document.getElementById("editRole").value  = localStorage.getItem("userRole")  || "Senior Software Engineer";
-    document.getElementById("editEmail").value = localStorage.getItem("userEmail") || "mahajay@gmail.com";
-    const currentImg = localStorage.getItem("profileImage") || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(localStorage.getItem("userName") || "Mahajaya S N")}`;
-    document.getElementById("editProfilePreview").src = currentImg;
-    pendingProfileImage = null;
-}
-
-function handleEditImageChange(input) {
-    const file = input.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function () {
-            pendingProfileImage = reader.result;
-            document.getElementById("editProfilePreview").src = pendingProfileImage;
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-function cancelEdit() {
-    document.getElementById("profileEditForm").style.display = "none";
-    document.getElementById("profileDisplay").style.display = "block";
-    pendingProfileImage = null;
-}
-
-// ✅ SAVE PROFILE (MONGODB INTEGRATED)
-async function saveProfile() {
-    const name  = document.getElementById("editName").value.trim();
-    const role  = document.getElementById("editRole").value.trim();
-    const email = document.getElementById("editEmail").value.trim() || localStorage.getItem("userEmail");
-    const dob   = document.getElementById("editDOB").value.trim();
-
-    if (name)  localStorage.setItem("userName",  name);
-    if (role)  localStorage.setItem("userRole",  role);
-    if (email) localStorage.setItem("userEmail", email);
-    if (dob)   localStorage.setItem("userDOB",   dob);
-    if (pendingProfileImage) localStorage.setItem("profileImage", pendingProfileImage);
-
-    // Update display instantly
-    document.getElementById("userName").innerText  = name || "User Name";
-    document.getElementById("userRole").innerText  = "💻 " + (role || "Senior Software Engineer").replace("💻 ", "");
-    const welcomeEl = document.getElementById("welcomeUserName");
-    if (welcomeEl) {
-        welcomeEl.innerText = (name || "User Name").split(" ")[0];
-    }
-    document.getElementById("userEmail").innerText = email || "user@example.com";
-    document.getElementById("userDOB").innerText   = dob || "01-01-2005";
-
-    if (pendingProfileImage) {
-        document.getElementById("profileImage").src = pendingProfileImage;
-    }
-
-    cancelEdit();
-
-    // Persist to MongoDB in background
-    try {
-        await fetch("http://localhost:3000/update_profile", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                email: email,
-                name: name,
-                role: role,
-                dob: dob,
-                profileImage: pendingProfileImage || localStorage.getItem("profileImage") || ""
-            })
-        });
-    } catch (err) {
-        console.error("Error updating MongoDB profile:", err);
-    }
-}
-
-// ✅ CHANGE PHOTO (FALLBACK DIRECT CLICK - MONGODB INTEGRATED)
-function changePhoto() { document.getElementById("imageUpload").click(); }
-document.getElementById("imageUpload").addEventListener("change", function () {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = async function () { 
-            const b64 = reader.result;
-            localStorage.setItem("profileImage", b64);
             const email = localStorage.getItem("userEmail");
             if (email) {
                 try {
-                    await fetch("http://localhost:3000/update_profile", {
+                    await fetch("http://localhost:3000/delete_history", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: email, profileImage: b64 })
+                        body: JSON.stringify({ email: email, id: id })
                     });
-                } catch (err) { console.error(err); }
+                } catch (err) {
+                    console.error("Error deleting MongoDB history item:", err);
+                }
             }
-            location.reload(); 
-        };
-        reader.readAsDataURL(file);
-    }
-});
+        }
 
-// ✅ LOGOUT
-function logout() {
-    localStorage.clear();
-    window.location.href = "../resume-analyzer-login/index.html";
-}
+        // ✅ SUGGEST JOB DESCRIPTION (AI)
+        async function suggestJD() {
+            const resumeFile = document.getElementById("resumeInput").files[0];
+            const btn = document.getElementById("suggestJdBtn");
+            const textarea = document.getElementById("jobDesc");
 
-</script>
+            if (!resumeFile) {
+                alert("Please upload your resume first so the AI can analyze your skills.");
+                return;
+            }
+            if (!resumeFile.name.toLowerCase().endsWith(".pdf") && resumeFile.type !== "application/pdf") {
+                alert("Please upload a valid PDF document (.pdf) to use the auto-suggest feature.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = "⏳ Generating...";
+            textarea.value = "AI is analyzing your resume and generating a matching job description... Please wait.";
+
+            try {
+                const formData = new FormData();
+                formData.append("resume", resumeFile);
+
+                const response = await fetch("http://localhost:3000/suggest-jd", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error("Server error: " + response.statusText);
+                }
+
+                const data = await response.json();
+                textarea.value = data.suggestedJD;
+                
+                // Save to localStorage and redirect to the new structured page
+                localStorage.setItem("suggestedJD", data.suggestedJD);
+                window.location.href = "suggested_jd.html";
+            } catch (err) {
+                alert("Failed to generate JD: " + err.message);
+                textarea.value = "";
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "✨ Auto-Suggest";
+            }
+        }
+
+        // ✅ ANALYZE (MONGODB INTEGRATED)
+        async function analyzeResume() {
+            const resumeFile = document.getElementById("resumeInput").files[0];
+            const jobDesc = document.getElementById("jobDesc").value.trim();
+
+            if (!resumeFile) { alert("Please upload your resume first."); return; }
+            if (!resumeFile.name.toLowerCase().endsWith(".pdf") && resumeFile.type !== "application/pdf") {
+                alert("⚠️ Invalid file format!\n\nPlease upload a PDF document (.pdf). Image files (like JPEG or PNG) cannot be parsed for text.");
+                return;
+            }
+            if (!jobDesc) { alert("Please paste the job description."); return; }
+
+            document.getElementById("loadingBox").style.display = "block";
+            document.getElementById("analyzeBtn").disabled = true;
+
+            try {
+                const reader = new FileReader();
+                const fileDataUrl = await new Promise((resolve) => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(resumeFile);
+                });
+
+                const formData = new FormData();
+                formData.append("resume", resumeFile);
+                formData.append("jobText", jobDesc);
+                formData.append("email", localStorage.getItem("userEmail") || "mahajay@gmail.com");
+
+                const response = await fetch("http://localhost:3000/analyze", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    let errorText = "";
+                    try {
+                        errorText = await response.text();
+                    } catch (_) { }
+                    throw new Error(errorText || ("Server error: " + response.status));
+                }
+
+                const data = await response.json();
+                localStorage.setItem("analysisResult", JSON.stringify(data));
+
+                // Save to History locally instantly
+                let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
+                const firstLineJob = jobDesc.split("\n")[0].substring(0, 50) + (jobDesc.length > 50 ? "..." : "");
+
+                const newEntry = {
+                    id: "hist-" + Date.now(),
+                    timestamp: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }),
+                    fileName: resumeFile ? resumeFile.name : "Uploaded_Resume.pdf",
+                    fileSize: resumeFile ? (resumeFile.size / (1024 * 1024)).toFixed(2) + " MB" : "1.8 MB",
+                    fileType: resumeFile ? resumeFile.name.split('.').pop().toUpperCase() : "PDF",
+                    fileDataUrl: fileDataUrl,
+                    jobTitle: firstLineJob || "Target Job Description",
+                    isSample: false,
+                    data: data
+                };
+
+                history.unshift(newEntry);
+                localStorage.setItem("analysisHistory", JSON.stringify(history));
+
+                displayResults(data);
+
+            } catch (err) {
+                alert("Error: " + err.message);
+                console.error(err);
+            } finally {
+                document.getElementById("loadingBox").style.display = "none";
+                document.getElementById("analyzeBtn").disabled = false;
+            }
+        }
+
+        function displayResults(data) {
+            renderAnalysisHistory();
+            window.location.href = "analysis.html";
+        }
+
+        // ✅ TOGGLE INLINE EDIT FORM & PHOTO UPLOAD
+        function editProfile() {
+            document.getElementById("profileDisplay").style.display = "none";
+            document.getElementById("profileEditForm").style.display = "block";
+
+            document.getElementById("editName").value = localStorage.getItem("userName") || "Mahajaya S N";
+            document.getElementById("editRole").value = localStorage.getItem("userRole") || "Senior Software Engineer";
+            document.getElementById("editEmail").value = localStorage.getItem("userEmail") || "mahajay@gmail.com";
+            const currentImg = localStorage.getItem("profileImage") || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(localStorage.getItem("userName") || "Mahajaya S N")}`;
+            document.getElementById("editProfilePreview").src = currentImg;
+            pendingProfileImage = null;
+        }
+
+        function handleEditImageChange(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    pendingProfileImage = reader.result;
+                    document.getElementById("editProfilePreview").src = pendingProfileImage;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function cancelEdit() {
+            document.getElementById("profileEditForm").style.display = "none";
+            document.getElementById("profileDisplay").style.display = "block";
+            pendingProfileImage = null;
+        }
+
+        // ✅ SAVE PROFILE (MONGODB INTEGRATED)
+        async function saveProfile() {
+            const name = document.getElementById("editName").value.trim();
+            const role = document.getElementById("editRole").value.trim();
+            const email = document.getElementById("editEmail").value.trim() || localStorage.getItem("userEmail");
+            const dob = document.getElementById("editDOB").value.trim();
+
+            if (dob) {
+                const dobRegex = /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-(19|20)\d\d$/;
+                if (!dobRegex.test(dob)) {
+                    alert("Please enter a valid Date of Birth in DD-MM-YYYY format.");
+                    return;
+                }
+            }
+
+            if (name) localStorage.setItem("userName", name);
+            if (role) localStorage.setItem("userRole", role);
+            if (email) localStorage.setItem("userEmail", email);
+            if (dob) localStorage.setItem("userDOB", dob);
+            if (pendingProfileImage) localStorage.setItem("profileImage", pendingProfileImage);
+
+            // Update display instantly
+            document.getElementById("userName").innerText = name || "User Name";
+            document.getElementById("userRole").innerText = "💻 " + (role || "Senior Software Engineer").replace("💻 ", "");
+            const welcomeEl = document.getElementById("welcomeUserName");
+            if (welcomeEl) {
+                welcomeEl.innerText = (name || "User Name").split(" ")[0];
+            }
+            document.getElementById("userEmail").innerText = email || "user@example.com";
+            document.getElementById("userDOB").innerText = dob || "01-01-2005";
+
+            if (pendingProfileImage) {
+                document.getElementById("profileImage").src = pendingProfileImage;
+            }
+
+            cancelEdit();
+
+            // Persist to MongoDB in background
+            try {
+                await fetch("http://localhost:3000/update_profile", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: email,
+                        name: name,
+                        role: role,
+                        dob: dob,
+                        profileImage: pendingProfileImage || localStorage.getItem("profileImage") || ""
+                    })
+                });
+            } catch (err) {
+                console.error("Error updating MongoDB profile:", err);
+            }
+        }
+
+        // ✅ CHANGE PHOTO (FALLBACK DIRECT CLICK - MONGODB INTEGRATED)
+        function changePhoto() { document.getElementById("imageUpload").click(); }
+        document.getElementById("imageUpload").addEventListener("change", function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async function () {
+                    const b64 = reader.result;
+                    localStorage.setItem("profileImage", b64);
+                    const email = localStorage.getItem("userEmail");
+                    if (email) {
+                        try {
+                            await fetch("http://localhost:3000/update_profile", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ email: email, profileImage: b64 })
+                            });
+                        } catch (err) { console.error(err); }
+                    }
+                    location.reload();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // ✅ LOGOUT
+        function logout() {
+            localStorage.clear();
+            window.location.href = "../resume-analyzer-login/index.html";
+        }
+
+    </script>
 </body>
+
 </html>

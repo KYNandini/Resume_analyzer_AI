@@ -1,41 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resume Analyzer</title>
 </head>
+
 <body>
 
-<h2>Upload Resume</h2>
+  <h2>Upload Resume</h2>
 
-<form id="form">
-  <input type="file" name="resume" accept=".pdf" required /><br><br>
-  <textarea name="jobText" placeholder="Paste job description" rows="6" cols="50"></textarea><br><br>
-  <button type="submit">Analyze</button>
-</form>
+  <form id="form">
+    <label for="resumeInput">Select PDF Resume:</label><br>
+    <input type="file" id="resumeInput" name="resume" accept=".pdf" title="Upload Resume PDF" required /><br><br>
+    <textarea name="jobText" placeholder="Enter job description" rows="6" cols="50"></textarea><br><br>
+    <button type="submit">Analyze</button>
+  </form>
 
-<pre id="result"></pre>
+  <pre id="result"></pre>
 
-<script>
-document.getElementById("form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+  <script>
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  document.getElementById("result").innerText = "Analyzing...";
+      document.getElementById("result").innerText = "Analyzing...";
 
-  const formData = new FormData(e.target);
+      const formData = new FormData(e.target);
 
-  try {
-    const res = await fetch("http://localhost:3000/analyze", {
-      method: "POST",
-      body: formData
+      try {
+        const res = await fetch("http://localhost:3000/analyze", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById("result").innerText = "Error: Make sure server.py is running!";
+      }
     });
-
-    const data = await res.json();
-    document.getElementById("result").innerText = JSON.stringify(data, null, 2);
-  } catch (err) {
-    document.getElementById("result").innerText = "Error: Make sure server.py is running!";
-  }
-});
-</script>
+  </script>
 
 </body>
+
 </html>

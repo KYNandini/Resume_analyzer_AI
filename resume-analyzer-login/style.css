@@ -100,7 +100,7 @@ button {
 	transition: transform 0.6s ease-in-out;
 }
 
-.container.right-panel-active .overlay-container{
+.container.right-panel-active .overlay-container {
 	transform: translateX(-100%);
 }
 
@@ -138,6 +138,7 @@ button {
 .overlay-right {
 	right: 0;
 }
+
 /* IMPORTANT FIX */
 .container {
 	display: flex;
@@ -152,56 +153,59 @@ button {
 .container.right-panel-active .overlay-right {
 	transform: translateX(20%);
 }
+
 /* SOCIAL ICON FIX */
 .social-container {
-    margin: 20px 0;
-    display: flex;
-    justify-content: center;
+	margin: 20px 0;
+	display: flex;
+	justify-content: center;
 }
 
 .social-container a {
-    border: 1px solid #ddd;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0 5px;
-    height: 40px;
-    width: 40px;
-    text-decoration: none;
-    color: #333;
-    font-size: 16px;
-    transition: 0.3s;
+	border: 1px solid #ddd;
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: 0 5px;
+	height: 40px;
+	width: 40px;
+	text-decoration: none;
+	color: #333;
+	font-size: 16px;
+	transition: 0.3s;
 }
 
 /* HOVER EFFECT */
 .social-container a:hover {
-    background-color: #2bbbad;
-    color: white;
-    border-color: #2bbbad;
+	background-color: #2bbbad;
+	color: white;
+	border-color: #2bbbad;
 }
 
 /* REMOVE BLUE LINK STYLE */
 .social-container a:visited,
 .social-container a:link {
-    color: #333;
-    text-decoration: none;
+	color: #333;
+	text-decoration: none;
 }
+
 .logo {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 120px;
-    height: auto;
-    z-index: 9999;
-    background: transparent;
-    border-radius: 8px;
-    pointer-events: none;
+	position: absolute;
+	top: 20px;
+	left: 20px;
+	width: 120px;
+	height: auto;
+	z-index: 9999;
+	background: transparent;
+	border-radius: 8px;
+	pointer-events: none;
 }
+
 .overlay-container {
-    z-index: 1;
+	z-index: 1;
 }
 
 .overlay {
-    z-index: 1;
+	z-index: 1;
 }

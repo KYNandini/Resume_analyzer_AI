@@ -15,7 +15,7 @@ if (signUpButton && signInButton && container) {
 }
 
 // =====================
-// SIGN UP
+// SIGN UP – direct registration
 // =====================
 const signUpForm = document.querySelector(".sign-up-container form");
 
@@ -32,7 +32,7 @@ signUpForm.addEventListener("submit", async function(e) {
     if (password.length < 6) return alert("Password must be at least 6 characters");
 
     try {
-        const res = await fetch("http://127.0.0.1:3000/signup", {
+        const res = await fetch("http://localhost:3000/signup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, email, password })
@@ -41,14 +41,14 @@ signUpForm.addEventListener("submit", async function(e) {
         const data = await res.json();
         
         if (!res.ok) {
-            return alert(data.error || "Failed to sign up");
+            return alert(data.error || "Registration failed");
         }
         
-        alert("Account created successfully!");
-        container.classList.remove("right-panel-active");
+        alert("Account created successfully! A welcome email has been sent. Please sign in.");
+        document.getElementById('container')?.classList.remove("right-panel-active");
     } catch (error) {
         console.error(error);
-        alert("Server error. Ensure backend is running.");
+        alert("Error connecting to server. Ensure backend is running on port 3000.");
     }
 });
 }
@@ -68,7 +68,7 @@ signInForm.addEventListener("submit", async function(e) {
     if (!email || !password) return alert("Enter email and password");
 
     try {
-        const res = await fetch("http://127.0.0.1:3000/login", {
+        const res = await fetch("http://localhost:3000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
@@ -155,7 +155,7 @@ if (userEmail) {
 }
 
 try {
-    const res = await fetch("http://127.0.0.1:3000/analyze", {
+    const res = await fetch("http://localhost:3000/analyze", {
         method: "POST",
         body: formData
     });

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Suggested Job Description</title>
+    <!-- Modern Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <!-- Marked.js for parsing Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary: #0d9488;
+            --primary-dark: #0284c7;
+            --bg-color: #24599e;
+            --card-bg-start: #e0f2fe;
+            --card-bg-end: #bae6fd;
+            --text: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #0369a1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-color);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            line-height: 1.6;
+            overflow-y: auto;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
+            color: #0c4a6e;
+            padding: 22px 28px;
+            border-radius: 20px;
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.15);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .glass-card {
+            background: linear-gradient(135deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            position: relative;
+            overflow: hidden;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+
+        .glass-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border-color: #cbd5e1;
+        }
+
+        .markdown-body {
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+
+        .markdown-body h1,
+        .markdown-body h2,
+        .markdown-body h3 {
+            color: #0c4a6e;
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(12, 74, 110, 0.1);
+            padding-bottom: 0.4rem;
+        }
+
+        .markdown-body h1 {
+            font-size: 1.6rem;
+        }
+
+        .markdown-body h2 {
+            font-size: 1.4rem;
+        }
+
+        .markdown-body h3 {
+            font-size: 1.15rem;
+            color: #0369a1;
+        }
+
+        .markdown-body p {
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body ul,
+        .markdown-body ol {
+            margin-bottom: 1.2rem;
+            padding-left: 2rem;
+        }
+
+        .markdown-body li {
+            margin-bottom: 0.4rem;
+        }
+
+        .markdown-body strong {
+            color: #0c4a6e;
+            font-weight: 700;
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1rem;
+            color: #334155;
+            margin-bottom: 1.5rem;
+            background: rgba(13, 148, 136, 0.05);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 20px rgba(13, 148, 136, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1> Suitable Job Descriptions </h1>
+            <p>Based on skills and experience</p>
+        </div>
+
+        <div id="jdContainer">
+            <div id="jdContent" class="markdown-body">
+                <div style="text-align: center; padding: 40px;">
+                    <p>Loading your personalized job description...</p>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button onclick="window.location.href='index.html'" class="btn btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Back to Dashboard
+                </button>
+                <button onclick="copyAndClose()" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy & Return
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rawJD = localStorage.getItem('suggestedJD');
+            const contentDiv = document.getElementById('jdContent');
+
+            if (rawJD) {
+                // Configure marked to use GFM
+                marked.setOptions({
+                    gfm: true,
+                    breaks: true
+                });
+
+                // Split by markdown horizontal rules (--- or *** or ___)
+                const jds = rawJD.split(/(?:\n|^)(?:-{3,}|\*{3,}|_{3,})(?:\n|$)/);
+
+                let finalHtml = '';
+
+                jds.forEach((jd, index) => {
+                    if (jd.trim().length > 10) {
+                        finalHtml += `
+                            <div class="glass-card" style="margin-bottom: 30px;">
+                                ${marked.parse(jd.trim())}
+                            </div>
+                        `;
+                    }
+                });
+
+                // If split failed or it was just one big block, wrap it in one card
+                if (finalHtml === '') {
+                    finalHtml = `
+                        <div class="glass-card" style="margin-bottom: 30px;">
+                            ${marked.parse(rawJD)}
+                        </div>
+                    `;
+                }
+
+                contentDiv.innerHTML = finalHtml;
+
+                // (Sparkles removed to match clean UI)
+
+            } else {
+                contentDiv.innerHTML = `
+                    <div class="glass-card">
+                        <div style="text-align: center; padding: 40px; color: #ef4444;">
+                            <h2>No Data Found</h2>
+                            <p>It looks like you opened this page directly. Please generate a job description from the dashboard first.</p>
+                        </div>
+                    </div>`;
+            }
+        });
+
+        function copyAndClose() {
+            const rawJD = localStorage.getItem('suggestedJD');
+            if (rawJD) {
+                navigator.clipboard.writeText(rawJD).then(() => {
+                    alert("Job description copied to clipboard!");
+                    window.location.href = 'index.html';
+                });
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+
+</html>

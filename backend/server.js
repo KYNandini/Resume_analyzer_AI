@@ -124,8 +124,8 @@ const upload = multer({ dest: "uploads/" });
 
 // Routes
 
-// 1. Send OTP for Signup
-app.post("/send-otp", async (req, res) => {
+// 1. Direct Signup – register immediately & send welcome email
+app.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -137,102 +137,11 @@ app.post("/send-otp", async (req, res) => {
       return res.status(400).json({ error: "Email already registered" });
     }
 
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // Delete any existing OTP for this email, then create fresh
-    await Otp.deleteOne({ email });
-    const otpDoc = new Otp({
-      email,
-      otp,
-      name,
-      password,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000)
-    });
-    try {
-      await otpDoc.save();
-      console.log("OTP saved to DB for:", email, "OTP:", otp);
-    } catch (saveErr) {
-      console.error("❌ CRITICAL: OTP save failed:", saveErr.message, saveErr.code);
-      return res.status(500).json({ error: "Failed to save OTP: " + saveErr.message });
-    }
-
-    // Send email
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your OTP for Resume Analyzer AI",
-      text: `Your One Time Password (OTP) for registration is: ${otp}\nThis code will expire in 5 minutes.`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
-          <div style="text-align: center; margin-bottom: 24px;">
-            <h2 style="color: #2bbbad; margin: 0; font-size: 24px; font-weight: 800;">Resume Analyzer AI</h2>
-          </div>
-          <div style="padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #f1f5f9;">
-            <h3 style="color: #1a1a2e; margin-top: 0; font-size: 18px;">Welcome, ${name}!</h3>
-            <p style="color: #475569; font-size: 15px; line-height: 1.6;">Thank you for registering with us. Please use the following One Time Password (OTP) to complete your sign-up process:</p>
-            <div style="background: #ffffff; padding: 20px; text-align: center; border-radius: 8px; margin: 24px 0; border: 2px dashed #2bbbad;">
-              <span style="font-size: 36px; font-weight: bold; color: #2bbbad; letter-spacing: 8px; display: block; margin-left: 8px;">${otp}</span>
-            </div>
-            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 0;">This code will expire in <strong>5 minutes</strong>. If you didn't request this code, you can safely ignore this email.</p>
-          </div>
-        </div>
-      `
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Error sending email:", error);
-        return res.status(500).json({ error: "Failed to send OTP email" });
-      }
-      
-      const previewUrl = nodemailer.getTestMessageUrl(info);
-      if (previewUrl) {
-        console.log("OTP Email sent! Preview URL: %s", previewUrl);
-      } else {
-        console.log("OTP Email successfully sent to:", email);
-      }
-      
-      return res.status(200).json({ 
-          message: "OTP sent successfully", 
-          previewUrl: previewUrl || null 
-      });
-    });
-  } catch (error) {
-    console.error("Send OTP error:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// 1.5 Verify OTP and Complete Signup
-app.post("/signup", async (req, res) => {
-  const { email, otp } = req.body;
-  if (!email || !otp) {
-    return res.status(400).json({ error: "Missing email or OTP" });
-  }
-
-  try {
-    const storedData = await Otp.findOne({ email });
-    console.log("Signup attempt - email:", email, "otp entered:", otp, "storedData:", storedData);
-    if (!storedData) {
-      return res.status(400).json({ error: "No pending signup found for this email, or OTP has expired." });
-    }
-
-    // Check manual expiry (5 minutes)
-    if (storedData.expiresAt && new Date() > storedData.expiresAt) {
-      await Otp.deleteOne({ email });
-      return res.status(400).json({ error: "OTP has expired. Please request a new one." });
-    }
-
-    if (storedData.otp !== otp.trim()) {
-      return res.status(400).json({ error: "Invalid OTP" });
-    }
-
-    // Proceed with registration
-    const hashedPassword = generatePassword(storedData.password);
-    const safeName = encodeURIComponent(storedData.name);
+    // Register the user immediately
+    const hashedPassword = generatePassword(password);
+    const safeName = encodeURIComponent(name);
     const userDoc = new User({
-      name: storedData.name,
+      name,
       email,
       password: hashedPassword,
       role: "Senior Software Engineer",
@@ -243,13 +152,47 @@ app.post("/signup", async (req, res) => {
 
     await userDoc.save();
     console.log("✅ User registered and saved to MongoDB:", email);
-    await Otp.deleteOne({ email }); // Clear OTP after success
+
+    // Send welcome notification email (non-blocking)
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Welcome to Resume Analyzer AI 🎉",
+      text: `Hi ${name},\n\nYour account has been created successfully!\n\nYou can now sign in and start analyzing your resume.\n\n— Resume Analyzer AI Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #2bbbad; margin: 0; font-size: 24px; font-weight: 800;">Resume Analyzer AI</h2>
+          </div>
+          <div style="padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #f1f5f9;">
+            <h3 style="color: #1a1a2e; margin-top: 0; font-size: 18px;">Welcome aboard, ${name}! 🎉</h3>
+            <p style="color: #475569; font-size: 15px; line-height: 1.6;">Your account has been created successfully. You can now sign in and start analyzing your resume against job descriptions using AI.</p>
+            <div style="background: linear-gradient(135deg, #2bbbad, #00a896); padding: 16px 24px; text-align: center; border-radius: 10px; margin: 24px 0;">
+              <span style="font-size: 16px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;">✅ Account Activated</span>
+            </div>
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 0;">If you did not create this account, please contact our support team immediately.</p>
+          </div>
+        </div>
+      `
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Welcome email send error (non-critical):", error);
+      } else {
+        const previewUrl = nodemailer.getTestMessageUrl(info);
+        if (previewUrl) console.log("Welcome email preview:", previewUrl);
+        else console.log("Welcome email sent to:", email);
+      }
+    });
+
     return res.status(201).json({ message: "Account created successfully" });
   } catch (error) {
     console.error("Signup error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 // 2. Login
 app.post("/login", async (req, res) => {
@@ -359,6 +302,45 @@ app.post("/delete_history", async (req, res) => {
   } catch (error) {
     console.error("Delete history error:", error);
     return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 5.5 Suggest Job Description
+app.post("/suggest-jd", upload.single("resume"), async (req, res) => {
+  if (!req.file || (!req.file.mimetype.includes("pdf") && !req.file.originalname.toLowerCase().endsWith(".pdf"))) {
+    return res.status(400).send("Please upload a valid PDF document (.pdf).");
+  }
+
+  try {
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const pdfData = await pdfParse(fileBuffer);
+    const resumeText = pdfData.text || "";
+
+    const tempResumePath = path.join(uploadDir, `resume_suggest_${Date.now()}.txt`);
+    fs.writeFileSync(tempResumePath, resumeText, "utf8");
+
+    const checkPythonCmd = 'where py >nul 2>nul && echo py || echo python';
+    exec(checkPythonCmd, (errCheck, stdoutCheck) => {
+      const usesPyLauncher = stdoutCheck.trim() === "py";
+      const pythonExec = usesPyLauncher ? "py -3.13" : "python";
+      const command = `${pythonExec} "${path.join(__dirname, "suggest_jd.py")}" "${tempResumePath}"`;
+
+      exec(command, { maxBuffer: 1024 * 1024 * 10 }, (err, stdout, stderr) => {
+        try { fs.unlinkSync(tempResumePath); } catch (_) {}
+        try { fs.unlinkSync(req.file.path); } catch (_) {}
+
+        if (err) {
+          console.error("Execution error during JD suggestion:", err);
+          return res.status(500).send("Error executing JD suggestion");
+        }
+        
+        return res.json({ suggestedJD: stdout.trim() });
+      });
+    });
+  } catch (err) {
+    console.error("PDF Parsing error in suggest JD:", err);
+    try { fs.unlinkSync(req.file.path); } catch (_) {}
+    return res.status(500).send("Error processing upload for JD suggestion");
   }
 });
 

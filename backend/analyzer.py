@@ -3,15 +3,24 @@ Resume Analyzer - Advanced Skill Extraction & Matching Engine
 =============================================================
 Model stack:
   - spaCy en_core_web_lg  → NER + noun-chunk phrase extraction
-  - all-mpnet-base-v2     → Best-in-class semantic similarity matching
+  - all-MiniLM-L6-v2      → Fast semantic similarity (80 MB, offline after first run)
   - Curated TECH_SKILLS   → 700+ skills vocabulary with categories
   - Google Gemini API     → Context-aware AI improvement suggestions
 """
 
 import re
 import os
+import sys
 from typing import Optional
 from dotenv import load_dotenv
+
+# ---------------------------------------------------------------------------
+# SBERT model name — small but highly accurate for skill matching
+# Downloads once (~80 MB) then cached locally at:
+#   Windows: C:\Users\<user>\.cache\huggingface\hub\
+# After first download works 100% offline
+# ---------------------------------------------------------------------------
+SBERT_MODEL_NAME = "all-MiniLM-L6-v2"
 
 # Optional heavy NLP deps — gracefully degrade on Python 3.14+
 try:
@@ -20,7 +29,7 @@ try:
 except Exception:
     spacy = None
     _SPACY_AVAILABLE = False
-    print("[analyzer] spaCy not available — using regex-only skill extraction (Pass 1 only)")
+    print("[analyzer] spaCy not available — using regex-only skill extraction (Pass 1 only)", file=sys.stderr)
 
 try:
     from sentence_transformers import SentenceTransformer, util as sbert_util
@@ -29,12 +38,12 @@ except Exception:
     SentenceTransformer = None
     sbert_util = None
     _SBERT_AVAILABLE = False
-    print("[analyzer] sentence-transformers not available — using exact-match only")
+    print("[analyzer] sentence-transformers not available — using exact-match only", file=sys.stderr)
 
 load_dotenv()
 
 # ---------------------------------------------------------------------------
-# Lazy-loaded models (loaded once at import time, shared across requests)
+# Models — pre-warmed at import time so first request is instant
 # ---------------------------------------------------------------------------
 _nlp = None
 _sbert = None
@@ -51,16 +60,30 @@ def get_nlp():
                 _nlp = spacy.load("en_core_web_sm")
             except OSError:
                 _nlp = None
+                print("[analyzer] No spaCy model found. Run: python -m spacy download en_core_web_sm", file=sys.stderr)
     return _nlp
 
 def get_sbert():
+    """Load SBERT model from local cache — downloads automatically on first run."""
     global _sbert
     if not _SBERT_AVAILABLE:
         return None
     if _sbert is None:
-        # all-mpnet-base-v2: top SBERT model for semantic textual similarity
-        _sbert = SentenceTransformer("all-mpnet-base-v2")
+        try:
+            print(f"[analyzer] Loading SBERT model '{SBERT_MODEL_NAME}' (from cache or downloading)...", file=sys.stderr)
+            _sbert = SentenceTransformer(SBERT_MODEL_NAME)
+            print(f"[analyzer] SBERT model ready ✓", file=sys.stderr)
+        except Exception as e:
+            print(f"[analyzer] SBERT model load failed: {e} — falling back to exact-match", file=sys.stderr)
+            _sbert = None
     return _sbert
+
+# Pre-warm SBERT model at import time so it's ready for the first request
+if _SBERT_AVAILABLE:
+    try:
+        get_sbert()
+    except Exception:
+        pass
 
 # ---------------------------------------------------------------------------
 # Curated Tech Skills Vocabulary  (skill_normalized -> category)
@@ -157,6 +180,21 @@ TECH_SKILLS: dict[str, str] = {
     "postman": "Testing", "tdd": "Testing", "bdd": "Testing",
     "unit testing": "Testing", "integration testing": "Testing",
 
+    # ── Finance & Accounting ──
+    "accountancy": "Finance", "accounting": "Finance", "financial accounting": "Finance",
+    "management accounting": "Finance", "cost accounting": "Finance", "corporate finance": "Finance",
+    "bookkeeping": "Finance", "auditing": "Finance", "audit": "Finance", "internal audit": "Finance",
+    "financial audit": "Finance", "taxation": "Finance", "tax planning": "Finance",
+    "income tax": "Finance", "gst": "Finance", "vat": "Finance", "tally": "Finance",
+    "tally prime": "Finance", "quickbooks": "Finance", "sap fico": "Finance",
+    "financial modeling": "Finance", "financial reporting": "Finance", "financial analysis": "Finance",
+    "accounts payable": "Finance", "accounts receivable": "Finance", "payroll": "Finance",
+    "bank reconciliation": "Finance", "reconciliation": "Finance", "balance sheet": "Finance",
+    "cash flow": "Finance", "budgeting": "Finance", "financial forecasting": "Finance",
+    "cpa": "Finance", "acca": "Finance", "chartered accountancy": "Finance",
+    "compliance": "Finance", "risk management": "Finance", "banking": "Finance",
+    "credit analysis": "Finance", "financial planning": "Finance", "tally erp": "Finance",
+
     # ── Security ──
     "cybersecurity": "Security", "penetration testing": "Security",
     "ethical hacking": "Security", "owasp": "Security",
@@ -209,6 +247,17 @@ ALIASES: dict[str, str] = {
     "ci/cd": "ci/cd",
     "js": "javascript",
     "ts": "typescript",
+    "accountant": "accountancy",
+    "accounting": "accountancy",
+    "financial accountant": "financial accounting",
+    "tally erp 9": "tally erp",
+}
+
+# Skills that are also common English words or single letters.
+# These require case-sensitive matching to avoid false positives 
+# (e.g., matching the letter 'c' in a bulleted list or the word 'go' in a sentence).
+AMBIGUOUS_SKILLS: set[str] = {
+    "c", "r", "go", "rest", "express", "spring", "ruby", "bash", "testing"
 }
 
 CIRCUMFERENCE = 2 * 3.14159 * 34
@@ -240,11 +289,30 @@ def extract_skills(text: str) -> list[dict]:
     # ── Pass 1: Curated vocabulary scan (phrase-aware, longest match first) ──
     sorted_skills = sorted(TECH_SKILLS.keys(), key=len, reverse=True)
     for skill in sorted_skills:
-        # Word-boundary aware matching
-        pattern = r"(?<![a-zA-Z0-9.#+-])" + re.escape(skill) + r"(?![a-zA-Z0-9.#+-])"
-        if re.search(pattern, text_lower):
-            canonical = ALIASES.get(skill, skill)
-            if canonical not in found:
+        canonical = ALIASES.get(skill, skill)
+        if canonical in found:
+            continue
+
+        # Prevent partial matches inside words, but allow dots/pluses for things like c++ or node.js
+        start_bound = r"(?<![a-zA-Z0-9+#-])"
+        end_bound = r"(?![a-zA-Z0-9+#-])"
+        
+        if skill in AMBIGUOUS_SKILLS:
+            # Case sensitive match required for ambiguous skills
+            if len(skill) == 1:
+                valid_cases = [skill.upper()]
+            else:
+                valid_cases = [skill.title(), skill.upper()]
+                
+            cases_pattern = "|".join(re.escape(c) for c in valid_cases)
+            pattern = start_bound + r"(?:" + cases_pattern + r")" + end_bound
+            
+            if re.search(pattern, text):
+                found[canonical] = TECH_SKILLS.get(canonical, TECH_SKILLS.get(skill, "General"))
+        else:
+            # Case insensitive match for normal skills
+            pattern = start_bound + re.escape(skill) + end_bound
+            if re.search(pattern, text_lower):
                 found[canonical] = TECH_SKILLS.get(canonical, TECH_SKILLS.get(skill, "General"))
 
     # ── Pass 2: spaCy noun chunks + NER as supplementary extraction ──
@@ -255,13 +323,15 @@ def extract_skills(text: str) -> list[dict]:
         for chunk in doc.noun_chunks:
             phrase = normalize(chunk.text)
             if len(phrase) > 1 and phrase in TECH_SKILLS and phrase not in found:
-                found[phrase] = TECH_SKILLS[phrase]
+                if phrase not in AMBIGUOUS_SKILLS:
+                    found[phrase] = TECH_SKILLS[phrase]
 
         for ent in doc.ents:
             if ent.label_ in {"PRODUCT", "ORG", "GPE", "WORK_OF_ART"}:
                 phrase = normalize(ent.text)
                 if phrase in TECH_SKILLS and phrase not in found:
-                    found[phrase] = TECH_SKILLS[phrase]
+                    if phrase not in AMBIGUOUS_SKILLS:
+                        found[phrase] = TECH_SKILLS[phrase]
 
     return [{"skill": k, "category": v} for k, v in found.items()]
 
@@ -422,16 +492,19 @@ def get_gemini_suggestions(missing_skills: list[dict], job_context: str) -> dict
         return {s: _static_suggestion(s) for s in skill_names}
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        import importlib
+        genai_mod = importlib.import_module("google.genai")
+        client = genai_mod.Client(api_key=api_key)
 
         prompt = (
             f"You are a career coach. For each skill below, give a concise, actionable 1-2 sentence "
             f"improvement tip for a job seeker targeting: '{job_context[:200]}'. "
             f"Output ONLY a JSON object mapping each skill name to its tip. Skills: {skill_names}"
         )
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
         text = response.text.strip()
         # Extract JSON from response
         json_match = re.search(r"\{.*\}", text, re.DOTALL)
@@ -440,7 +513,8 @@ def get_gemini_suggestions(missing_skills: list[dict], job_context: str) -> dict
             suggestions = json.loads(json_match.group())
             return {k.lower(): v for k, v in suggestions.items()}
     except Exception as e:
-        print(f"[Gemini] Falling back to static suggestions: {e}")
+        import sys
+        print(f"[Gemini] Falling back to static suggestions: {e}", file=sys.stderr)
 
     return {s: _static_suggestion(s) for s in skill_names}
 
@@ -467,4 +541,60 @@ def _static_suggestion(skill: str) -> str:
         return f"Highlight {skill} in your experience bullets — use the STAR method (Situation, Task, Action, Result)."
     if category == "Testing":
         return f"Add automated tests using {skill} to an existing project to demonstrate quality assurance skills."
+    if category == "Finance":
+        return f"Highlight your {skill} knowledge by listing relevant certifications (e.g., ACCA, CPA) and quantify financial outcomes in your experience bullets."
+    if category == "Security":
+        return f"Earn a foundational {skill} certification (e.g., CompTIA Security+) and set up a home lab to practice defensive techniques."
+    if category == "Architecture":
+        return f"Document system design decisions using {skill} principles in your portfolio — draw architecture diagrams and explain trade-offs."
+    if category == "Mobile":
+        return f"Build and publish a small mobile app using {skill} to the Play Store or App Store to demonstrate hands-on experience."
     return f"Research {skill} through official documentation and build a demo project showcasing its core features."
+
+if __name__ == "__main__":
+    import sys
+    import json
+    
+    if len(sys.argv) < 3:
+        print(json.dumps({"error": "Missing arguments"}))
+        sys.exit(1)
+        
+    resume_path = sys.argv[1]
+    job_path = sys.argv[2]
+    
+    try:
+        with open(resume_path, "r", encoding="utf-8") as f:
+            resume_text = f.read()
+        with open(job_path, "r", encoding="utf-8") as f:
+            job_text = f.read()
+            
+        resume_skills = extract_skills(resume_text)
+        job_skills = extract_skills(job_text)
+        
+        result = match_skills(resume_skills, job_skills, threshold=0.72)
+        
+        job_context = job_text[:300]
+        suggestions = get_gemini_suggestions(result["missingSkills"], job_context)
+        
+        for skill_obj in result["missingSkills"]:
+            skill_name = skill_obj["skill"]
+            skill_obj["suggestion"] = suggestions.get(skill_name, suggestions.get(skill_name.lower(), f"Research and add {skill_name} to your skill set."))
+            
+        result["suggestions"] = {
+            s["skill"]: s.get("suggestion", "") for s in result["missingSkills"]
+        }
+        
+        match_pct = result.get("matchPercent", 0)
+        if match_pct >= 80:
+            result["overallFeedback"] = "Excellent match! Your resume is ATS-optimized and closely aligned to this role."
+        elif match_pct >= 60:
+            result["overallFeedback"] = "Good alignment. Adding a few missing skills will significantly boost your ATS score."
+        elif match_pct >= 40:
+            result["overallFeedback"] = "Fair match. Focus on the high-priority missing skills to strengthen your application."
+        else:
+            result["overallFeedback"] = "Your resume needs targeted improvements. Prioritize the missing skills listed below."
+            
+        print(json.dumps(result))
+    except Exception as e:
+        import traceback
+        print(json.dumps({"error": str(e), "trace": traceback.format_exc()}))
