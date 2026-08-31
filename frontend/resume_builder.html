@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailored Resume Builder - Resume Analyzer AI</title>
+    <script src="vendor/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .top-bar h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-outline {
+            padding: 8px 16px;
+            border: 1px solid var(--border-light);
+            background: white;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .btn-primary {
+            padding: 10px 20px;
+            border: none;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Container for A4 Sheet */
+        .workspace {
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* A4 Sheet Styles */
+        .a4-sheet {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 20mm;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        /* Loading State */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f1f5f9;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Typography & Layout inside A4 (Resume Formatting) */
+        #resumeContent {
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 10.5pt;
+            line-height: 1.5;
+        }
+
+        .resume-header {
+            text-align: center;
+                border-bottom: 2px solid #000;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+
+            .resume-header h1 {
+                font-size: 24pt;
+                margin: 0 0 10px 0;
+                font-weight: 700;
+                color: #000;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .header-contact {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                font-size: 9.5pt;
+                line-height: 1.5;
+                color: #333;
+            }
+
+            .contact-left {
+                text-align: left;
+            }
+
+            .contact-right {
+                text-align: right;
+            }
+
+            #resumeContent h2 {
+                font-size: 14pt;
+                border-bottom: 2px solid #000;
+                padding-bottom: 3px;
+                margin: 20px 0 10px 0;
+                font-weight: 700;
+                color: #000;
+                text-transform: uppercase;
+            }
+
+            #resumeContent h3 {
+                font-size: 12pt;
+                margin: 10px 0 5px 0;
+                font-weight: 600;
+            }
+
+            #resumeContent p {
+                margin: 0 0 8px 0;
+            }
+
+            #resumeContent ul {
+                margin: 0 0 10px 0;
+                padding-left: 20px;
+            }
+
+            #resumeContent li {
+                margin-bottom: 4px;
+            }
+
+            #resumeContent strong {
+                font-weight: 600;
+            }
+
+            #resumeContent a {
+                color: #111;
+                text-decoration: none;
+                border-bottom: 1px solid #999;
+            }
+
+            /* Print Media Query */
+            @media print {
+                body {
+                    background: white;
+                }
+
+                .top-bar {
+                    display: none !important;
+                }
+
+                .workspace {
+                    padding: 0;
+                    display: block;
+                }
+
+                .a4-sheet {
+                    width: 100%;
+                    min-height: auto;
+                    box-shadow: none;
+                    padding: 0;
+                    margin: 0;
+                }
+
+                @page {
+                    size: A4;
+                    margin: 20mm;
+                }
+            }
+    </style>
+</head>
+
+<body>
+
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <a href="dashboard.html" class="btn-outline">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Dashboard
+            </a>
+            <h2>✨ Tailored Resume</h2>
+        </div>
+        <div>
+            <button class="btn-primary" id="downloadPdfBtn" onclick="window.print()" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Download PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="workspace">
+        <div class="a4-sheet">
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <h3 style="margin-bottom: 5px;">Crafting Your Resume...</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Our AI is rewriting your experience to match
+                    the job description.</p>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 10px;">This usually takes 10-15
+                    seconds.</p>
+            </div>
+
+            <div id="resumeContent">
+                <!-- Markdown content will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            generateResume();
+        });
+
+        async function generateResume() {
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            const resumeContent = document.getElementById("resumeContent");
+            const downloadBtn = document.getElementById("downloadPdfBtn");
+
+            try {
+                // Determine whether to use a specific history item, or the form
+                const jobDesc = localStorage.getItem("currentJobDesc");
+
+                let fileDataUrl = localStorage.getItem("pendingResumeFileDataUrl");
+                let fileName = localStorage.getItem("pendingResumeFileName") || "resume.pdf";
+
+                if (!fileDataUrl) {
+                    let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
+                    const currentHistoryId = localStorage.getItem("currentHistoryId");
+
+                    let targetItem = history.find(h => h.id === currentHistoryId);
+                    if (!targetItem && history.length > 0) {
+                        targetItem = history[0];
+                    }
+
+                    if (targetItem && targetItem.fileDataUrl) {
+                        fileDataUrl = targetItem.fileDataUrl;
+                        fileName = targetItem.fileName || fileName;
+                    }
+                }
+
+                if (!fileDataUrl) {
+                    throw new Error("Resume file data missing. Please upload your resume again from the dashboard.");
+                }
+
+                if (!jobDesc) {
+                    throw new Error("Job description missing. Please go back and provide a job description.");
+                }
+
+                // Convert base64 dataUrl back to a Blob
+                const fetchRes = await fetch(fileDataUrl);
+                const blob = await fetchRes.blob();
+
+                const formData = new FormData();
+                formData.append("resume", blob, fileName);
+                formData.append("jobText", jobDesc);
+                
+                // Fetch and append user profile preferences
+                const userEmail = localStorage.getItem("userEmail");
+                if (userEmail) {
+                    try {
+                        const profRes = await fetch(`http://localhost:3000/get_profile?email=${encodeURIComponent(userEmail)}`);
+                        if (profRes.ok) {
+                            const profData = await profRes.json();
+                            if (profData.shortBio) formData.append("shortBio", profData.shortBio);
+                            if (profData.preferredJobTitle) formData.append("prefTitle", profData.preferredJobTitle);
+                            if (profData.preferredLocation) formData.append("prefLoc", profData.preferredLocation);
+                        }
+                    } catch (e) {
+                        console.error("Failed to fetch profile info:", e);
+                    }
+                }
+
+                const response = await fetch("http://localhost:3000/build-resume", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || "Failed to generate tailored resume");
+                }
+
+                const data = await response.json();
+
+                // Configure marked.js options
+                marked.setOptions({
+                    gfm: true,
+                    breaks: false
+                });
+
+                // Parse and inject the markdown
+                resumeContent.innerHTML = marked.parse(data.tailoredResume);
+
+                // Hide loading, enable download
+                loadingOverlay.style.display = "none";
+                downloadBtn.disabled = false;
+
+            } catch (err) {
+                loadingOverlay.innerHTML = `
+                    <div style="color: #ef4444; background: #fef2f2; padding: 20px; border-radius: 12px; border: 1px solid #f87171; max-width: 80%; text-align: center;">
+                        <h3 style="margin-top: 0;">❌ Generation Failed</h3>
+                        <p>${err.message}</p>
+                        <a href="dashboard.html" class="btn-outline" style="margin-top: 15px;">Return to Dashboard</a>
+                    </div>
+                `;
+            }
+        }
+    </script>
+    
+</body>
+
+</html>

@@ -67,6 +67,11 @@ const userSchema = new mongoose.Schema({
   role: { type: String, default: "Senior Software Engineer" },
   dob: { type: String, default: "01-01-2005" },
   profileImage: { type: String, default: "" },
+  shortBio: { type: String, default: "" },
+  preferredJobTitle: { type: String, default: "" },
+  preferredLocation: { type: String, default: "" },
+  workArrangement: { type: String, default: "" },
+  employmentType: { type: String, default: "" },
   history: { type: Array, default: [] }
 });
 
@@ -241,6 +246,11 @@ app.get("/get_profile", async (req, res) => {
       role: user.role,
       dob: user.dob,
       profileImage: user.profileImage,
+      shortBio: user.shortBio,
+      preferredJobTitle: user.preferredJobTitle,
+      preferredLocation: user.preferredLocation,
+      workArrangement: user.workArrangement,
+      employmentType: user.employmentType,
       history: user.history
     });
   } catch (error) {
@@ -251,7 +261,7 @@ app.get("/get_profile", async (req, res) => {
 
 // 4. Update Profile
 app.post("/update_profile", async (req, res) => {
-  const { email, name, role, dob, profileImage } = req.body;
+  const { email, name, role, dob, profileImage, shortBio, preferredJobTitle, preferredLocation, workArrangement, employmentType } = req.body;
   if (!email) {
     return res.status(400).json({ error: "Email required" });
   }
@@ -262,6 +272,11 @@ app.post("/update_profile", async (req, res) => {
     if (role !== undefined) updateFields.role = role;
     if (dob !== undefined) updateFields.dob = dob;
     if (profileImage !== undefined) updateFields.profileImage = profileImage;
+    if (shortBio !== undefined) updateFields.shortBio = shortBio;
+    if (preferredJobTitle !== undefined) updateFields.preferredJobTitle = preferredJobTitle;
+    if (preferredLocation !== undefined) updateFields.preferredLocation = preferredLocation;
+    if (workArrangement !== undefined) updateFields.workArrangement = workArrangement;
+    if (employmentType !== undefined) updateFields.employmentType = employmentType;
 
     const user = await User.findOneAndUpdate(
       { email },

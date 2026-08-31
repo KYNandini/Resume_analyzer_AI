@@ -482,39 +482,44 @@ def _empty_result(job_skills: list[dict] = None) -> dict:
 # ---------------------------------------------------------------------------
 def get_gemini_suggestions(missing_skills: list[dict], job_context: str) -> dict[str, str]:
     """
-    Generate AI-powered improvement suggestions for each missing skill.
-    Falls back to curated static suggestions if API key not set.
+    Generate AI-powered improvement suggestions for each missing skill using local Ollama.
+    Falls back to curated static suggestions if Ollama is unavailable.
     """
-    api_key = os.getenv("GEMINI_API_KEY", "")
     skill_names = [s["skill"] for s in missing_skills[:8]]
 
-    if not api_key or not skill_names:
-        return {s: _static_suggestion(s) for s in skill_names}
+    if not skill_names:
+        return {}
 
     try:
-        import importlib
-        genai_mod = importlib.import_module("google.genai")
-        client = genai_mod.Client(api_key=api_key)
+        import requests
+        import json
 
         prompt = (
             f"You are a career coach. For each skill below, give a concise, actionable 1-2 sentence "
             f"improvement tip for a job seeker targeting: '{job_context[:200]}'. "
-            f"Output ONLY a JSON object mapping each skill name to its tip. Skills: {skill_names}"
+            f"Output ONLY a JSON object mapping each skill name to its tip. Do not output markdown code blocks. Skills: {skill_names}"
         )
-        response = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=prompt
+        
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": "llama3",
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=120
         )
-        text = response.text.strip()
-        # Extract JSON from response
-        json_match = re.search(r"\{.*\}", text, re.DOTALL)
-        if json_match:
-            import json
-            suggestions = json.loads(json_match.group())
-            return {k.lower(): v for k, v in suggestions.items()}
+        
+        if response.status_code == 200:
+            text = response.json().get("response", "").strip()
+            # Extract JSON from response
+            json_match = re.search(r"\{.*\}", text, re.DOTALL)
+            if json_match:
+                suggestions = json.loads(json_match.group())
+                return {k.lower(): v for k, v in suggestions.items()}
     except Exception as e:
         import sys
-        print(f"[Gemini] Falling back to static suggestions: {e}", file=sys.stderr)
+        print(f"[Ollama] Falling back to static suggestions: {e}", file=sys.stderr)
 
     return {s: _static_suggestion(s) for s in skill_names}
 
@@ -550,6 +555,85 @@ def _static_suggestion(skill: str) -> str:
     if category == "Mobile":
         return f"Build and publish a small mobile app using {skill} to the Play Store or App Store to demonstrate hands-on experience."
     return f"Research {skill} through official documentation and build a demo project showcasing its core features."
+
+
+def generate_tailored_resume(resume_text: str, job_text: str, short_bio: str = "", pref_title: str = "", pref_loc: str = "") -> str:
+    """
+    Generate a tailored resume based on the original resume and the job description using local Ollama.
+    """
+    try:
+        import requests
+
+        user_preferences = ""
+        if short_bio or pref_title or pref_loc:
+            user_preferences = f"\n--- USER CAREER PREFERENCES ---\n"
+            if pref_title: user_preferences += f"Target Job Title: {pref_title}\n"
+            if pref_loc: user_preferences += f"Target Location: {pref_loc}\n"
+            if short_bio: user_preferences += f"User's Short Bio: {short_bio}\n"
+            user_preferences += "IMPORTANT: Use these career preferences to guide your rewrite. If a 'Target Job Title' or 'User's Short Bio' is provided, ensure the generated 'CAREER OBJECTIVE' perfectly incorporates this information instead of relying solely on the original resume.\n"
+
+        prompt = (
+            f"You are an expert resume writer and ATS specialist. "
+            f"Please rewrite the following resume to perfectly align with the provided job description while STRICTLY preserving certain sections. "
+            f"Do not fabricate experience.\n\n"
+            f"CRITICAL FORMATTING INSTRUCTIONS:\n"
+            f"You MUST format the output as a strict, clean Markdown document suited for a highly professional A4 print layout.\n"
+            f"1. For the contact information and Name, you MUST output EXACTLY this HTML block (replace with candidate's actual details, omit fields if missing):\n"
+            f"   <div class=\"resume-header\">\n"
+            f"     <h1>Candidate Name</h1>\n"
+            f"     <div class=\"header-contact\">\n"
+            f"       <div class=\"contact-left\">Address<br>Phone Number</div>\n"
+            f"       <div class=\"contact-right\">Email<br>LinkedIn URL<br>GitHub URL</div>\n"
+            f"     </div>\n"
+            f"   </div>\n"
+            f"2. After the HTML block, use exactly this order for major sections (H2 `## Section Name`):\n"
+            f"   - CAREER OBJECTIVE\n"
+            f"   - EDUCATION\n"
+            f"   - EXPERIENCE\n"
+            f"   - PROJECTS\n"
+            f"   - TECHNICAL SKILLS\n"
+            f"   - CERTIFICATIONS\n"
+            f"   - LANGUAGES\n"
+            f"3. PRESERVATION RULES: You MUST keep the 'CAREER OBJECTIVE', 'EDUCATION', 'PROJECTS', 'CERTIFICATIONS', and 'LANGUAGES' sections EXACTLY as they are in the original resume. Do not change their content or format.\n"
+            f"4. TECHNICAL SKILLS RULE: In the 'TECHNICAL SKILLS' section, you MUST include ALL existing technical skills from the original resume, AND seamlessly add any new missing technical skills required by the job description.\n"
+            f"5. EXPERIENCE RULE: For EXPERIENCE, use H3 (`### Job Title`). You MUST reword bullet points to match the job requirements, and integrate missing keywords where applicable, while keeping a highly professional tone.\n"
+            f"6. You MUST insert a horizontal rule (`---`) at the very end of EVERY section to act as a visual divider before the next section.\n"
+            f"7. DO NOT include any introductory or concluding conversational text. ONLY output the Markdown itself.\n\n"
+            f"--- ORIGINAL RESUME ---\n{resume_text}\n\n"
+            f"--- JOB DESCRIPTION ---\n{job_text}\n"
+            f"{user_preferences}"
+        )
+        
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": "llama3",
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=300
+        )
+        
+        if response.status_code == 200:
+            text = response.json().get("response", "").strip()
+            import re
+            
+            # Remove any wrapping ```markdown or ```html or ``` that local LLMs tend to add
+            text = re.sub(r"^```(?:markdown|html|)\s*\n(.*?)\n```$", r"\1", text, flags=re.DOTALL | re.IGNORECASE)
+            
+            # Find the start of the actual content to skip conversational filler like "Here is your resume:"
+            match = re.search(r"(<div class=\"resume-header\".*)", text, flags=re.DOTALL | re.IGNORECASE)
+            if match:
+                text = match.group(1)
+                
+            return text.strip()
+        else:
+            raise Exception(f"Ollama returned status {response.status_code}")
+    except Exception as e:
+        import sys
+        print(f"[Ollama] Failed to generate tailored resume: {e}", file=sys.stderr)
+        raise Exception(f"Failed to generate tailored resume: {e}")
+
 
 if __name__ == "__main__":
     import sys

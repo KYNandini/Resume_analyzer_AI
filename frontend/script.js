@@ -89,7 +89,7 @@ signInForm.addEventListener("submit", async function(e) {
         localStorage.setItem("profileImage", data.profileImage || "");
         localStorage.setItem("analysisHistory", JSON.stringify(data.history || []));
         
-        window.location.href = "../analysis-dashboard/index.html";
+        window.location.href = "dashboard.html";
     } catch (error) {
         console.error(error);
         alert("Server error. Ensure backend is running.");

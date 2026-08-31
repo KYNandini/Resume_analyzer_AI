@@ -1,40 +1,88 @@
 import os
 import sys
-import re
-from dotenv import load_dotenv
-
-load_dotenv()
+import random
+from analyzer import extract_skills, TECH_SKILLS
 
 def generate_jd(resume_text: str) -> str:
-    api_key = os.getenv("GEMINI_API_KEY", "")
+    # 1. Extract skills locally using the existing offline engine
+    skills_data = extract_skills(resume_text)
+    skills = [s['skill'].title() for s in skills_data]
     
-    if not api_key:
-        return "Error: GEMINI_API_KEY not found in backend/.env. Please configure it to use this feature."
+    # If no skills found, use some generic fallbacks
+    if not skills:
+        skills = ["Communication", "Problem Solving", "Teamwork", "Time Management", "Project Management"]
         
-    try:
-        import importlib
-        genai_mod = importlib.import_module("google.genai")
-        client = genai_mod.Client(api_key=api_key)
+    # Categorize skills to figure out the primary domain
+    categories = {}
+    for skill in skills:
+        cat = TECH_SKILLS.get(skill.lower())
+        if cat:
+            categories[cat] = categories.get(cat, 0) + 1
+            
+    # Sort categories by count
+    sorted_cats = sorted(categories.items(), key=lambda x: x[1], reverse=True)
+    primary_domain = sorted_cats[0][0] if sorted_cats else "Technology"
+    
+    # Select top skills to feature prominently
+    top_skills = skills[:8]
+    if len(top_skills) < 8:
+        # Pad if not enough skills extracted
+        top_skills += ["Agile/Scrum", "Git", "Testing", "CI/CD", "System Design"][:8-len(top_skills)]
+        
+    skills_str = ", ".join(top_skills[:3])
+    
+    # Template Generation
+    templates = []
+    
+    # Generate 3 options based on the skills
+    titles = [
+        f"Senior {primary_domain} Engineer / Specialist",
+        f"{primary_domain} Consultant & Analyst",
+        f"Lead Technical Solutions Architect ({primary_domain})"
+    ]
+    
+    cats_only = [c for c, _ in sorted_cats]
+    if "Programming" in cats_only:
+        titles[0] = "Senior Software Engineer"
+        titles[1] = "Full Stack Developer"
+    elif "Data" in cats_only:
+        titles[0] = "Data Scientist / Machine Learning Engineer"
+        titles[1] = "Senior Data Analyst"
+    elif "Cloud" in cats_only or "DevOps" in cats_only:
+        titles[0] = "Senior Cloud / DevOps Engineer"
+        titles[1] = "Site Reliability Engineer (SRE)"
+        
+    for i, title in enumerate(titles):
+        # Shuffle slightly to make them distinct
+        random.shuffle(top_skills)
+        core_reqs = "\n".join([f"- Proficiency in {s}" for s in top_skills[:4]])
+        bonus_reqs = "\n".join([f"- Experience with {s} is a plus" for s in top_skills[4:6]])
+        
+        template = f"""# Option {i+1}: {title}
 
-        prompt = (
-            "You are an expert technical recruiter and hiring manager. I will provide you with a resume text. "
-            "Your task is to generate EXACTLY 3 distinct, professional, realistic, and comprehensive Job Descriptions (JDs) that match the candidate's skills and experience level found in the resume. "
-            "The 3 job descriptions should represent different potential roles or career paths the candidate could take based on their profile. "
-            "Format the output clearly. For each JD, use a prominent header (e.g., '# Option 1: [Job Title]'), and include exactly these sections: About the Role, Key Responsibilities, Required Experience, and Required Qualifications/Skills. "
-            "Separate each of the 3 Job Descriptions with a horizontal line (---). Make them look like real job postings. "
-            "Here is the resume text:\n\n"
-            f"{resume_text[:25000]}" # cap for speed and token limits
-        )
+**About the Role**
+We are seeking an experienced and highly motivated {title} to join our dynamic team. You will be responsible for driving technical excellence, collaborating with cross-functional teams, and leveraging your expertise in {skills_str} to deliver high-quality solutions.
+
+**Key Responsibilities**
+- Design, develop, and implement scalable solutions within the {primary_domain} domain.
+- Collaborate with product managers, designers, and other stakeholders to understand business requirements.
+- Leverage your expertise in {top_skills[0]} and {top_skills[1]} to optimize system performance and reliability.
+- Mentor junior team members and conduct code/architecture reviews.
+- Drive best practices in deployment, testing, and continuous integration.
+
+**Required Experience**
+- 3+ years of professional experience in a related {primary_domain} role.
+- Demonstrated ability to lead projects from conception to deployment.
+- Strong analytical and problem-solving capabilities in high-stakes environments.
+
+**Required Qualifications/Skills**
+{core_reqs}
+{bonus_reqs}
+- Excellent communication and teamwork skills.
+- Bachelor's degree in Computer Science, Engineering, or a related field (or equivalent practical experience)."""
+        templates.append(template)
         
-        response = client.models.generate_content(
-            model="gemini-3.6-flash",
-            contents=prompt
-        )
-        return response.text.strip()
-    except Exception as e:
-        import sys
-        print(f"[Gemini] Error generating JD: {e}", file=sys.stderr)
-        return f"Error: Could not generate JD due to an AI service error. Details: {str(e)}"
+    return "\n\n---\n\n".join(templates)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

@@ -17,7 +17,19 @@ from email_validator import validate_email, EmailNotValidError
 # Temporary in-memory store for password-reset OTPs: {email: {otp, expires}}
 _reset_otps = {}
 
+def is_online():
+    import socket
+    try:
+        socket.create_connection(("1.1.1.1", 53), timeout=2)
+        return True
+    except OSError:
+        return False
+
 def send_welcome_email(to_email, user_name):
+    if not is_online():
+        print(f"[Offline] Skipped welcome email to {to_email}")
+        return
+
     sender_email = os.getenv("EMAIL_USER")
     sender_pass = os.getenv("EMAIL_PASS")
     
@@ -45,6 +57,10 @@ def send_welcome_email(to_email, user_name):
         print(f"Failed to send email to {to_email}: {str(e)}")
 
 def send_scorecard_email(to_email, user_name, result, is_daily_reminder=False):
+    if not is_online():
+        print(f"[Offline] Skipped scorecard email to {to_email}")
+        return
+
     sender_email = os.getenv("EMAIL_USER")
     sender_pass = os.getenv("EMAIL_PASS")
     
@@ -111,7 +127,7 @@ def send_scorecard_email(to_email, user_name, result, is_daily_reminder=False):
         print(f"Failed to send scorecard email to {to_email}: {str(e)}")
 
 # Import the upgraded analyzer engine
-from analyzer import extract_skills, match_skills, get_gemini_suggestions
+from analyzer import extract_skills, match_skills, get_gemini_suggestions, generate_tailored_resume
 
 load_dotenv()
 
@@ -389,6 +405,36 @@ def suggest_jd():
         return jsonify({"error": "Failed to suggest JD"}), 500
 
 
+@app.route("/build-resume", methods=["POST", "OPTIONS"])
+def build_resume():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+
+    resume_file = request.files.get("resume")
+    job_text = request.form.get("jobText", "")
+
+    if not resume_file or not job_text:
+        return jsonify({"error": "Resume and job description are required"}), 400
+
+    if not resume_file.filename.lower().endswith(".pdf"):
+        return jsonify({"error": "Please upload a valid PDF document (.pdf)."}), 400
+
+    short_bio = request.form.get("shortBio", "")
+    pref_title = request.form.get("prefTitle", "")
+    pref_loc = request.form.get("prefLoc", "")
+
+    try:
+        file_bytes = resume_file.read()
+        resume_text = extract_text_from_pdf(file_bytes)
+        
+        tailored_resume = generate_tailored_resume(resume_text, job_text, short_bio, pref_title, pref_loc)
+        
+        return jsonify({"tailoredResume": tailored_resume})
+    except Exception as e:
+        print(f"Error building tailored resume: {e}")
+        return jsonify({"error": "Failed to build tailored resume: " + str(e)}), 500
+
+
 @app.route("/delete_history", methods=["POST", "OPTIONS"])
 def delete_history():
     if request.method == "OPTIONS":
@@ -430,6 +476,12 @@ def forgot_password():
 
     sender_email = os.getenv("EMAIL_USER")
     sender_pass = os.getenv("EMAIL_PASS")
+
+    if not is_online():
+        print(f"\n==========================================")
+        print(f"[Offline Mode] Password Reset OTP for {email}: {otp}")
+        print(f"==========================================\n")
+        return jsonify({"message": f"Offline mode active. Your OTP is {otp}", "otp": otp}), 200
 
     def send_reset_otp():
         try:
@@ -549,6 +601,62 @@ def daily_reminder_job():
                         send_scorecard_email(user["email"], user.get("name", "there"), result, is_daily_reminder=True)
         except Exception as e:
             print(f"Error in daily reminder job: {e}")
+
+@app.route("/fetch-job-url", methods=["POST", "OPTIONS"])
+def fetch_job_url():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+        
+    data = request.json
+    if not data or "url" not in data:
+        return jsonify({"error": "Missing URL"}), 400
+        
+    url = data["url"].strip()
+    
+    if not is_online():
+        return jsonify({"error": "You are offline. Please copy and paste the job description manually."}), 503
+        
+    try:
+        import requests
+        from bs4 import BeautifulSoup
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+        }
+        
+        # Adding timeout to prevent hanging
+        response = requests.get(url, headers=headers, timeout=10)
+        
+        if response.status_code == 403 or response.status_code == 429:
+            return jsonify({"error": "Access denied by the website (anti-bot protection). Please copy and paste the job description manually."}), 403
+            
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        
+        # Remove scripts, styles, nav, footer, etc to get clean text
+        for element in soup(["script", "style", "nav", "footer", "header", "aside"]):
+            element.extract()
+            
+        text = soup.get_text(separator="\n")
+        
+        # Clean up whitespace
+        lines = (line.strip() for line in text.splitlines())
+        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+        text = "\n".join(chunk for chunk in chunks if chunk)
+        
+        # Truncate if insanely long (prevent abuse)
+        if len(text) > 50000:
+            text = text[:50000]
+            
+        return jsonify({"text": text}), 200
+        
+    except requests.exceptions.Timeout:
+        return jsonify({"error": "Connection timed out. The website might be blocking scrapers."}), 504
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch URL: {str(e)}"}), 500
 
 if __name__ == "__main__":
     threading.Thread(target=daily_reminder_job, daemon=True).start()

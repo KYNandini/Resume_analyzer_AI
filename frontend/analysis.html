@@ -725,6 +725,7 @@
         #missingHeader {
             margin-top: 4px;
         }
+
     </style>
 </head>
 
@@ -735,7 +736,7 @@
         <!-- ─── LEFT PANEL ─────────────────────────────── -->
         <div class="left-panel">
             <div class="header">
-                <button class="back-btn" onclick="goBack()" title="Back to Dashboard" id="backBtn">←</button>
+                <button class="back-btn" onclick="window.location.href='dashboard.html'" title="Back to Dashboard" id="backBtn">←</button>
                 <div class="header-text">
                     <h1>Analysis Overview</h1>
                     <p>Semantic AI evaluation against job description</p>
@@ -814,6 +815,9 @@
                     <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 Analyze Another Resume
+            </button>
+            <button class="reupload-btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); margin-top: 10px;" onclick="buildTailoredResume()" id="buildResumeBtn">
+                ✨ Build Tailored Resume
             </button>
         </div>
 
@@ -1027,9 +1031,15 @@
         }
 
         function goBack() {
-            window.location.href = "index.html";
+            window.location.href = "dashboard.html";
+        }
+
+        // Tailored Resume Logic
+        function buildTailoredResume() {
+            window.location.href = "resume_builder.html";
         }
     </script>
+    
 </body>
 
 </html>

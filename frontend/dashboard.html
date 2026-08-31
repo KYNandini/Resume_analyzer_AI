@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Resume Analyzer</title>
-    <link rel="stylesheet" href="style.css?v=15">
+    <link rel="stylesheet" href="dashboard.css?v=19">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 </head>
 
@@ -37,8 +37,8 @@
                 <!-- DISPLAY MODE -->
                 <div id="profileDisplay" class="profile-display">
                     <div class="profile-header-compact">
-                        <img id="profileImage" src="logo.png" alt="Profile" onclick="changePhoto()"
-                            title="Click to change photo">
+                        <img id="profileImage" src="logo.png" alt="Profile" onclick="openProfileModal()"
+                            title="Click to edit profile">
                         <input type="file" id="imageUpload" hidden>
                         <div class="profile-info">
                             <h3 id="userName">---</h3>
@@ -46,7 +46,7 @@
                             <p id="userEmail">---</p>
                             <p id="userDOB">---</p>
                         </div>
-                        <button class="btn-edit-icon" onclick="editProfile()" title="Edit Profile Info">
+                        <button class="btn-edit-icon" onclick="openProfileModal()" title="Edit Profile Info">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M12 20h9"></path>
@@ -377,7 +377,8 @@
                 </head>
                 <body>
                     <iframe src="${item.fileDataUrl}" allowfullscreen></iframe>
-                </body>
+                
+</body>
                 </html>
             `);
                     newWindow.document.close();
@@ -667,10 +668,266 @@
         // ✅ LOGOUT
         function logout() {
             localStorage.clear();
-            window.location.href = "../resume-analyzer-login/index.html";
+            window.location.href = "index.html";
         }
 
+    
+        // --- PROFILE BUILDER MODAL LOGIC ---
+        function openProfileModal() {
+            document.getElementById('profileModalOverlay').classList.add('active');
+            currentStep = 1;
+            updateUI();
+            const emailStr = localStorage.getItem("userEmail");
+            if (emailStr) document.getElementById("p_email").value = emailStr;
+            fetchProfile();
+        }
+        function closeProfileModal() {
+            document.getElementById('profileModalOverlay').classList.remove('active');
+            location.reload(); // Refresh to reflect any saved changes on dashboard
+        }
+        
+
+        let currentStep = 1;
+        const totalSteps = 3;
+        const userEmail = localStorage.getItem("userEmail");
+
+        if (!userEmail) {
+            window.location.href = "index.html";
+        }
+
+        // Initialization now happens safely inside openProfileModal()
+
+        function switchTab(step) {
+            currentStep = step;
+            updateUI();
+        }
+
+        function goBack() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateUI();
+            } else {
+                closeProfileModal();
+            }
+        }
+
+        async function goNext() {
+            // Save data for current step
+            await saveProfileData(false);
+            
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateUI();
+            } else {
+                // Final save
+                await saveProfileData(true);
+                closeProfileModal();
+            }
+        }
+
+        function updateUI() {
+            // Update tabs
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`tab-${i}`).classList.remove('active');
+                document.getElementById(`content-${i}`).classList.remove('active');
+            }
+            document.getElementById(`tab-${currentStep}`).classList.add('active');
+            document.getElementById(`content-${currentStep}`).classList.add('active');
+
+            // Update buttons
+            const btnNext = document.getElementById("btnNext");
+            if (currentStep === totalSteps) {
+                btnNext.innerText = "Save profile";
+                btnNext.className = "btn-primary teal";
+            } else {
+                btnNext.innerText = "Save & Next";
+                btnNext.className = "btn-primary";
+            }
+        }
+
+        async function fetchProfile() {
+            document.getElementById("loadingOverlay").style.display = "flex";
+            try {
+                const res = await fetch(`http://localhost:3000/get_profile?email=${encodeURIComponent(userEmail)}`);
+                const data = await res.json();
+                
+                if (res.ok) {
+                    document.getElementById("p_name").value = data.name || "";
+                    document.getElementById("p_role").value = data.role || "";
+                    document.getElementById("p_dob").value = data.dob || "";
+                    document.getElementById("p_bio").value = data.shortBio || "";
+                    document.getElementById("p_pref_title").value = data.preferredJobTitle || "";
+                    document.getElementById("p_pref_loc").value = data.preferredLocation || "";
+                    document.getElementById("p_work_arr").value = data.workArrangement || "";
+                    document.getElementById("p_emp_type").value = data.employmentType || "";
+                    
+                    if (data.name) {
+                        const parts = data.name.split(' ');
+                        const initials = parts.length > 1 ? parts[0][0] + (parts.length > 1 ? parts[parts.length-1][0] : '') : parts[0][0];
+                        document.getElementById("avatarImage").innerText = initials.toUpperCase();
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                document.getElementById("loadingOverlay").style.display = "none";
+            }
+        }
+
+        async function saveProfileData(isFinal) {
+            const btn = document.getElementById("btnNext");
+            const originalText = btn.innerText;
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            const payload = {
+                email: userEmail,
+                name: document.getElementById("p_name").value.trim(),
+                role: document.getElementById("p_role").value.trim(),
+                dob: document.getElementById("p_dob").value.trim(),
+                shortBio: document.getElementById("p_bio").value.trim(),
+                preferredJobTitle: document.getElementById("p_pref_title").value.trim(),
+                preferredLocation: document.getElementById("p_pref_loc").value.trim(),
+                workArrangement: document.getElementById("p_work_arr").value,
+                employmentType: document.getElementById("p_emp_type").value
+            };
+
+            try {
+                const res = await fetch("http://localhost:3000/update_profile", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    alert("Failed to save profile.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Network error.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+    
+
     </script>
+
+
+
+    <!-- PROFILE BUILDER MODAL -->
+    <div id="profileModalOverlay">
+        <div class="bg-overlay"></div>
+        <div class="builder-container">
+            <div class="loading-overlay" id="loadingOverlay">Loading...</div>
+
+            <div class="actions-right">
+                <button class="lang-btn">GB English ⌄</button>
+                <button class="close-btn" onclick="closeProfileModal()">×</button>
+            </div>
+
+            <div class="header">
+                <div class="subtitle">PROFILE BUILDER</div>
+                <h1>Build your professional profile</h1>
+                <div class="desc">Complete each section to create a stronger resume profile.</div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab(1)" id="tab-1"><span>01</span> Your Details</div>
+                <div class="tab" onclick="switchTab(2)" id="tab-2"><span>02</span> Short Bio</div>
+                <div class="tab" onclick="switchTab(3)" id="tab-3"><span>03</span> Career Preferences</div>
+            </div>
+
+            <!-- Step 1: Your Details -->
+            <div class="tab-content active" id="content-1">
+                <div class="section-tag">01 / PERSONAL INFORMATION</div>
+                <h2>Your Details</h2>
+                <div class="section-desc">Tell employers who you are and how they can reach you.</div>
+
+                <div class="photo-area">
+                    <div class="avatar" id="avatarImage">NA</div>
+                    <div class="photo-actions">
+                        <button class="btn-outline">Change photo</button>
+                        <span class="photo-hint">PNG or JPG, up to 2 MB</span>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full name</label>
+                        <input type="text" id="p_name" placeholder="E.g. John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label>Job title</label>
+                        <input type="text" id="p_role" placeholder="E.g. Senior Software Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label>Email address</label>
+                        <input type="email" id="p_email" readonly style="background: #f8fafc; cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label>Date of birth</label>
+                        <input type="text" id="p_dob" placeholder="DD-MM-YYYY">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Short Bio -->
+            <div class="tab-content" id="content-2">
+                <div class="section-tag">02 / INTRODUCTION</div>
+                <h2>Short Bio</h2>
+                <div class="section-desc">Write a concise introduction that makes your experience memorable.</div>
+
+                <div class="form-group">
+                    <label>Professional summary</label>
+                    <textarea id="p_bio" placeholder="I am a ... professional with experience in ..."></textarea>
+                    <span class="photo-hint" style="margin-top: 4px;">Aim for two to four sentences. Focus on your strengths, experience, and the value you bring.</span>
+                </div>
+            </div>
+
+            <!-- Step 3: Career Preferences -->
+            <div class="tab-content" id="content-3">
+                <div class="section-tag">03 / NEXT CAREER MOVE</div>
+                <h2>Career Preferences</h2>
+                <div class="section-desc">Set preferences to make future job matching more relevant.</div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Preferred job title</label>
+                        <input type="text" id="p_pref_title" placeholder="Software Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label>Preferred location</label>
+                        <input type="text" id="p_pref_loc" placeholder="City, Country">
+                    </div>
+                    <div class="form-group">
+                        <label>Work arrangement</label>
+                        <select id="p_work_arr">
+                            <option value="">Select arrangement</option>
+                            <option value="Remote">Remote</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="On-site">On-site</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Employment type</label>
+                        <select id="p_emp_type">
+                            <option value="">Select employment type</option>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                            <option value="Contract">Contract</option>
+                            <option value="Internship">Internship</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <button class="btn-back" id="btnBack" onclick="goBack()">Back</button>
+                <button class="btn-primary" id="btnNext" onclick="goNext()">Save & Next</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
