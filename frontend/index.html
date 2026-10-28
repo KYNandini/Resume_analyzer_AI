@@ -1241,14 +1241,8 @@
         document.getElementById('signupFields').style.display = 'none';
         const otpStep = document.getElementById('signupOtpStep');
         otpStep.style.display = 'flex';
-        document.getElementById('signupOtpHdr').innerHTML = 'Enter the 6-digit code sent to <b>' + email + '</b><br><span style="color:#00a896;font-size:0.8rem;font-weight:600;">(Also printed directly in your backend terminal)</span>';
+        document.getElementById('signupOtpHdr').innerHTML = 'Enter the 6-digit verification code for <b>' + email + '</b><br><span style="color:#00a896;font-size:0.8rem;font-weight:600;">(Check your backend terminal for the OTP)</span>';
         clearRegDigits();
-        if (data.otp) {
-          [...data.otp].forEach((ch, idx) => {
-            const input = document.getElementById('regOtp' + idx);
-            if (input) input.value = ch;
-          });
-        }
         setTimeout(() => document.getElementById('regOtp0').focus(), 100);
       } catch { showSignupMsg('Error connecting to server. Make sure the backend is running.', 'error'); }
       finally { btn.disabled = false; btn.textContent = 'Send OTP'; }
