@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import fitz  # PyMuPDF
 from pymongo import MongoClient
@@ -17,7 +17,6 @@ import subprocess
 import uuid
 import sys
 import json
-import requests
 
 if sys.platform == "win32":
     try:
@@ -39,157 +38,144 @@ def is_online():
     except OSError:
         return False
 
-def send_email_message(to_email, subject, html_content):
-    """
-    Sends email using Resend REST API (HTTPS Port 443 - works 100% on Render/Cloud without firewall blocks),
-    Brevo REST API, or Gmail SMTP fallback.
-    """
-    # 1. Resend HTTP REST API (Best for Render & Cloud servers)
-    resend_key = os.getenv("RESEND_API_KEY")
-    if resend_key:
-        try:
-            from_sender = os.getenv("RESEND_FROM", "Resume Analyzer AI <onboarding@resend.dev>")
-            resp = requests.post(
-                "https://api.resend.com/emails",
-                headers={
-                    "Authorization": f"Bearer {resend_key.strip()}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "from": from_sender,
-                    "to": [to_email],
-                    "subject": subject,
-                    "html": html_content
-                },
-                timeout=12
-            )
-            if resp.status_code in (200, 201):
-                print(f"✅ [Resend API] Email delivered to {to_email}", flush=True)
-                return True
-            else:
-                print(f"⚠️ [Resend API] Error {resp.status_code}: {resp.text}", flush=True)
-        except Exception as e:
-            print(f"⚠️ [Resend API] Request failed: {e}", flush=True)
+def send_signup_otp_email(to_email, user_name, otp):
+    if not is_online():
+        return
 
-    # 2. Brevo HTTP REST API (HTTPS Port 443)
-    brevo_key = os.getenv("BREVO_API_KEY")
-    if brevo_key:
-        try:
-            sender_email = os.getenv("EMAIL_USER", "no-reply@resumeanalyzer.com")
-            resp = requests.post(
-                "https://api.brevo.com/v3/smtp/email",
-                headers={
-                    "api-key": brevo_key.strip(),
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "sender": {"name": "Resume Analyzer AI", "email": sender_email},
-                    "to": [{"email": to_email}],
-                    "subject": subject,
-                    "htmlContent": html_content
-                },
-                timeout=12
-            )
-            if resp.status_code in (200, 201):
-                print(f"✅ [Brevo API] Email delivered to {to_email}", flush=True)
-                return True
-            else:
-                print(f"⚠️ [Brevo API] Error {resp.status_code}: {resp.text}", flush=True)
-        except Exception as e:
-            print(f"⚠️ [Brevo API] Request failed: {e}", flush=True)
-
-    # 3. Standard Gmail SMTP (Works on Local PC where port 587 is unblocked)
     sender_email = os.getenv("EMAIL_USER")
     sender_pass = os.getenv("EMAIL_PASS")
-    if sender_email and sender_pass and sender_email != "your-email@gmail.com":
-        sender_pass = sender_pass.strip().replace(" ", "")
-        try:
-            msg = MIMEMultipart()
-            msg['From'] = sender_email
-            msg['To'] = to_email
-            msg['Subject'] = subject
-            msg.attach(MIMEText(html_content, 'html'))
-            server = smtplib.SMTP('smtp.gmail.com', 587, timeout=12)
-            server.starttls()
-            server.login(sender_email, sender_pass)
-            server.sendmail(sender_email, to_email, msg.as_string())
-            server.quit()
-            print(f"✅ [Gmail SMTP] Email delivered to {to_email}", flush=True)
-            return True
-        except Exception as e:
-            print(f"❌ [Gmail SMTP] Direct port 587 failed: {e} (Render blocks SMTP. Add RESEND_API_KEY to bypass).", flush=True)
-    return False
+    
+    if not sender_email or not sender_pass or sender_email == "your-email@gmail.com":
+        return
 
-def send_signup_otp_email(to_email, user_name, otp):
-    body = f"""
-    <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:30px;border:1px solid #e0e0e0;border-radius:10px;">
-      <h2 style="color:#00a896;">Verify Your Account</h2>
-      <p>Hi <strong>{user_name}</strong>,</p>
-      <p>Thank you for registering with Resume Analyzer AI. Please use the verification OTP below to complete your registration. It is valid for <strong>10 minutes</strong>.</p>
-      <div style="font-size:2rem;font-weight:bold;letter-spacing:8px;text-align:center;
-                  background:#f0f2f5;padding:16px;border-radius:8px;margin:20px 0;color:#1a1a2e;">
-        {otp}
-      </div>
-      <p style="color:#888;font-size:0.82rem;">If you did not request this account, please ignore this email.</p>
-      <p>— The Resume Analyzer AI Team</p>
-    </div>
-    """
-    send_email_message(to_email, "Account Verification OTP – Resume Analyzer AI", body)
-
-def send_reset_otp_email(to_email, otp):
-    body = f"""
-    <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:30px;border:1px solid #e0e0e0;border-radius:10px;">
-      <h2 style="color:#00a896;">Password Reset Request</h2>
-      <p>We received a request to reset your password. Use the verification OTP below. It is valid for <strong>10 minutes</strong>.</p>
-      <div style="font-size:2rem;font-weight:bold;letter-spacing:8px;text-align:center;
-                  background:#f0f2f5;padding:16px;border-radius:8px;margin:20px 0;color:#1a1a2e;">
-        {otp}
-      </div>
-      <p style="color:#888;font-size:0.82rem;">If you did not request a password reset, please ignore this email.</p>
-      <p>— The Resume Analyzer AI Team</p>
-    </div>
-    """
-    send_email_message(to_email, "Password Reset OTP – Resume Analyzer AI", body)
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = to_email
+        msg['Subject'] = "Account Verification OTP – Resume Analyzer AI"
+        body = f"""
+        <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:30px;border:1px solid #e0e0e0;border-radius:10px;">
+          <h2 style="color:#00a896;">Verify Your Account</h2>
+          <p>Hi <strong>{user_name}</strong>,</p>
+          <p>Thank you for registering with Resume Analyzer AI. Please use the verification OTP below to complete your registration. It is valid for <strong>10 minutes</strong>.</p>
+          <div style="font-size:2rem;font-weight:bold;letter-spacing:8px;text-align:center;
+                      background:#f0f2f5;padding:16px;border-radius:8px;margin:20px 0;color:#1a1a2e;">
+            {otp}
+          </div>
+          <p style="color:#888;font-size:0.82rem;">If you did not request this account, please ignore this email.</p>
+          <p>— The Resume Analyzer AI Team</p>
+        </div>
+        """
+        msg.attach(MIMEText(body, 'html'))
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, sender_pass)
+        server.sendmail(sender_email, to_email, msg.as_string())
+        server.quit()
+        print(f"Registration OTP email sent to {to_email}", flush=True)
+    except Exception as e:
+        print(f"Failed to send registration OTP email: {e}", flush=True)
 
 def send_welcome_email(to_email, user_name):
-    body = f"<h2>Welcome {user_name}!</h2><p>Thank you for signing up for Resume Analyzer AI.</p><p>We are excited to help you optimize your resume and land your dream job!</p><br><p>Best Regards,</p><p>The Resume Analyzer AI Team</p>"
-    send_email_message(to_email, "Welcome to Resume Analyzer AI!", body)
+    if not is_online():
+        print(f"[Offline] Skipped welcome email to {to_email}")
+        return
+
+    sender_email = os.getenv("EMAIL_USER")
+    sender_pass = os.getenv("EMAIL_PASS")
+    
+    if not sender_email or not sender_pass or sender_email == "your-email@gmail.com":
+        print("Email configuration missing or using placeholders. Skipping email sending.")
+        return
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = to_email
+        msg['Subject'] = "Welcome to Resume Analyzer AI!"
+        
+        body = f"<h2>Welcome {user_name}!</h2><p>Thank you for signing up for Resume Analyzer AI.</p><p>We are excited to help you optimize your resume and land your dream job!</p><br><p>Best Regards,</p><p>The Resume Analyzer AI Team</p>"
+        
+        msg.attach(MIMEText(body, 'html'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, sender_pass)
+        server.sendmail(sender_email, to_email, msg.as_string())
+        server.quit()
+        print(f"Welcome email sent successfully to {to_email}")
+    except Exception as e:
+        print(f"Failed to send email to {to_email}: {str(e)}")
 
 def send_scorecard_email(to_email, user_name, result, is_daily_reminder=False):
-    match_pct = result.get('matchPercent', 0)
-    feedback = result.get('overallFeedback', '')
-    matched = result.get('matchedCount', 0)
-    total = result.get('totalSkills', 0)
-    missing = total - matched
-    
-    missing_skills_html = ""
-    if result.get('missingSkills'):
-        skills = [s.get('skill') for s in result['missingSkills'][:5]]
-        missing_skills_html = f"<p><strong>Top Skills to Add:</strong> {', '.join(skills)}</p>"
-    
-    header_text = "Keep Improving Your Resume!" if is_daily_reminder else "Your Resume Analysis is Ready!"
-    intro_text = "This is your daily reminder to keep pushing your ATS score higher!" if is_daily_reminder else "We've successfully analyzed your resume against the provided job description."
-    cta_text = "Log back into your dashboard to track your progress!"
-    subject = "Your Daily ATS Scorecard Reminder!" if is_daily_reminder else "Your Resume ATS Scorecard – Resume Analyzer AI"
+    if not is_online():
+        print(f"[Offline] Skipped scorecard email to {to_email}")
+        return
 
-    body = f"""
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border:1px solid #ddd;border-radius:10px;">
-      <h2 style="color:#00a896;">{header_text}</h2>
-      <p>Hi <strong>{user_name}</strong>,</p>
-      <p>{intro_text}</p>
-      <div style="background:#f0fdfa;border:1px solid #14b8a6;padding:15px;border-radius:8px;margin:20px 0;">
-          <h3 style="margin-top:0;color:#0f766e;text-align:center;">Current ATS Match Score: {match_pct}%</h3>
-          <p style="text-align:center;color:#0f172a;margin-bottom:0;">{feedback}</p>
-      </div>
-      <p><strong>Matched Skills:</strong> {matched} / {total}</p>
-      <p><strong>Missing Skills:</strong> {missing}</p>
-      {missing_skills_html}
-      <p>{cta_text}</p>
-      <br>
-      <p>— The Resume Analyzer AI Team</p>
-    </div>
-    """
-    send_email_message(to_email, subject, body)
+    sender_email = os.getenv("EMAIL_USER")
+    sender_pass = os.getenv("EMAIL_PASS")
+    
+    if not sender_email or not sender_pass or sender_email == "your-email@gmail.com":
+        print("Email configuration missing. Skipping scorecard email.")
+        return
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = to_email
+        msg['Subject'] = "Your Daily ATS Scorecard Reminder!" if is_daily_reminder else "Your Resume ATS Scorecard – Resume Analyzer AI"
+        
+        match_pct = result.get('matchPercent', 0)
+        feedback = result.get('overallFeedback', '')
+        matched = result.get('matchedCount', 0)
+        total = result.get('totalSkills', 0)
+        missing = total - matched
+        
+        missing_skills_html = ""
+        if result.get('missingSkills'):
+            skills = [s.get('skill') for s in result['missingSkills'][:5]]
+            missing_skills_html = f"<p><strong>Top Skills to Add:</strong> {', '.join(skills)}</p>"
+        
+        if is_daily_reminder:
+            header_text = "Keep Improving Your Resume!"
+            intro_text = "This is your daily reminder to keep pushing your ATS score higher! Review your missing skills below, update your resume, and re-upload the improved version to our dashboard."
+            cta_text = "Log back into your dashboard to re-upload your improved resume and track your progress!"
+        else:
+            header_text = "Your Resume Analysis is Ready!"
+            intro_text = "We've successfully analyzed your resume against the provided job description."
+            cta_text = "Log back into your dashboard to view the full detailed report, including AI-generated suggestions to improve your missing skills!"
+
+        body = f"""
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border:1px solid #ddd;border-radius:10px;">
+          <h2 style="color:#00a896;">{header_text}</h2>
+          <p>Hi <strong>{user_name}</strong>,</p>
+          <p>{intro_text}</p>
+          
+          <div style="background:#f0fdfa;border:1px solid #14b8a6;padding:15px;border-radius:8px;margin:20px 0;">
+              <h3 style="margin-top:0;color:#0f766e;text-align:center;">Current ATS Match Score: {match_pct}%</h3>
+              <p style="text-align:center;color:#0f172a;margin-bottom:0;">{feedback}</p>
+          </div>
+          
+          <p><strong>Matched Skills:</strong> {matched} / {total}</p>
+          <p><strong>Missing Skills:</strong> {missing}</p>
+          {missing_skills_html}
+          
+          <p>{cta_text}</p>
+          <br>
+          <p>— The Resume Analyzer AI Team</p>
+        </div>
+        """
+        
+        msg.attach(MIMEText(body, 'html'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, sender_pass)
+        server.sendmail(sender_email, to_email, msg.as_string())
+        server.quit()
+        print(f"Scorecard email sent successfully to {to_email}")
+    except Exception as e:
+        print(f"Failed to send scorecard email to {to_email}: {str(e)}")
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
@@ -200,35 +186,14 @@ except ImportError:
 env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 load_dotenv(env_path) if os.path.exists(env_path) else load_dotenv()
 
-frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
-app = Flask(__name__, static_folder=frontend_dir, static_url_path="")
+app = Flask(__name__)
 # Enable comprehensive CORS for all origins and headers
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-@app.route("/")
-def serve_index():
-    return send_from_directory(frontend_dir, "index.html")
-
-@app.route("/<path:path>")
-def serve_static(path):
-    file_path = os.path.join(frontend_dir, path)
-    if os.path.exists(file_path):
-        return send_from_directory(frontend_dir, path)
-    return jsonify({"error": "Not found"}), 404
-
 # MongoDB Setup
 try:
-    import certifi
-    ca = certifi.where()
-except Exception:
-    ca = None
-
-try:
     mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
-    if ca and ("mongodb+srv://" in mongo_uri or "ssl=true" in mongo_uri.lower() or "tls=true" in mongo_uri.lower()):
-        client = MongoClient(mongo_uri, tlsCAFile=ca)
-    else:
-        client = MongoClient(mongo_uri)
+    client = MongoClient(mongo_uri)
     db = client["resumeanalyzer"]
     users_collection = db["users"]
     resumes_collection = db["resumes"]
@@ -316,7 +281,7 @@ def signup_otp():
     print("="*50 + "\n", flush=True)
 
     threading.Thread(target=send_signup_otp_email, args=(email, name, otp)).start()
-    return jsonify({"message": f"OTP generated for {email}.", "otp": otp}), 200
+    return jsonify({"message": f"OTP sent to {email}. Please verify to complete registration.", "otp": otp if not is_online() else None}), 200
 
 
 @app.route("/verify-signup-otp", methods=["POST", "OPTIONS"])
@@ -909,13 +874,11 @@ def forgot_password():
 
     sender_email = os.getenv("EMAIL_USER")
     sender_pass = os.getenv("EMAIL_PASS")
-    if sender_pass:
-        sender_pass = sender_pass.strip().replace(" ", "")
+
+    if not is_online():
+        return jsonify({"message": f"Offline mode active. Your OTP is {otp}", "otp": otp}), 200
 
     def send_reset_otp():
-        if not sender_email or not sender_pass:
-            print(f"[Forgot Password] Email skipped: EMAIL_USER or EMAIL_PASS not configured.", flush=True)
-            return
         try:
             msg = MIMEMultipart()
             msg['From'] = sender_email
@@ -935,17 +898,17 @@ def forgot_password():
             </div>
             """
             msg.attach(MIMEText(body, 'html'))
-            server = smtplib.SMTP('smtp.gmail.com', 587, timeout=15)
+            server = smtplib.SMTP('smtp.gmail.com', 587)
             server.starttls()
             server.login(sender_email, sender_pass)
             server.sendmail(sender_email, user["email"], msg.as_string())
             server.quit()
-            print(f"✅ Password reset OTP sent to {user['email']}", flush=True)
+            print(f"Password reset OTP sent to {user['email']}", flush=True)
         except Exception as e:
-            print(f"❌ Failed to send reset OTP email: {e}", flush=True)
+            print(f"Failed to send reset OTP email: {e}", flush=True)
 
     threading.Thread(target=send_reset_otp).start()
-    return jsonify({"message": "If this email is registered, an OTP has been sent.", "otp": otp}), 200
+    return jsonify({"message": "If this email is registered, an OTP has been sent."}), 200
 
 
 @app.route("/verify-reset-otp", methods=["POST", "OPTIONS"])
@@ -1097,6 +1060,5 @@ if __name__ == "__main__":
     from analyzer import get_nlp, get_sbert
     get_nlp()
     get_sbert()
-    port = int(os.environ.get("PORT", 3000))
-    print(f"Models loaded! Server starting on http://0.0.0.0:{port}")
-    app.run(host="0.0.0.0", port=port, debug=False)
+    print("Models loaded! Server starting on http://0.0.0.0:3000")
+    app.run(host="0.0.0.0", port=3000, debug=False)

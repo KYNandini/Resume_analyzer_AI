@@ -5,11 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resume Analyser – Register / Login</title>
-  <meta name="description" content="Sign in or create an account on Resume Analyser to start optimizing your resume with AI-powered insights.">
+  <meta name="description"
+    content="Sign in or create an account on Resume Analyser to start optimizing your resume with AI-powered insights.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -28,13 +31,17 @@
       --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
     }
 
-    body, button, input, select, textarea {
+    body,
+    button,
+    input,
+    select,
+    textarea {
       font-family: 'Times New Roman', Times, serif;
     }
 
     body {
       background: linear-gradient(rgba(10, 20, 40, 0.4), rgba(10, 20, 40, 0.4)),
-                  url("resume_bg.jpeg") no-repeat center center fixed;
+        url("resume_bg.jpeg") no-repeat center center fixed;
       background-size: cover;
       display: flex;
       justify-content: center;
@@ -66,13 +73,13 @@
       font-size: 0.78rem;
       font-weight: 600;
       color: var(--text-dark);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
       transition: box-shadow 0.2s;
       position: relative;
     }
 
     .lang-selector:hover {
-      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
     }
 
     .lang-flag {
@@ -102,20 +109,20 @@
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.97);
+      background: rgba(255, 255, 255, 0.97);
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
       transition: box-shadow 0.2s, background 0.3s;
       font-size: 1rem;
       color: #444;
     }
 
     .dark-toggle:hover {
-      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
     }
 
     /* MAIN CARD */
@@ -176,7 +183,7 @@
       font-size: 1.5rem;
       font-weight: 800;
       line-height: 1.2;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
     }
 
     .overlay-panel p {
@@ -203,9 +210,9 @@
     }
 
     .btn-ghost:hover {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.2);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     }
 
     /* FORMS WRAPPER */
@@ -302,13 +309,35 @@
       transition: all 0.25s;
     }
 
-    .social-container a:hover.facebook { background: #1877F2; color: white; border-color: #1877F2; }
-    .social-container a:hover.github   { background: #333; color: white; border-color: #333; }
-    .social-container a:hover.linkedin { background: #0A66C2; color: white; border-color: #0A66C2; }
+    .social-container a:hover.facebook {
+      background: #1877F2;
+      color: white;
+      border-color: #1877F2;
+    }
 
-    .social-icon-facebook { color: #1877F2; }
-    .social-icon-github   { color: #333; }
-    .social-icon-linkedin { color: #0A66C2; }
+    .social-container a:hover.github {
+      background: #333;
+      color: white;
+      border-color: #333;
+    }
+
+    .social-container a:hover.linkedin {
+      background: #0A66C2;
+      color: white;
+      border-color: #0A66C2;
+    }
+
+    .social-icon-facebook {
+      color: #1877F2;
+    }
+
+    .social-icon-github {
+      color: #333;
+    }
+
+    .social-icon-linkedin {
+      color: #0A66C2;
+    }
 
     .divider-text {
       font-size: 0.72rem;
@@ -338,7 +367,7 @@
 
     .input-group input:focus {
       border-color: var(--teal);
-      box-shadow: 0 0 0 3px rgba(43,187,173,0.15);
+      box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.15);
       background: white;
     }
 
@@ -366,12 +395,12 @@
       cursor: pointer;
       letter-spacing: 0.04em;
       transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 14px rgba(43,187,173,0.35);
+      box-shadow: 0 4px 14px rgba(43, 187, 173, 0.35);
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 22px rgba(43,187,173,0.45);
+      box-shadow: 0 8px 22px rgba(43, 187, 173, 0.45);
     }
 
     .btn-primary:disabled {
@@ -428,14 +457,16 @@
       margin: -4px 0 6px;
     }
 
-    form a.forgot-link:hover { text-decoration: underline; }
+    form a.forgot-link:hover {
+      text-decoration: underline;
+    }
 
     /* FORGOT PASSWORD MODAL */
     .fp-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.45);
+      background: rgba(0, 0, 0, 0.45);
       backdrop-filter: blur(5px);
       z-index: 9000;
       justify-content: center;
@@ -443,25 +474,42 @@
       animation: fpFadeIn 0.25s ease;
     }
 
-    .fp-overlay.active { display: flex; }
+    .fp-overlay.active {
+      display: flex;
+    }
 
-    @keyframes fpFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fpFadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
 
     .fp-modal {
       background: white;
       border-radius: 20px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
       padding: 34px 32px 28px;
       width: 410px;
       max-width: 92vw;
       position: relative;
-      animation: fpSlideUp 0.3s cubic-bezier(.34,1.56,.64,1);
+      animation: fpSlideUp 0.3s cubic-bezier(.34, 1.56, .64, 1);
       text-align: left;
     }
 
     @keyframes fpSlideUp {
-      from { opacity: 0; transform: translateY(24px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+      from {
+        opacity: 0;
+        transform: translateY(24px) scale(0.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .fp-steps-indicator {
@@ -538,7 +586,7 @@
 
     .fp-modal input:focus {
       border-color: var(--teal-dark);
-      box-shadow: 0 0 0 3px rgba(43,187,173,0.18);
+      box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.18);
     }
 
     .fp-btn {
@@ -555,12 +603,12 @@
       letter-spacing: 0.04em;
       transition: transform 0.2s, box-shadow 0.2s;
       margin-top: 4px;
-      box-shadow: 0 4px 14px rgba(43,187,173,0.35);
+      box-shadow: 0 4px 14px rgba(43, 187, 173, 0.35);
     }
 
     .fp-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 22px rgba(43,187,173,0.45);
+      box-shadow: 0 8px 22px rgba(43, 187, 173, 0.45);
     }
 
     .fp-btn:disabled {
@@ -608,8 +656,13 @@
       line-height: 1.55;
     }
 
-    .fp-step { display: none; }
-    .fp-step.active { display: block; }
+    .fp-step {
+      display: none;
+    }
+
+    .fp-step.active {
+      display: block;
+    }
 
     .fp-msg {
       font-size: 0.78rem;
@@ -619,8 +672,18 @@
       display: none;
       text-align: center;
     }
-    .fp-msg.error   { background: #ffeaea; color: #c0392b; display: block; }
-    .fp-msg.success { background: #e6faf8; color: #00897b; display: block; }
+
+    .fp-msg.error {
+      background: #ffeaea;
+      color: #c0392b;
+      display: block;
+    }
+
+    .fp-msg.success {
+      background: #e6faf8;
+      color: #00897b;
+      display: block;
+    }
 
     .fp-back {
       background: none;
@@ -639,9 +702,20 @@
       letter-spacing: 0;
       font-weight: 600;
     }
-    .fp-back:hover { text-decoration: underline; box-shadow: none; transform: none; }
 
-    .otp-inputs { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; }
+    .fp-back:hover {
+      text-decoration: underline;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .otp-inputs {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
     .otp-inputs input {
       width: 44px;
       height: 52px;
@@ -655,28 +729,86 @@
       background: #f8fafc;
       transition: border-color 0.25s, box-shadow 0.25s;
     }
+
     .otp-inputs input:focus {
       border-color: var(--teal);
-      box-shadow: 0 0 0 3px rgba(43,187,173,0.18);
+      box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.18);
     }
 
-    .pw-wrap { position: relative; margin-bottom: 12px; }
-    .pw-wrap input { margin-bottom: 0; padding-right: 42px; }
-    .pw-toggle {
-      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; color: #aaa; cursor: pointer;
-      padding: 0; font-size: 0.95rem; box-shadow: none; margin: 0; line-height: 1;
+    .pw-wrap {
+      position: relative;
+      margin-bottom: 12px;
     }
-    .pw-toggle:hover { color: var(--teal); box-shadow: none; transform: translateY(-50%); }
+
+    .pw-wrap input {
+      margin-bottom: 0;
+      padding-right: 42px;
+    }
+
+    .pw-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.95rem;
+      box-shadow: none;
+      margin: 0;
+      line-height: 1;
+    }
+
+    .pw-toggle:hover {
+      color: var(--teal);
+      box-shadow: none;
+      transform: translateY(-50%);
+    }
 
     @media (max-width: 600px) {
-      .container { display: flex; flex-direction: column; min-height: unset; height: auto; }
-      .overlay-container { position: relative !important; width: 100% !important; min-height: 180px !important; transform: none !important; border-radius: 20px 20px 0 0 !important; }
-      .form-wrapper { position: relative !important; width: 100% !important; height: auto !important; }
-      .form-container { position: relative !important; width: 100% !important; left: 0 !important; right: 0 !important; height: auto !important; transform: none !important; }
-      .sign-up-container { display: none; }
-      .container.right-panel-active .sign-in-container { display: none; }
-      .container.right-panel-active .sign-up-container { display: flex; }
+      .container {
+        display: flex;
+        flex-direction: column;
+        min-height: unset;
+        height: auto;
+      }
+
+      .overlay-container {
+        position: relative !important;
+        width: 100% !important;
+        min-height: 180px !important;
+        transform: none !important;
+        border-radius: 20px 20px 0 0 !important;
+      }
+
+      .form-wrapper {
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+      }
+
+      .form-container {
+        position: relative !important;
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: auto !important;
+        transform: none !important;
+      }
+
+      .sign-up-container {
+        display: none;
+      }
+
+      .container.right-panel-active .sign-in-container {
+        display: none;
+      }
+
+      .container.right-panel-active .sign-up-container {
+        display: flex;
+      }
     }
   </style>
 </head>
@@ -720,18 +852,24 @@
         <form id="signInForm" autocomplete="on">
           <h1 data-i18n="login.title">Sign In</h1>
           <div class="social-container">
-            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook" class="facebook"><i class="fab fa-facebook-f social-icon-facebook"></i></a>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub" class="github"><i class="fab fa-github social-icon-github"></i></a>
-            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn" class="linkedin"><i class="fab fa-linkedin-in social-icon-linkedin"></i></a>
+            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"
+              class="facebook"><i class="fab fa-facebook-f social-icon-facebook"></i></a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub" class="github"><i
+                class="fab fa-github social-icon-github"></i></a>
+            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"
+              class="linkedin"><i class="fab fa-linkedin-in social-icon-linkedin"></i></a>
           </div>
           <p class="divider-text" data-i18n="login.or_use_account">or use your account</p>
           <div class="input-group">
-            <input type="email" id="loginEmail" placeholder="Email" data-i18n-placeholder="placeholder.email" autocomplete="email" />
+            <input type="email" id="loginEmail" placeholder="Email" data-i18n-placeholder="placeholder.email"
+              autocomplete="email" />
           </div>
           <div class="input-group">
-            <input type="password" id="loginPassword" placeholder="Password" data-i18n-placeholder="placeholder.password" autocomplete="current-password" />
+            <input type="password" id="loginPassword" placeholder="Password"
+              data-i18n-placeholder="placeholder.password" autocomplete="current-password" />
           </div>
-          <a href="#" class="forgot-link" id="forgotPasswordLink" data-i18n="login.forgot_password">Forgot your password?</a>
+          <a href="#" class="forgot-link" id="forgotPasswordLink" data-i18n="login.forgot_password">Forgot your
+            password?</a>
           <button type="submit" class="btn-primary" data-i18n="login.btn_signin">Sign In</button>
           <p style="font-size:0.73rem;color:#888;margin-top:14px;">Don't have an account?
             <a href="#" id="goToSignUp" style="color:var(--teal);font-weight:600;text-decoration:none;">Create one</a>
@@ -744,21 +882,27 @@
         <form id="signUpForm" autocomplete="off">
           <h1 data-i18n="register.title">Create Account</h1>
           <div class="social-container">
-            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook" class="facebook"><i class="fab fa-facebook-f social-icon-facebook"></i></a>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub" class="github"><i class="fab fa-github social-icon-github"></i></a>
-            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn" class="linkedin"><i class="fab fa-linkedin-in social-icon-linkedin"></i></a>
+            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"
+              class="facebook"><i class="fab fa-facebook-f social-icon-facebook"></i></a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub" class="github"><i
+                class="fab fa-github social-icon-github"></i></a>
+            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"
+              class="linkedin"><i class="fab fa-linkedin-in social-icon-linkedin"></i></a>
           </div>
           <p class="divider-text" data-i18n="register.or_use_email">or use your email for registration</p>
 
           <div id="signupFields" style="width:100%;display:flex;flex-direction:column;align-items:center;">
             <div class="input-group">
-              <input type="text" id="regName" placeholder="Enter your full name" data-i18n-placeholder="placeholder.name" autocomplete="name" />
+              <input type="text" id="regName" placeholder="Enter your full name"
+                data-i18n-placeholder="placeholder.name" autocomplete="name" />
             </div>
             <div class="input-group">
-              <input type="email" id="regEmail" placeholder="Email address" data-i18n-placeholder="placeholder.email" autocomplete="email" />
+              <input type="email" id="regEmail" placeholder="Email address" data-i18n-placeholder="placeholder.email"
+                autocomplete="email" />
             </div>
             <div class="input-group">
-              <input type="password" id="regPassword" placeholder="Password" data-i18n-placeholder="placeholder.password" autocomplete="new-password" />
+              <input type="password" id="regPassword" placeholder="Password"
+                data-i18n-placeholder="placeholder.password" autocomplete="new-password" />
               <p class="input-hint">Password must contain at least 8 characters, including a number.</p>
             </div>
             <button type="submit" id="signupBtn" class="btn-primary" data-i18n="register.btn_create">Send OTP</button>
@@ -788,8 +932,10 @@
               <input type="text" maxlength="1" class="reg-otp-digit" id="regOtp4" inputmode="numeric" pattern="[0-9]">
               <input type="text" maxlength="1" class="reg-otp-digit" id="regOtp5" inputmode="numeric" pattern="[0-9]">
             </div>
-            <button type="button" id="verifySignupBtn" class="btn-primary" style="margin-top:4px;">Verify & Create Account</button>
-            <button type="button" class="fp-back" id="signupBackBtn" style="margin-top:10px;">&larr; Change registration details</button>
+            <button type="button" id="verifySignupBtn" class="btn-primary" style="margin-top:4px;">Verify & Create
+              Account</button>
+            <button type="button" class="fp-back" id="signupBackBtn" style="margin-top:10px;">&larr; Change registration
+              details</button>
           </div>
 
           <p style="font-size:0.73rem;color:#888;margin-top:12px;">Already have an account?
@@ -863,11 +1009,10 @@
 
   <script src="i18n.js"></script>
   <script>
-    const API_BASE = (window.location.port === "8000") ? "http://localhost:3000" : "";
     // PANEL TOGGLE
     const container = document.getElementById('container');
     const overlayH1 = document.querySelector('#overlayContent h1');
-    const overlayP  = document.querySelector('#overlayContent p');
+    const overlayP = document.querySelector('#overlayContent p');
     const triggerBtn = document.getElementById('signUpTrigger');
 
     let isSignUpMode = false;
@@ -896,7 +1041,7 @@
 
     // DARK MODE TOGGLE
     const darkToggle = document.getElementById('darkToggle');
-    const darkIcon   = document.getElementById('darkToggleIcon');
+    const darkIcon = document.getElementById('darkToggleIcon');
     let isDark = false;
     darkToggle.addEventListener('click', () => {
       isDark = !isDark;
@@ -905,19 +1050,19 @@
     });
 
     // FORGOT PASSWORD MODAL
-    const fpOverlay    = document.getElementById('fpOverlay');
+    const fpOverlay = document.getElementById('fpOverlay');
     const fpEmailInput = document.getElementById('fpEmail');
     let fpVerifiedEmail = '';
 
     function fpShowStep(n) {
-      [1,2,3].forEach(i => {
-        document.getElementById('fpStep'+i).classList.toggle('active', i === n);
-        document.getElementById('fpDot'+i).classList.toggle('active', i === n);
+      [1, 2, 3].forEach(i => {
+        document.getElementById('fpStep' + i).classList.toggle('active', i === n);
+        document.getElementById('fpDot' + i).classList.toggle('active', i === n);
       });
       clearFpMsgs();
     }
     function clearFpMsgs() {
-      ['fpMsg1','fpMsg2','fpMsg3'].forEach(id => {
+      ['fpMsg1', 'fpMsg2', 'fpMsg3'].forEach(id => {
         const el = document.getElementById(id);
         el.textContent = ''; el.className = 'fp-msg';
       });
@@ -979,25 +1124,15 @@
       const btn = document.getElementById('fpSendOtp');
       btn.disabled = true; btn.textContent = 'Sending\u2026';
       try {
-        const res = await fetch(`${API_BASE}/forgot-password`, {
+        const res = await fetch('http://localhost:3000/forgot-password', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
         });
         const data = await res.json();
         if (!res.ok) { fpMsg('fpMsg1', data.error || 'Something went wrong.', 'error'); return; }
         fpVerifiedEmail = email;
-        let hint = 'Enter the 6-digit code sent to ' + email + '.';
-        if (data.otp) {
-          hint += ' (OTP: ' + data.otp + ')';
-          const chars = data.otp.split('');
-          chars.forEach((c, i) => {
-            const el = document.getElementById('fpOtp' + i);
-            if (el) el.value = c;
-          });
-        }
-        document.getElementById('fpOtpHint').textContent = hint;
-        fpShowStep(2);
-        if (!data.otp) setTimeout(() => document.getElementById('fpOtp0').focus(), 100);
+        document.getElementById('fpOtpHint').textContent = 'Enter the 6-digit code sent to ' + email + '. It expires in 10 minutes.';
+        fpShowStep(2); setTimeout(() => document.getElementById('fpOtp0').focus(), 100);
       } catch { fpMsg('fpMsg1', 'Cannot reach server. Is the backend running?', 'error'); }
       finally { btn.disabled = false; btn.textContent = 'Send OTP'; }
     });
@@ -1009,7 +1144,7 @@
       const btn = document.getElementById('fpVerifyOtp');
       btn.disabled = true; btn.textContent = 'Verifying\u2026';
       try {
-        const res = await fetch(`${API_BASE}/verify-reset-otp`, {
+        const res = await fetch('http://localhost:3000/verify-reset-otp', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: fpVerifiedEmail, otp })
         });
@@ -1030,7 +1165,7 @@
       const btn = document.getElementById('fpResetPw');
       btn.disabled = true; btn.textContent = 'Resetting\u2026';
       try {
-        const res = await fetch(`${API_BASE}/reset-password`, {
+        const res = await fetch('http://localhost:3000/reset-password', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: fpVerifiedEmail, otp, newPassword: newPw })
         });
@@ -1077,22 +1212,22 @@
     // SIGN UP - STEP 1: SEND OTP
     document.getElementById('signUpForm').addEventListener('submit', async function (e) {
       e.preventDefault();
-      const name     = document.getElementById('regName').value.trim();
-      const email    = document.getElementById('regEmail').value.trim();
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value.trim();
 
-      if (!name || name.length < 2)         { showSignupMsg('Enter a valid name.', 'error'); return; }
-      if (!/^[A-Za-z\s]+$/.test(name))      { showSignupMsg('Name can only contain letters and spaces.', 'error'); return; }
-      if (!email || !email.includes('@'))    { showSignupMsg('Enter a valid email.', 'error'); return; }
+      if (!name || name.length < 2) { showSignupMsg('Enter a valid name.', 'error'); return; }
+      if (!/^[A-Za-z\s]+$/.test(name)) { showSignupMsg('Name can only contain letters and spaces.', 'error'); return; }
+      if (!email || !email.includes('@')) { showSignupMsg('Enter a valid email.', 'error'); return; }
       if (!password || password.length < 8) { showSignupMsg('Password must be at least 8 characters.', 'error'); return; }
-      if (!/\d/.test(password))             { showSignupMsg('Password must include at least one number.', 'error'); return; }
+      if (!/\d/.test(password)) { showSignupMsg('Password must include at least one number.', 'error'); return; }
 
       const btn = document.getElementById('signupBtn');
       btn.disabled = true; btn.textContent = 'Sending OTP\u2026';
       removeSignupMsg();
 
       try {
-        const response = await fetch(`${API_BASE}/signup-otp`, {
+        const response = await fetch('http://localhost:3000/signup-otp', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password })
         });
@@ -1103,19 +1238,9 @@
         document.getElementById('signupFields').style.display = 'none';
         const otpStep = document.getElementById('signupOtpStep');
         otpStep.style.display = 'flex';
-        let hdr = 'Enter the 6-digit code sent to ' + email;
-        if (data.otp) {
-          hdr += ' (OTP: ' + data.otp + ')';
-          const chars = data.otp.split('');
-          chars.forEach((c, i) => {
-            const el = document.getElementById('regOtp' + i);
-            if (el) el.value = c;
-          });
-        } else {
-          clearRegDigits();
-          setTimeout(() => document.getElementById('regOtp0').focus(), 100);
-        }
-        document.getElementById('signupOtpHdr').textContent = hdr;
+        document.getElementById('signupOtpHdr').textContent = 'Enter the 6-digit code sent to ' + email + ' (or visible in terminal).';
+        clearRegDigits();
+        setTimeout(() => document.getElementById('regOtp0').focus(), 100);
       } catch { showSignupMsg('Error connecting to server. Make sure the backend is running.', 'error'); }
       finally { btn.disabled = false; btn.textContent = 'Send OTP'; }
     });
@@ -1130,7 +1255,7 @@
       removeSignupMsg();
 
       try {
-        const response = await fetch(`${API_BASE}/verify-signup-otp`, {
+        const response = await fetch('http://localhost:3000/verify-signup-otp', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: signupEmailPending, otp })
         });
@@ -1177,11 +1302,11 @@
     // SIGN IN
     document.getElementById('signInForm').addEventListener('submit', async function (e) {
       e.preventDefault();
-      const email    = document.getElementById('loginEmail').value.trim();
+      const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
       if (!email || !password) { alert('Enter email and password.'); return; }
       try {
-        const response = await fetch(`${API_BASE}/login`, {
+        const response = await fetch('http://localhost:3000/login', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
@@ -1201,4 +1326,26 @@
   </script>
 
 </body>
+
+</html> const response = await fetch(`${API_BASE}/login`, {
+method: 'POST', headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ email, password })
+});
+const data = await response.json();
+if (!response.ok) { alert(data.error || 'Invalid login credentials.'); return; }
+localStorage.clear();
+localStorage.setItem('loggedIn', 'true');
+localStorage.setItem('userName', data.name);
+localStorage.setItem('userEmail', data.email);
+localStorage.setItem('userRole', data.role || 'Senior Software Engineer');
+localStorage.setItem('userDOB', data.dob || '01-01-2005');
+localStorage.setItem('profileImage', data.profileImage || '');
+localStorage.setItem('analysisHistory', JSON.stringify(data.history || []));
+window.location.href = 'dashboard.html';
+} catch (err) { alert('Error connecting to server: ' + err.message); }
+});
+</script>
+
+</body>
+
 </html>

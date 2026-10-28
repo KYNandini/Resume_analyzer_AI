@@ -813,10 +813,21 @@
             color: #0f172a;
         }
 
-        .education-table th:nth-child(1) { width: 28%; }
-        .education-table th:nth-child(2) { width: 42%; }
-        .education-table th:nth-child(3) { width: 14%; }
-        .education-table th:nth-child(4) { width: 16%; }
+        .education-table th:nth-child(1) {
+            width: 28%;
+        }
+
+        .education-table th:nth-child(2) {
+            width: 42%;
+        }
+
+        .education-table th:nth-child(3) {
+            width: 14%;
+        }
+
+        .education-table th:nth-child(4) {
+            width: 16%;
+        }
 
         .education-table td:nth-child(3),
         .education-table td:nth-child(4) {
@@ -1159,7 +1170,6 @@
     </div>
 
     <script>
-        const API_BASE = (window.location.port === "8000") ? "http://localhost:3000" : "";
         let currentTemplate = localStorage.getItem("selectedResumeTemplate") || "modern";
 
         function changeTemplate(tpl) {
@@ -1291,7 +1301,7 @@
                 const userEmail = localStorage.getItem("userEmail");
                 if (userEmail) {
                     try {
-                        const profRes = await fetch(`${API_BASE}/get_profile?email=${encodeURIComponent(userEmail)}`);
+                        const profRes = await fetch(`http://localhost:3000/get_profile?email=${encodeURIComponent(userEmail)}`);
                         if (profRes.ok) {
                             const profData = await profRes.json();
                             if (profData.shortBio) formData.append("shortBio", profData.shortBio);
@@ -1303,7 +1313,7 @@
                     }
                 }
 
-                const response = await fetch(`${API_BASE}/build-resume`, {
+                const response = await fetch("http://localhost:3000/build-resume", {
                     method: "POST",
                     body: formData
                 });
@@ -1426,7 +1436,7 @@
                 const userEmail = localStorage.getItem("userEmail");
                 if (userEmail) {
                     try {
-                        const profRes = await fetch(`${API_BASE}/get_profile?email=${encodeURIComponent(userEmail)}`);
+                        const profRes = await fetch(`http://localhost:3000/get_profile?email=${encodeURIComponent(userEmail)}`);
                         if (profRes.ok) {
                             const profData = await profRes.json();
                             if (profData.shortBio) formData.append("shortBio", profData.shortBio);
@@ -1436,7 +1446,7 @@
                     } catch (e) { console.error(e); }
                 }
 
-                const response = await fetch(`${API_BASE}/build-resume-latex`, {
+                const response = await fetch("http://localhost:3000/build-resume-latex", {
                     method: "POST",
                     body: formData
                 });
@@ -1588,7 +1598,7 @@
                 formData.append("resume", blob, fileName);
                 formData.append("jobText", jobDesc);
 
-                const res = await fetch(`${API_BASE}/generate-cover-letter`, {
+                const res = await fetch("http://localhost:3000/generate-cover-letter", {
                     method: "POST",
                     body: formData
                 });
@@ -1657,7 +1667,7 @@
                     const formData = new FormData();
                     formData.append("coverLetterText", currentCoverLetterText);
 
-                    const resp = await fetch(`${API_BASE}/build-cover-letter-latex`, {
+                    const resp = await fetch("http://localhost:3000/build-cover-letter-latex", {
                         method: "POST",
                         body: formData
                     });

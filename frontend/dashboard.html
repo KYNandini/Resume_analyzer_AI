@@ -29,7 +29,8 @@
 
             <!-- Profile Section -->
             <h3 class="section-heading dark-text">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                 </svg>
@@ -40,19 +41,22 @@
                 <img id="profileImage" src="logo.png" class="profile-avatar" alt="Profile" onclick="openProfileModal()">
                 <div class="profile-info-new">
                     <div class="profile-name-row">
-                        <span id="userName" class="profile-name">Mahajaya S N</span>
-                        <button class="btn-edit-badge" onclick="openProfileModal()"><span style="color: #f97316;">✏️</span> <span data-i18n="btn.edit_profile">Edit</span></button>
+                        <span id="userName" class="profile-name">User</span>
+                        <button class="btn-edit-badge" onclick="openProfileModal()"><span
+                                style="color: #f97316;">✏️</span> <span
+                                data-i18n="btn.edit_profile">Edit</span></button>
                     </div>
-                    <div id="userRole" class="profile-role">💻 Senior Software Engineer</div>
-                    <div id="userEmail" class="profile-email">majisn123@gmail.com</div>
-                    <div id="userDOB" class="profile-dob">18-08-2005</div>
+                    <div id="userRole" class="profile-role">💻 Member</div>
+                    <div id="userEmail" class="profile-email">---</div>
+                    <div id="userDOB" class="profile-dob">---</div>
                 </div>
                 <input type="file" id="imageUpload" hidden>
             </div>
 
             <!-- Upload Resume Section -->
             <h3 class="section-heading dark-text" style="margin-top: 2px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="17 8 12 3 7 8"></polyline>
                     <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -87,16 +91,20 @@
             <div class="sample-roles-section">
                 <div class="sample-roles-title">Choose a sample role</div>
                 <div class="sample-roles-list">
-                    <button type="button" class="sample-role-btn" onclick="selectSampleRole('python_dev')">Python Developer</button>
-                    <button type="button" class="sample-role-btn" onclick="selectSampleRole('python_sw_dev')">Python Software Developer</button>
-                    <button type="button" class="sample-role-btn" onclick="selectSampleRole('senior_sw_eng')">Senior Software Engineer</button>
+                    <button type="button" class="sample-role-btn" onclick="selectSampleRole('python_dev')">Python
+                        Developer</button>
+                    <button type="button" class="sample-role-btn" onclick="selectSampleRole('python_sw_dev')">Python
+                        Software Developer</button>
+                    <button type="button" class="sample-role-btn" onclick="selectSampleRole('senior_sw_eng')">Senior
+                        Software Engineer</button>
                 </div>
             </div>
 
             <!-- Job Description Section -->
             <div class="jd-header-row">
                 <h3 class="section-heading dark-text" style="margin-bottom: 0;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                         <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -108,15 +116,23 @@
                 <button type="button" class="btn-clear-jd" onclick="clearJobDesc()">Clear</button>
             </div>
 
-            <textarea id="jobDesc" class="job-desc-textarea" placeholder="Paste the complete job description here... Include the job title, requirements, responsibilities, skills, qualifications, and company information."></textarea>
+            <textarea id="jobDesc" class="job-desc-textarea"
+                placeholder="Paste the complete job description here... Include the job title, requirements, responsibilities, skills, qualifications, and company information."></textarea>
 
             <div class="jd-info-box">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 1px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                <div>Copy and paste the complete job description from any job posting. Our AI will compare it with your resume to understand the required skills, experience, and keywords.</div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 1px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <div>Copy and paste the complete job description from any job posting. Our AI will compare it with your
+                    resume to understand the required skills, experience, and keywords.</div>
             </div>
 
             <div class="jd-hint">
-                <span class="lightbulb">💡</span> Paste a complete job description with at least 50 characters for accurate AI analysis
+                <span class="lightbulb">💡</span> Paste a complete job description with at least 50 characters for
+                accurate AI analysis
             </div>
 
             <div class="char-counter-container">
@@ -131,7 +147,11 @@
 
             <div class="import-url-section">
                 <div class="import-url-link" onclick="toggleUrlImport()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
                     Import job description from a URL <span id="urlToggleArrow">^</span>
                 </div>
                 <div id="urlInputGroupContainer" style="display: block;">
@@ -139,7 +159,9 @@
                         <input type="text" id="jobUrlInput" placeholder="Paste job posting URL">
                         <button class="btn-import" onclick="importJobUrl()">Import</button>
                     </div>
-                    <div id="urlErrorMsg" style="color: #ef4444; font-size: 0.72rem; margin-top: 4px; display: none; font-weight: 600;">Invalid URL</div>
+                    <div id="urlErrorMsg"
+                        style="color: #ef4444; font-size: 0.72rem; margin-top: 4px; display: none; font-weight: 600;">
+                        Invalid URL</div>
                     <div class="import-supports">Supports LinkedIn, Naukri, Indeed, Glassdoor</div>
                 </div>
             </div>
@@ -158,14 +180,18 @@
             </div>
 
             <button id="analyzeBtn" class="btn-analyze" onclick="analyzeResume()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
                 <span data-i18n="btn.analyze">Analyze Resume</span>
             </button>
             <div id="loadingBox" style="display:none; text-align: center; margin-top: 4px;">
-                <div class="spinner" style="border: 3px solid #f3f3f3; border-top: 3px solid #0d9488; border-radius: 50%; width: 22px; height: 22px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-                <p class="loading-text" style="color: #0d9488; font-weight: 700; font-size: 0.82rem; margin-top: 6px;">AI is analyzing your resume...</p>
+                <div class="spinner"
+                    style="border: 3px solid #f3f3f3; border-top: 3px solid #0d9488; border-radius: 50%; width: 22px; height: 22px; animation: spin 1s linear infinite; margin: 0 auto;">
+                </div>
+                <p class="loading-text" style="color: #0d9488; font-weight: 700; font-size: 0.82rem; margin-top: 6px;">
+                    AI is analyzing your resume...</p>
             </div>
         </div>
 
@@ -176,7 +202,8 @@
             <!-- Top Utility Bar -->
             <div class="top-nav">
                 <button class="btn-logout-nav" onclick="logout()">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
                         <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -192,14 +219,16 @@
                     </select>
                 </div>
 
-                <button id="themeToggleBtn" class="btn-theme-toggle" title="Switch to dark mode" onclick="toggleTheme()">🌙</button>
+                <button id="themeToggleBtn" class="btn-theme-toggle" title="Switch to dark mode"
+                    onclick="toggleTheme()">🌙</button>
             </div>
 
             <!-- Welcome Banner -->
             <div class="welcome-banner">
                 <div class="welcome-banner-text">
-                    <h1>👋 Welcome, <span id="welcomeUserName">Mahajaya</span>!</h1>
-                    <p>Analyze your resume, match it with job requirements, and discover ATS keywords, skill gaps, and improvement areas.</p>
+                    <h1>👋 Welcome, <span id="welcomeUserName">User</span>!</h1>
+                    <p>Analyze your resume, match it with job requirements, and discover ATS keywords, skill gaps, and
+                        improvement areas.</p>
                 </div>
 
                 <div class="welcome-logo-badge" title="AI Resume Analyser">
@@ -209,7 +238,8 @@
 
             <!-- Resume Analysis History Section -->
             <div class="history-section-header">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                 </svg>
                 <span data-i18n="nav.history">Your Resume Analysis History</span>
@@ -217,8 +247,13 @@
 
             <div class="history-controls">
                 <div class="search-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" id="historySearch" placeholder="Search by filename or job title..." oninput="renderAnalysisHistory()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="search-icon">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="historySearch" placeholder="Search by filename or job title..."
+                        oninput="renderAnalysisHistory()">
                 </div>
                 <div class="sort-box">
                     <label for="historySort">Sort by:</label>
@@ -273,8 +308,10 @@
                 <div class="photo-area">
                     <div class="avatar" id="avatarImage">MS</div>
                     <div class="photo-actions">
-                        <input type="file" id="modalImageUpload" accept="image/png, image/jpeg" style="display: none;" onchange="handleModalImageChange(this)">
-                        <button class="btn-outline" onclick="document.getElementById('modalImageUpload').click()">Change photo</button>
+                        <input type="file" id="modalImageUpload" accept="image/png, image/jpeg" style="display: none;"
+                            onchange="handleModalImageChange(this)">
+                        <button class="btn-outline" onclick="document.getElementById('modalImageUpload').click()">Change
+                            photo</button>
                         <span class="photo-hint">PNG or JPG, up to 2 MB</span>
                     </div>
                 </div>
@@ -282,7 +319,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Full name</label>
-                        <input type="text" id="p_name" placeholder="Mahajaya S N">
+                        <input type="text" id="p_name" placeholder="Your Full Name">
                     </div>
                     <div class="form-group">
                         <label>Job title</label>
@@ -290,11 +327,12 @@
                     </div>
                     <div class="form-group">
                         <label>Email address</label>
-                        <input type="email" id="p_email" readonly style="background: #f8fafc; cursor: not-allowed;" placeholder="majisn123@gmail.com">
+                        <input type="email" id="p_email" readonly style="background: #f8fafc; cursor: not-allowed;"
+                            placeholder="your.email@example.com">
                     </div>
                     <div class="form-group">
                         <label>Date of birth</label>
-                        <input type="text" id="p_dob" placeholder="18-08-2005">
+                        <input type="text" id="p_dob" placeholder="DD-MM-YYYY">
                     </div>
                     <div class="form-group full-width">
                         <label>Location</label>
@@ -312,7 +350,8 @@
                 <div class="form-group full-width">
                     <label>Professional summary</label>
                     <textarea id="p_bio" placeholder="I am a ... professional with experience in ..."></textarea>
-                    <span class="photo-hint" style="margin-top: 4px;">Aim for two to four sentences. Focus on your strengths, experience, and the value you bring.</span>
+                    <span class="photo-hint" style="margin-top: 4px;">Aim for two to four sentences. Focus on your
+                        strengths, experience, and the value you bring.</span>
                 </div>
             </div>
 
@@ -364,72 +403,10 @@
          SCRIPTS & LOGIC
          ───────────────────────────────────────────────────────── -->
     <script>
-        const API_BASE = (window.location.port === "8000") ? "http://localhost:3000" : "";
         let pendingProfileImage = null;
 
-        // Sample history entries matching the exact reference UI
-        const DEFAULT_SAMPLE_HISTORY = [
-            {
-                id: "hist-1",
-                fileName: "Mahajaya Updated Resume.pdf",
-                timestamp: "Sep 29, 2026, 12:27 AM",
-                fileSize: "0.31 MB",
-                fileType: "PDF",
-                jobTitle: "Job: PYTHON DEVELOPER ...",
-                fullJobDesc: "Python Developer with strong experience in building backend APIs, Django/FastAPI applications, and database optimizations.",
-                data: {
-                    matchPercent: 46,
-                    efficiencyPercent: 54,
-                    matchingSkills: ["Python", "Django", "FastAPI", "SQL", "Git", "REST APIs", "Docker", "Linux", "PostgreSQL", "OOP", "Data Structures", "Redis", "Unit Testing"],
-                    missingSkills: ["AWS", "Kubernetes", "GraphQL", "CI/CD", "Celery", "Kafka", "Microservices", "System Design", "Agile", "PyTest", "MongoDB", "Terraform", "Elasticsearch", "RabbitMQ", "HTML/CSS"]
-                }
-            },
-            {
-                id: "hist-2",
-                fileName: "Mahajaya-S-N-tailored-resume (...",
-                timestamp: "Sep 28, 2026, 11:09 PM",
-                fileSize: "0.10 MB",
-                fileType: "PDF",
-                jobTitle: "Job: PYTHON DEVELOPER ...",
-                fullJobDesc: "Python Developer with core engineering skills and cloud fundamentals.",
-                data: {
-                    matchPercent: 50,
-                    efficiencyPercent: 58,
-                    matchingSkills: ["Python", "Django", "FastAPI", "PostgreSQL"],
-                    missingSkills: ["AWS", "Docker", "Kubernetes", "CI/CD"]
-                }
-            },
-            {
-                id: "hist-3",
-                fileName: "Mahajay Resume (1).pdf",
-                timestamp: "Sep 9, 2026, 12:00 PM",
-                fileSize: "0.12 MB",
-                fileType: "PDF",
-                jobTitle: "Job: # Resume Analyzer AI - Skills Matc...",
-                fullJobDesc: "Resume Analyzer AI - Skills Match & ATS Optimization Role.",
-                data: {
-                    matchPercent: 38,
-                    efficiencyPercent: 46,
-                    matchingSkills: ["Python", "Django", "REST APIs", "SQL", "Git"],
-                    missingSkills: ["AWS", "Docker", "Kubernetes", "Redis", "Celery", "GraphQL", "Kafka", "System Design"]
-                }
-            },
-            {
-                id: "hist-4",
-                fileName: "Mahajay Resume (1).pdf",
-                timestamp: "Sep 3, 2026, 11:50 AM",
-                fileSize: "0.12 MB",
-                fileType: "PDF",
-                jobTitle: "Job: # Resume Analyzer AI - Skills Matc...",
-                fullJobDesc: "Resume Analyzer AI - Skills Match & ATS Optimization Role.",
-                data: {
-                    matchPercent: 38,
-                    efficiencyPercent: 46,
-                    matchingSkills: ["Python", "Django", "REST APIs", "SQL", "Git"],
-                    missingSkills: ["AWS", "Docker", "Kubernetes", "Redis", "Celery", "GraphQL", "Kafka", "System Design"]
-                }
-            }
-        ];
+        const API_BASE = (window.location.port === "8000") ? "http://localhost:3000" : "";
+        const DEFAULT_SAMPLE_HISTORY = [];
 
         // Sample Roles Definitions
         const SAMPLE_ROLES_DATA = {
@@ -488,7 +465,7 @@
             const analyzeBtn = document.getElementById("analyzeBtn");
 
             if (countEl) countEl.innerText = `${count} / 50`;
-            
+
             if (count >= 50) {
                 if (textEl) textEl.innerText = "Sufficient length to continue";
                 if (statusJd) {
@@ -522,24 +499,24 @@
                 let dob = localStorage.getItem("userDOB");
                 let image = localStorage.getItem("profileImage");
 
-                if (!name || name === "---" || name.trim() === "") name = "Mahajaya S N";
-                if (!role || role === "---" || role.trim() === "") role = "Senior Software Engineer";
-                if (!email || email === "---" || !email.includes("@")) email = "majisn123@gmail.com";
-                if (!dob || dob === "---" || dob.length < 5) dob = "18-08-2005";
+                if (!name || name === "---" || name.trim() === "") name = "User";
+                if (!role || role === "---" || role.trim() === "") role = "Software Professional";
+                if (!email || email === "---" || !email.includes("@")) email = "";
+                if (!dob || dob === "---" || dob.length < 5) dob = "";
 
                 document.getElementById("userName").innerText = name;
                 document.getElementById("userRole").innerText = "💻 " + role.replace("💻 ", "");
 
                 const welcomeEl = document.getElementById("welcomeUserName");
                 if (welcomeEl) {
-                    welcomeEl.innerText = name.split(" ")[0];
+                    welcomeEl.innerText = name.split(" ")[0] || "User";
                 }
 
-                document.getElementById("userEmail").innerText = email;
-                document.getElementById("userDOB").innerText = dob;
+                document.getElementById("userEmail").innerText = email || "Not signed in";
+                document.getElementById("userDOB").innerText = dob || "Not set";
 
                 if (!image || image.trim() === "" || image === "---") {
-                    image = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
+                    image = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || "User")}`;
                 }
                 document.getElementById("profileImage").src = image;
             }
@@ -561,10 +538,26 @@
                 }
             }
 
-            // Ensure analysisHistory is seeded if empty
+            // Ensure clean history list for logged-in user
             let savedHistory = localStorage.getItem("analysisHistory");
-            if (!savedHistory || JSON.parse(savedHistory).length === 0) {
-                localStorage.setItem("analysisHistory", JSON.stringify(DEFAULT_SAMPLE_HISTORY));
+            if (!savedHistory) {
+                localStorage.setItem("analysisHistory", JSON.stringify([]));
+            }
+
+            // Sync user's real uploaded resumes from database
+            const loggedInEmail = localStorage.getItem("userEmail");
+            if (loggedInEmail) {
+                try {
+                    fetch(`${API_BASE}/get_profile?email=${encodeURIComponent(loggedInEmail)}`)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(prof => {
+                            if (prof && Array.isArray(prof.history)) {
+                                localStorage.setItem("analysisHistory", JSON.stringify(prof.history));
+                                renderAnalysisHistory();
+                            }
+                        })
+                        .catch(e => console.log("Profile sync error:", e));
+                } catch (e) {}
             }
 
             try {
@@ -796,18 +789,18 @@
             if (item && item.data) {
                 localStorage.setItem("analysisResult", JSON.stringify(item.data));
                 localStorage.setItem("currentHistoryId", id);
-                
+
                 if (item.fullJobDesc) {
                     localStorage.setItem("currentJobDesc", item.fullJobDesc);
                 } else if (item.jobTitle) {
                     localStorage.setItem("currentJobDesc", item.jobTitle);
                 }
-                
+
                 if (item.fileDataUrl) {
                     localStorage.setItem("pendingResumeFileDataUrl", item.fileDataUrl);
                     localStorage.setItem("pendingResumeFileName", item.fileName || "resume.pdf");
                 }
-                
+
                 window.location.href = "analysis.html";
             } else {
                 alert("Report data not found.");
@@ -987,7 +980,7 @@
             const email = localStorage.getItem("userEmail");
             if (email) {
                 try {
-                    await fetch(`${API_BASE}/delete_history`, {
+                    await fetch("http://localhost:3000/delete_history", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email: email, id: id })
@@ -1017,7 +1010,7 @@
                 const formData = new FormData();
                 formData.append("resume", resumeFile);
 
-                const response = await fetch(`${API_BASE}/suggest-jd`, {
+                const response = await fetch("http://localhost:3000/suggest-jd", {
                     method: "POST",
                     body: formData
                 });
@@ -1029,7 +1022,7 @@
                 const data = await response.json();
                 textarea.value = data.suggestedJD;
                 updateJdCounters();
-                
+
                 localStorage.setItem("suggestedJD", data.suggestedJD);
                 window.location.href = "suggested_jd.html";
             } catch (err) {
@@ -1063,7 +1056,7 @@
                 const formData = new FormData();
                 formData.append("resume", resumeFile);
                 formData.append("jobText", jobDesc);
-                formData.append("email", localStorage.getItem("userEmail") || "majisn123@gmail.com");
+                formData.append("email", localStorage.getItem("userEmail") || "");
 
                 const response = await fetch(`${API_BASE}/analyze`, {
                     method: "POST",
@@ -1118,7 +1111,7 @@
             const urlInput = document.getElementById("jobUrlInput");
             const errorMsg = document.getElementById("urlErrorMsg");
             const url = urlInput.value.trim();
-            
+
             if (!url) {
                 errorMsg.innerText = "Please enter a URL";
                 errorMsg.style.display = "block";
@@ -1154,15 +1147,15 @@
             document.getElementById('profileModalOverlay').classList.add('active');
             currentStep = 1;
             updateModalUI();
-            const emailStr = localStorage.getItem("userEmail") || "majisn123@gmail.com";
+            const emailStr = localStorage.getItem("userEmail") || "";
             document.getElementById("p_email").value = emailStr;
-            document.getElementById("p_name").value = localStorage.getItem("userName") || "Mahajaya S N";
-            document.getElementById("p_role").value = localStorage.getItem("userRole") || "Senior Software Engineer";
-            document.getElementById("p_dob").value = localStorage.getItem("userDOB") || "18-08-2005";
-            document.getElementById("p_location").value = localStorage.getItem("userLocation") || "Bangalore, India";
-            document.getElementById("p_bio").value = localStorage.getItem("userBio") || "Experienced Senior Software Engineer with expertise in scalable Python cloud services and distributed architectures.";
-            document.getElementById("p_pref_title").value = localStorage.getItem("prefTitle") || "Senior Software Engineer";
-            document.getElementById("p_pref_loc").value = localStorage.getItem("prefLoc") || "Bangalore, India";
+            document.getElementById("p_name").value = localStorage.getItem("userName") || "";
+            document.getElementById("p_role").value = localStorage.getItem("userRole") || "Software Professional";
+            document.getElementById("p_dob").value = localStorage.getItem("userDOB") || "";
+            document.getElementById("p_location").value = localStorage.getItem("userLocation") || "";
+            document.getElementById("p_bio").value = localStorage.getItem("userBio") || "";
+            document.getElementById("p_pref_title").value = localStorage.getItem("prefTitle") || "";
+            document.getElementById("p_pref_loc").value = localStorage.getItem("prefLoc") || "";
 
             const profileImg = localStorage.getItem("profileImage");
             const avatar = document.getElementById("avatarImage");
@@ -1171,7 +1164,8 @@
                 avatar.innerText = "";
             } else {
                 avatar.style.backgroundImage = "none";
-                avatar.innerText = "MS";
+                const userInitial = (localStorage.getItem("userName") || "U").substring(0, 2).toUpperCase();
+                avatar.innerText = userInitial;
             }
         }
 
@@ -1199,16 +1193,16 @@
                 updateModalUI();
             } else {
                 // Save profile details
-                const name = document.getElementById("p_name").value.trim() || "Mahajaya S N";
-                const role = document.getElementById("p_role").value.trim() || "Senior Software Engineer";
-                const dob = document.getElementById("p_dob").value.trim() || "18-08-2005";
-                const loc = document.getElementById("p_location").value.trim() || "Bangalore, India";
+                const name = document.getElementById("p_name").value.trim() || localStorage.getItem("userName") || "User";
+                const role = document.getElementById("p_role").value.trim() || localStorage.getItem("userRole") || "Software Professional";
+                const dob = document.getElementById("p_dob").value.trim() || localStorage.getItem("userDOB") || "";
+                const loc = document.getElementById("p_location").value.trim() || localStorage.getItem("userLocation") || "";
                 const bio = document.getElementById("p_bio").value.trim();
                 const prefTitle = document.getElementById("p_pref_title").value.trim();
                 const prefLoc = document.getElementById("p_pref_loc").value.trim();
                 const workArr = document.getElementById("p_work_arr").value;
                 const empType = document.getElementById("p_emp_type").value;
-                
+
                 localStorage.setItem("userName", name);
                 localStorage.setItem("userRole", role);
                 localStorage.setItem("userDOB", dob);
