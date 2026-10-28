@@ -257,10 +257,11 @@ def signup_otp():
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        validation = validate_email(email, check_deliverability=True)
+        validation = validate_email(email, check_deliverability=False)
         email = validation.normalized.lower()
-    except EmailNotValidError as e:
-        return jsonify({"error": f"Email not found or invalid: {str(e)}"}), 400
+    except Exception:
+        if "@" not in email or "." not in email:
+            return jsonify({"error": "Please enter a valid email address."}), 400
 
     if users_collection.find_one({"email": {"$regex": f"^{email}$", "$options": "i"}}):
         return jsonify({"error": "Email is already registered. Please sign in."}), 400
@@ -275,13 +276,23 @@ def signup_otp():
     }
 
     # Always display OTP prominently in the terminal
-    print("\n" + "="*50, flush=True)
-    print(f"🔑 [SIGNUP REGISTRATION OTP] For: {email} ({name})", flush=True)
-    print(f"👉 OTP CODE: {otp} (Valid for 10 minutes)", flush=True)
-    print("="*50 + "\n", flush=True)
+    print("\n" + "="*60, flush=True)
+    print("           🔑 [SIGNUP REGISTRATION OTP] 🔑             ", flush=True)
+    print(f"  Name:     {name}", flush=True)
+    print(f"  Email:    {email}", flush=True)
+    print(f"  Time:     {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
+    print("  ------------------------------------------------------", flush=True)
+    print(f"  👉  YOUR REGISTRATION OTP IS: >>>  {otp}  <<<", flush=True)
+    print("  ------------------------------------------------------", flush=True)
+    print("  (Code is valid for 10 minutes)", flush=True)
+    print("="*60 + "\n", flush=True)
+    sys.stdout.flush()
 
     threading.Thread(target=send_signup_otp_email, args=(email, name, otp)).start()
-    return jsonify({"message": f"OTP sent to {email}. Please verify to complete registration.", "otp": otp if not is_online() else None}), 200
+    return jsonify({
+        "message": f"OTP sent to {email}. Please verify to complete registration.",
+        "otp": otp
+    }), 200
 
 
 @app.route("/verify-signup-otp", methods=["POST", "OPTIONS"])
@@ -867,10 +878,16 @@ def forgot_password():
     _reset_otps[email] = {"otp": otp, "expires": expires}
 
     # Always display OTP prominently in the terminal
-    print("\n" + "="*50, flush=True)
-    print(f"🔑 [PASSWORD RESET OTP] For: {email}", flush=True)
-    print(f"👉 OTP CODE: {otp} (Valid for 10 minutes)", flush=True)
-    print("="*50 + "\n", flush=True)
+    print("\n" + "="*60, flush=True)
+    print("           🔑 [PASSWORD RESET OTP] 🔑                 ", flush=True)
+    print(f"  Email:    {email}", flush=True)
+    print(f"  Time:     {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
+    print("  ------------------------------------------------------", flush=True)
+    print(f"  👉  YOUR RESET OTP IS: >>>  {otp}  <<<", flush=True)
+    print("  ------------------------------------------------------", flush=True)
+    print("  (Code is valid for 10 minutes)", flush=True)
+    print("="*60 + "\n", flush=True)
+    sys.stdout.flush()
 
     sender_email = os.getenv("EMAIL_USER")
     sender_pass = os.getenv("EMAIL_PASS")

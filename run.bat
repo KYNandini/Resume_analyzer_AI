@@ -12,7 +12,7 @@ start "Resume Analyzer - Frontend (Python)" cmd /k "python -m http.server 8000"
 ping -n 5 127.0.0.1 >nul
 
 :: Open the login page in default browser
-start "" http://localhost:8000/frontend/index.html
+start " http://localhost:8000/frontend/index.html"
 
 :: Inform user
 echo =========================================================
