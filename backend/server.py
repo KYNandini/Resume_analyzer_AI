@@ -39,14 +39,14 @@ def is_online():
         return False
 
 def send_signup_otp_email(to_email, user_name, otp):
-    if not is_online():
-        return
-
     sender_email = os.getenv("EMAIL_USER")
     sender_pass = os.getenv("EMAIL_PASS")
     
     if not sender_email or not sender_pass or sender_email == "your-email@gmail.com":
+        print(f"[Email] Skipping signup OTP to {to_email}: EMAIL_USER or EMAIL_PASS not configured.", flush=True)
         return
+
+    sender_pass = sender_pass.strip().replace(" ", "")
 
     try:
         msg = MIMEMultipart()
@@ -67,26 +67,60 @@ def send_signup_otp_email(to_email, user_name, otp):
         </div>
         """
         msg.attach(MIMEText(body, 'html'))
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=15)
         server.starttls()
         server.login(sender_email, sender_pass)
         server.sendmail(sender_email, to_email, msg.as_string())
         server.quit()
-        print(f"Registration OTP email sent to {to_email}", flush=True)
+        print(f"✅ Registration OTP email sent successfully to {to_email}", flush=True)
     except Exception as e:
-        print(f"Failed to send registration OTP email: {e}", flush=True)
+        print(f"❌ Failed to send registration OTP email to {to_email}: {e}", flush=True)
 
-def send_welcome_email(to_email, user_name):
-    if not is_online():
-        print(f"[Offline] Skipped welcome email to {to_email}")
-        return
-
+def send_reset_otp_email(to_email, otp):
     sender_email = os.getenv("EMAIL_USER")
     sender_pass = os.getenv("EMAIL_PASS")
     
     if not sender_email or not sender_pass or sender_email == "your-email@gmail.com":
-        print("Email configuration missing or using placeholders. Skipping email sending.")
+        print(f"[Email] Skipping password reset email to {to_email}: EMAIL_USER or EMAIL_PASS not configured.", flush=True)
         return
+
+    sender_pass = sender_pass.strip().replace(" ", "")
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = to_email
+        msg['Subject'] = "Password Reset OTP – Resume Analyzer AI"
+        body = f"""
+        <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:30px;border:1px solid #e0e0e0;border-radius:10px;">
+          <h2 style="color:#00a896;">Password Reset Request</h2>
+          <p>We received a request to reset your password. Use the verification OTP below. It is valid for <strong>10 minutes</strong>.</p>
+          <div style="font-size:2rem;font-weight:bold;letter-spacing:8px;text-align:center;
+                      background:#f0f2f5;padding:16px;border-radius:8px;margin:20px 0;color:#1a1a2e;">
+            {otp}
+          </div>
+          <p style="color:#888;font-size:0.82rem;">If you did not request a password reset, please ignore this email.</p>
+          <p>— The Resume Analyzer AI Team</p>
+        </div>
+        """
+        msg.attach(MIMEText(body, 'html'))
+        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=15)
+        server.starttls()
+        server.login(sender_email, sender_pass)
+        server.sendmail(sender_email, to_email, msg.as_string())
+        server.quit()
+        print(f"✅ Reset OTP email sent successfully to {to_email}", flush=True)
+    except Exception as e:
+        print(f"❌ Failed to send reset OTP email to {to_email}: {e}", flush=True)
+
+def send_welcome_email(to_email, user_name):
+    sender_email = os.getenv("EMAIL_USER")
+    sender_pass = os.getenv("EMAIL_PASS")
+    
+    if not sender_email or not sender_pass or sender_email == "your-email@gmail.com":
+        return
+
+    sender_pass = sender_pass.strip().replace(" ", "")
 
     try:
         msg = MIMEMultipart()
@@ -98,26 +132,27 @@ def send_welcome_email(to_email, user_name):
         
         msg.attach(MIMEText(body, 'html'))
         
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=15)
         server.starttls()
         server.login(sender_email, sender_pass)
         server.sendmail(sender_email, to_email, msg.as_string())
         server.quit()
+        print(f"✅ Welcome email sent to {to_email}", flush=True)
+    except Exception as e:
+        print(f"❌ Failed to send welcome email to {to_email}: {e}", flush=True)
         print(f"Welcome email sent successfully to {to_email}")
     except Exception as e:
         print(f"Failed to send email to {to_email}: {str(e)}")
 
 def send_scorecard_email(to_email, user_name, result, is_daily_reminder=False):
-    if not is_online():
-        print(f"[Offline] Skipped scorecard email to {to_email}")
-        return
-
     sender_email = os.getenv("EMAIL_USER")
     sender_pass = os.getenv("EMAIL_PASS")
     
     if not sender_email or not sender_pass or sender_email == "your-email@gmail.com":
-        print("Email configuration missing. Skipping scorecard email.")
+        print(f"[Email] Skipping scorecard email to {to_email}: EMAIL_USER not configured.", flush=True)
         return
+
+    sender_pass = sender_pass.strip().replace(" ", "")
 
     try:
         msg = MIMEMultipart()
@@ -168,7 +203,7 @@ def send_scorecard_email(to_email, user_name, result, is_daily_reminder=False):
         
         msg.attach(MIMEText(body, 'html'))
         
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=15)
         server.starttls()
         server.login(sender_email, sender_pass)
         server.sendmail(sender_email, to_email, msg.as_string())
@@ -435,6 +470,81 @@ def login():
         "employmentType": user.get("employmentType", ""),
         "history": user.get("history", [])
     }), 200
+
+
+@app.route("/forgot-password", methods=["POST", "OPTIONS"])
+def forgot_password():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+    data = request.json or {}
+    email = data.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    user = users_collection.find_one({"email": {"$regex": f"^{email}$", "$options": "i"}})
+    if not user:
+        return jsonify({"error": "No account found with this email"}), 404
+
+    otp = str(random.randint(100000, 999999))
+    expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+    _reset_otps[email] = {"otp": otp, "expires": expires}
+
+    print(f"🔑 [PASSWORD RESET OTP] For: {email} | Code: {otp}", flush=True)
+    threading.Thread(target=send_reset_otp_email, args=(email, otp)).start()
+    return jsonify({"message": "Password reset OTP sent to email."}), 200
+
+
+@app.route("/verify-reset-otp", methods=["POST", "OPTIONS"])
+def verify_reset_otp():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+    data = request.json or {}
+    email = data.get("email", "").strip().lower()
+    otp = data.get("otp", "").strip()
+
+    if not email or not otp:
+        return jsonify({"error": "Email and OTP are required"}), 400
+
+    record = _reset_otps.get(email)
+    if not record:
+        return jsonify({"error": "No OTP request found for this email"}), 400
+    if datetime.datetime.utcnow() > record["expires"]:
+        del _reset_otps[email]
+        return jsonify({"error": "OTP has expired. Please request a new one."}), 400
+    if record["otp"] != otp:
+        return jsonify({"error": "Invalid OTP code"}), 400
+
+    return jsonify({"message": "OTP verified successfully"}), 200
+
+
+@app.route("/reset-password", methods=["POST", "OPTIONS"])
+def reset_password():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+    data = request.json or {}
+    email = data.get("email", "").strip().lower()
+    otp = data.get("otp", "").strip()
+    new_password = data.get("newPassword", "").strip()
+
+    if not email or not otp or not new_password:
+        return jsonify({"error": "Missing required fields"}), 400
+    if len(new_password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters"}), 400
+
+    record = _reset_otps.get(email)
+    if not record:
+        return jsonify({"error": "No OTP request found for this email"}), 400
+    if datetime.datetime.utcnow() > record["expires"]:
+        del _reset_otps[email]
+        return jsonify({"error": "OTP has expired. Please request a new one."}), 400
+    if record["otp"] != otp:
+        return jsonify({"error": "Invalid OTP code"}), 400
+
+    hashed_password = generate_password_hash(new_password)
+    users_collection.update_one({"email": {"$regex": f"^{email}$", "$options": "i"}}, {"$set": {"password": hashed_password}})
+    del _reset_otps[email]
+    print(f"✅ Password successfully reset for: {email}", flush=True)
+    return jsonify({"message": "Password reset successfully"}), 200
 
 
 @app.route("/get_profile", methods=["GET", "OPTIONS"])
