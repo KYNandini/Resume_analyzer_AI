@@ -33,9 +33,10 @@ _signup_otps = {}
 def is_online():
     import socket
     try:
-        socket.create_connection(("1.1.1.1", 53), timeout=2)
+        s = socket.create_connection(("1.1.1.1", 53), timeout=0.6)
+        s.close()
         return True
-    except OSError:
+    except (OSError, Exception):
         return False
 
 def send_signup_otp_email(to_email, user_name, otp):
@@ -190,18 +191,163 @@ app = Flask(__name__)
 # Enable comprehensive CORS for all origins and headers
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# MongoDB Setup
+class OfflineCollection:
+    """Thread-safe, 100% offline local JSON-backed collection mimicking PyMongo API."""
+    def __init__(self, filename):
+        self.filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+        self.lock = threading.Lock()
+        self._load()
+
+    def _load(self):
+        if os.path.exists(self.filepath):
+            try:
+                with open(self.filepath, "r", encoding="utf-8") as f:
+                    self.docs = json.load(f)
+            except Exception:
+                self.docs = []
+        else:
+            self.docs = []
+
+    def _save(self):
+        try:
+            with open(self.filepath, "w", encoding="utf-8") as f:
+                json.dump(self.docs, f, default=str, indent=2)
+        except Exception as e:
+            print(f"[Offline DB] Error saving {self.filepath}: {e}", flush=True)
+
+    def _matches(self, doc, query):
+        import re
+        for k, v in query.items():
+            if isinstance(v, dict) and "$regex" in v:
+                pattern = v["$regex"]
+                flags = re.IGNORECASE if v.get("$options") == "i" else 0
+                if not re.search(pattern, str(doc.get(k, "")), flags):
+                    return False
+            elif doc.get(k) != v:
+                return False
+        return True
+
+    def find_one(self, query=None):
+        with self.lock:
+            self._load()
+            if not query:
+                return self.docs[0].copy() if self.docs else None
+            for doc in self.docs:
+                if self._matches(doc, query):
+                    return doc.copy()
+            return None
+
+    def find(self, query=None):
+        with self.lock:
+            self._load()
+            if not query:
+                return [d.copy() for d in self.docs]
+            return [d.copy() for d in self.docs if self._matches(d, query)]
+
+    def insert_one(self, doc):
+        with self.lock:
+            self._load()
+            d = doc.copy()
+            if "file_data" in d and isinstance(d["file_data"], bytes):
+                d["file_data"] = f"<binary:{len(d['file_data'])} bytes>"
+            self.docs.append(d)
+            self._save()
+            return type("InsertResult", (), {"inserted_id": str(uuid.uuid4())})()
+
+    def update_one(self, filter_query, update_spec):
+        with self.lock:
+            self._load()
+            for doc in self.docs:
+                if self._matches(doc, filter_query):
+                    if "$set" in update_spec:
+                        for sk, sv in update_spec["$set"].items():
+                            doc[sk] = sv
+                    if "$push" in update_spec:
+                        for pk, pv in update_spec["$push"].items():
+                            if pk not in doc or not isinstance(doc[pk], list):
+                                doc[pk] = []
+                            if isinstance(pv, dict) and "$each" in pv:
+                                items = pv["$each"]
+                                pos = pv.get("$position", len(doc[pk]))
+                                for item in reversed(items):
+                                    doc[pk].insert(pos, item)
+                            else:
+                                doc[pk].append(pv)
+                    self._save()
+                    return type("UpdateResult", (), {"modified_count": 1})()
+            return type("UpdateResult", (), {"modified_count": 0})()
+
+class DatabaseWrapper:
+    """Seamless proxy that uses remote MongoDB when online, and offline JSON storage when offline."""
+    def __init__(self, remote_col, offline_col):
+        self.remote = remote_col
+        self.offline = offline_col
+
+    def find_one(self, *args, **kwargs):
+        if self.remote is not None:
+            try:
+                res = self.remote.find_one(*args, **kwargs)
+                if res is not None:
+                    return res
+            except Exception:
+                pass
+        return self.offline.find_one(*args, **kwargs)
+
+    def insert_one(self, doc):
+        try:
+            self.offline.insert_one(doc)
+        except Exception:
+            pass
+        if self.remote is not None:
+            try:
+                return self.remote.insert_one(doc)
+            except Exception:
+                pass
+        return type("InsertResult", (), {"inserted_id": str(uuid.uuid4())})()
+
+    def update_one(self, filter_query, update_spec):
+        try:
+            self.offline.update_one(filter_query, update_spec)
+        except Exception:
+            pass
+        if self.remote is not None:
+            try:
+                res = self.remote.update_one(filter_query, update_spec)
+                if res and getattr(res, "modified_count", 0) > 0:
+                    return res
+            except Exception:
+                pass
+        return type("UpdateResult", (), {"modified_count": 1})()
+
+    def find(self, *args, **kwargs):
+        if self.remote is not None:
+            try:
+                return self.remote.find(*args, **kwargs)
+            except Exception:
+                pass
+        return self.offline.find(*args, **kwargs)
+
+# Database Setup (Supports both Online Cloud Atlas & 100% Offline Mode)
+offline_users = OfflineCollection("offline_users.json")
+offline_resumes = OfflineCollection("offline_resumes.json")
+
+remote_users = None
+remote_resumes = None
+
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
 try:
-    mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
-    client = MongoClient(mongo_uri)
-    db = client["resumeanalyzer"]
-    users_collection = db["users"]
-    resumes_collection = db["resumes"]
-    # Test connection
+    # 1.5 second timeout: never hangs when offline!
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=1500, connectTimeoutMS=1500)
     client.server_info()
-    print("Connected to MongoDB successfully!")
+    db = client["resumeanalyzer"]
+    remote_users = db["users"]
+    remote_resumes = db["resumes"]
+    print("✓ Connected to MongoDB Atlas!", flush=True)
 except Exception as e:
-    print(f"Could not connect to MongoDB: {e}")
+    print(f"ℹ️ Cloud MongoDB unreachable ({e}). Running in 100% OFFLINE local database mode!", flush=True)
+
+users_collection = DatabaseWrapper(remote_users, offline_users)
+resumes_collection = DatabaseWrapper(remote_resumes, offline_resumes)
 
 
 def extract_text_from_pdf(file_bytes):
@@ -211,7 +357,7 @@ def extract_text_from_pdf(file_bytes):
         text += page.get_text()
     
     # If standard text extraction yielded almost nothing, the PDF is a scanned image or photo!
-    if len(text.strip()) < 30:
+    if len(text.strip()) < 30 and is_online():
         print("[PDF Extract] Text layer is empty or scanned image. Invoking Gemini Vision OCR fallback...")
         try:
             import google.generativeai as genai
@@ -579,7 +725,8 @@ def analyze():
 
         user = users_collection.find_one({"email": email})
         user_name = user.get("name", "there") if user else "there"
-        threading.Thread(target=send_scorecard_email, args=(email, user_name, result)).start()
+        if is_online():
+            threading.Thread(target=send_scorecard_email, args=(email, user_name, result)).start()
 
     return jsonify(result)
 
