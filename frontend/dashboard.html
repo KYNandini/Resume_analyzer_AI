@@ -1070,9 +1070,17 @@
                 }
 
                 const data = await response.json();
-                localStorage.setItem("analysisResult", JSON.stringify(data));
+                try {
+                    localStorage.setItem("analysisResult", JSON.stringify(data));
+                } catch (e) {
+                    console.warn("Storage quota exceeded for analysisResult", e);
+                }
 
-                let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
+                let history = [];
+                try {
+                    history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
+                } catch (_) { history = []; }
+
                 const firstLineJob = jobDesc.split("\n")[0].substring(0, 45) + (jobDesc.length > 45 ? "..." : "");
 
                 const newEntry = {
@@ -1082,18 +1090,28 @@
                     fileSize: resumeFile ? (resumeFile.size / (1024 * 1024)).toFixed(2) + " MB" : "0.31 MB",
                     fileType: resumeFile ? resumeFile.name.split('.').pop().toUpperCase() : "PDF",
                     fileDataUrl: fileDataUrl,
-                    jobTitle: "Job: " + (firstLineJob || "PYTHON DEVELOPER ..."),
+                    jobTitle: "Job: " + (firstLineJob || "Target Role"),
                     fullJobDesc: jobDesc,
                     data: data
                 };
 
-                history.unshift(newEntry);
-                localStorage.setItem("analysisHistory", JSON.stringify(history));
+                try {
+                    history.unshift(newEntry);
+                    if (history.length > 8) history = history.slice(0, 8);
+                    localStorage.setItem("analysisHistory", JSON.stringify(history));
+                } catch (_) {
+                    try {
+                        const lightweight = history.slice(0, 5).map(h => ({ ...h, fileDataUrl: "" }));
+                        localStorage.setItem("analysisHistory", JSON.stringify(lightweight));
+                    } catch (_) { }
+                }
 
-                localStorage.setItem("currentHistoryId", newEntry.id);
-                localStorage.setItem("currentJobDesc", newEntry.fullJobDesc);
-                localStorage.setItem("pendingResumeFileDataUrl", newEntry.fileDataUrl);
-                localStorage.setItem("pendingResumeFileName", newEntry.fileName);
+                try {
+                    localStorage.setItem("currentHistoryId", newEntry.id);
+                    localStorage.setItem("currentJobDesc", newEntry.fullJobDesc);
+                    localStorage.setItem("pendingResumeFileName", newEntry.fileName);
+                    localStorage.setItem("pendingResumeFileDataUrl", newEntry.fileDataUrl);
+                } catch (_) { }
 
                 window.location.href = "analysis.html";
 
