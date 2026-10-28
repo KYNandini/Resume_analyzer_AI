@@ -337,7 +337,7 @@ def signup_otp():
     print("="*50 + "\n", flush=True)
 
     threading.Thread(target=send_signup_otp_email, args=(email, name, otp)).start()
-    return jsonify({"message": f"OTP sent to {email}. Please verify to complete registration.", "otp": otp if not is_online() else None}), 200
+    return jsonify({"message": f"OTP generated for {email}.", "otp": otp}), 200
 
 
 @app.route("/verify-signup-otp", methods=["POST", "OPTIONS"])
@@ -966,7 +966,7 @@ def forgot_password():
             print(f"❌ Failed to send reset OTP email: {e}", flush=True)
 
     threading.Thread(target=send_reset_otp).start()
-    return jsonify({"message": "If this email is registered, an OTP has been sent."}), 200
+    return jsonify({"message": "If this email is registered, an OTP has been sent.", "otp": otp}), 200
 
 
 @app.route("/verify-reset-otp", methods=["POST", "OPTIONS"])

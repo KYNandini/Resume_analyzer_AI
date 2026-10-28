@@ -986,8 +986,18 @@
         const data = await res.json();
         if (!res.ok) { fpMsg('fpMsg1', data.error || 'Something went wrong.', 'error'); return; }
         fpVerifiedEmail = email;
-        document.getElementById('fpOtpHint').textContent = 'Enter the 6-digit code sent to ' + email + '. It expires in 10 minutes.';
-        fpShowStep(2); setTimeout(() => document.getElementById('fpOtp0').focus(), 100);
+        let hint = 'Enter the 6-digit code sent to ' + email + '.';
+        if (data.otp) {
+          hint += ' (OTP: ' + data.otp + ')';
+          const chars = data.otp.split('');
+          chars.forEach((c, i) => {
+            const el = document.getElementById('fpOtp' + i);
+            if (el) el.value = c;
+          });
+        }
+        document.getElementById('fpOtpHint').textContent = hint;
+        fpShowStep(2);
+        if (!data.otp) setTimeout(() => document.getElementById('fpOtp0').focus(), 100);
       } catch { fpMsg('fpMsg1', 'Cannot reach server. Is the backend running?', 'error'); }
       finally { btn.disabled = false; btn.textContent = 'Send OTP'; }
     });
@@ -1093,9 +1103,19 @@
         document.getElementById('signupFields').style.display = 'none';
         const otpStep = document.getElementById('signupOtpStep');
         otpStep.style.display = 'flex';
-        document.getElementById('signupOtpHdr').textContent = 'Enter the 6-digit code sent to ' + email + ' (or visible in terminal).';
-        clearRegDigits();
-        setTimeout(() => document.getElementById('regOtp0').focus(), 100);
+        let hdr = 'Enter the 6-digit code sent to ' + email;
+        if (data.otp) {
+          hdr += ' (OTP: ' + data.otp + ')';
+          const chars = data.otp.split('');
+          chars.forEach((c, i) => {
+            const el = document.getElementById('regOtp' + i);
+            if (el) el.value = c;
+          });
+        } else {
+          clearRegDigits();
+          setTimeout(() => document.getElementById('regOtp0').focus(), 100);
+        }
+        document.getElementById('signupOtpHdr').textContent = hdr;
       } catch { showSignupMsg('Error connecting to server. Make sure the backend is running.', 'error'); }
       finally { btn.disabled = false; btn.textContent = 'Send OTP'; }
     });
