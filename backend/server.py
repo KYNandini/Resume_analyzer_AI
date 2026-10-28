@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import fitz  # PyMuPDF
 from pymongo import MongoClient
@@ -186,14 +186,35 @@ except ImportError:
 env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 load_dotenv(env_path) if os.path.exists(env_path) else load_dotenv()
 
-app = Flask(__name__)
+frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+app = Flask(__name__, static_folder=frontend_dir, static_url_path="")
 # Enable comprehensive CORS for all origins and headers
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+@app.route("/")
+def serve_index():
+    return send_from_directory(frontend_dir, "index.html")
+
+@app.route("/<path:path>")
+def serve_static(path):
+    file_path = os.path.join(frontend_dir, path)
+    if os.path.exists(file_path):
+        return send_from_directory(frontend_dir, path)
+    return jsonify({"error": "Not found"}), 404
+
 # MongoDB Setup
 try:
+    import certifi
+    ca = certifi.where()
+except Exception:
+    ca = None
+
+try:
     mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
-    client = MongoClient(mongo_uri)
+    if ca and ("mongodb+srv://" in mongo_uri or "ssl=true" in mongo_uri.lower() or "tls=true" in mongo_uri.lower()):
+        client = MongoClient(mongo_uri, tlsCAFile=ca)
+    else:
+        client = MongoClient(mongo_uri)
     db = client["resumeanalyzer"]
     users_collection = db["users"]
     resumes_collection = db["resumes"]

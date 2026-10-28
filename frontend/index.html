@@ -863,6 +863,7 @@
 
   <script src="i18n.js"></script>
   <script>
+    const API_BASE = (window.location.port === "8000") ? "http://localhost:3000" : "";
     // PANEL TOGGLE
     const container = document.getElementById('container');
     const overlayH1 = document.querySelector('#overlayContent h1');
@@ -978,7 +979,7 @@
       const btn = document.getElementById('fpSendOtp');
       btn.disabled = true; btn.textContent = 'Sending\u2026';
       try {
-        const res = await fetch('http://localhost:3000/forgot-password', {
+        const res = await fetch(`${API_BASE}/forgot-password`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
         });
@@ -998,7 +999,7 @@
       const btn = document.getElementById('fpVerifyOtp');
       btn.disabled = true; btn.textContent = 'Verifying\u2026';
       try {
-        const res = await fetch('http://localhost:3000/verify-reset-otp', {
+        const res = await fetch(`${API_BASE}/verify-reset-otp`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: fpVerifiedEmail, otp })
         });
@@ -1019,7 +1020,7 @@
       const btn = document.getElementById('fpResetPw');
       btn.disabled = true; btn.textContent = 'Resetting\u2026';
       try {
-        const res = await fetch('http://localhost:3000/reset-password', {
+        const res = await fetch(`${API_BASE}/reset-password`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: fpVerifiedEmail, otp, newPassword: newPw })
         });
@@ -1081,7 +1082,7 @@
       removeSignupMsg();
 
       try {
-        const response = await fetch('http://localhost:3000/signup-otp', {
+        const response = await fetch(`${API_BASE}/signup-otp`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password })
         });
@@ -1109,7 +1110,7 @@
       removeSignupMsg();
 
       try {
-        const response = await fetch('http://localhost:3000/verify-signup-otp', {
+        const response = await fetch(`${API_BASE}/verify-signup-otp`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: signupEmailPending, otp })
         });
@@ -1160,7 +1161,7 @@
       const password = document.getElementById('loginPassword').value.trim();
       if (!email || !password) { alert('Enter email and password.'); return; }
       try {
-        const response = await fetch('http://localhost:3000/login', {
+        const response = await fetch(`${API_BASE}/login`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });

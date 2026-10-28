@@ -364,6 +364,7 @@
          SCRIPTS & LOGIC
          ───────────────────────────────────────────────────────── -->
     <script>
+        const API_BASE = (window.location.port === "8000") ? "http://localhost:3000" : "";
         let pendingProfileImage = null;
 
         // Sample history entries matching the exact reference UI
@@ -986,7 +987,7 @@
             const email = localStorage.getItem("userEmail");
             if (email) {
                 try {
-                    await fetch("http://localhost:3000/delete_history", {
+                    await fetch(`${API_BASE}/delete_history`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email: email, id: id })
@@ -1016,7 +1017,7 @@
                 const formData = new FormData();
                 formData.append("resume", resumeFile);
 
-                const response = await fetch("http://localhost:3000/suggest-jd", {
+                const response = await fetch(`${API_BASE}/suggest-jd`, {
                     method: "POST",
                     body: formData
                 });
@@ -1064,7 +1065,7 @@
                 formData.append("jobText", jobDesc);
                 formData.append("email", localStorage.getItem("userEmail") || "majisn123@gmail.com");
 
-                const response = await fetch("http://localhost:3000/analyze", {
+                const response = await fetch(`${API_BASE}/analyze`, {
                     method: "POST",
                     body: formData
                 });
