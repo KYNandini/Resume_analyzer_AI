@@ -5,391 +5,510 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resume Analyser – Register / Login</title>
+  <meta name="description" content="Sign in or create an account on Resume Analyser to start optimizing your resume with AI-powered insights.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <!-- Fonts: using system font stack — no internet required -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * {
+    *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
-    html {
-      font-size: 13px;
+    :root {
+      --teal: #2bbbad;
+      --teal-dark: #00a896;
+      --teal-gradient: linear-gradient(135deg, #2bbbad 0%, #00b4a6 50%, #0099b4 100%);
+      --white: #ffffff;
+      --bg-light: #f4f6f8;
+      --text-dark: #1a1a2e;
+      --text-muted: #888;
+      --border: #e0e3e8;
+      --input-bg: #f0f2f5;
+      --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    body, button, input, select, textarea {
+      font-family: 'Times New Roman', Times, serif;
     }
 
     body {
-      background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url("https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop") no-repeat center center fixed;
+      background: linear-gradient(rgba(10, 20, 40, 0.4), rgba(10, 20, 40, 0.4)),
+                  url("resume_bg.jpeg") no-repeat center center fixed;
       background-size: cover;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      transition: background-image 0.5s ease-in-out;
+      transition: background 0.4s;
     }
 
-    body.register-mode {
-      background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url("https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop") no-repeat center center fixed;
-      background-size: cover;
+    /* TOP-RIGHT CONTROLS */
+    .top-controls {
+      position: fixed;
+      top: 18px;
+      right: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
     }
 
+    .lang-selector {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.97);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      transition: box-shadow 0.2s;
+      position: relative;
+    }
+
+    .lang-selector:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    }
+
+    .lang-flag {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .lang-selector select {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      font-family: 'Times New Roman', Times, serif;
+      cursor: pointer;
+      appearance: none;
+    }
+
+    .lang-caret {
+      font-size: 0.6rem;
+      color: #555;
+      pointer-events: none;
+    }
+
+    .dark-toggle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.97);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      transition: box-shadow 0.2s, background 0.3s;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    .dark-toggle:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    }
+
+    /* MAIN CARD */
     .container {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
       position: relative;
       overflow: hidden;
-      width: 780px;
-      max-width: 92vw;
-      height: 480px;
-      max-height: 85vh;
-      min-height: 440px;
+      width: 820px;
+      max-width: 95vw;
+      min-height: 520px;
+    }
+
+    /* SLIDING TEAL OVERLAY PANEL */
+    .overlay-container {
+      position: absolute;
+      top: 0;
+      left: 58%;
+      width: 42%;
+      height: 100%;
+      background: var(--teal-gradient);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 30px;
+      transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+      z-index: 20;
+      transform: translateX(0);
+    }
+
+    .container.right-panel-active .overlay-container {
+      transform: translateX(-138.1%);
+    }
+
+    .logo-panel {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      width: 110px;
+      height: auto;
+      border-radius: 8px;
+      z-index: 25;
+    }
+
+    .overlay-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      color: white;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .overlay-panel h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1.2;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+
+    .overlay-panel p {
+      font-size: 0.83rem;
+      opacity: 0.92;
+      line-height: 1.6;
+      max-width: 200px;
+    }
+
+    .btn-ghost {
+      margin-top: 16px;
+      border: 2px solid white;
+      background: transparent;
+      color: white;
+      border-radius: 22px;
+      padding: 10px 36px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: 'Times New Roman', Times, serif;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.25s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: none;
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    /* FORMS WRAPPER */
+    .form-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
     }
 
     .form-container {
       position: absolute;
       top: 0;
       height: 100%;
-      width: 50%;
-      transition: all 0.6s ease-in-out;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
     }
 
+    /* Sign In sits on the LEFT (0% to 58%) in default mode */
     .sign-in-container {
       left: 0;
-      z-index: 2;
+      width: 58%;
+      opacity: 1;
+      transform: translateX(0);
+      z-index: 5;
+      pointer-events: all;
     }
 
+    /* Sign Up sits on the RIGHT (42% to 100%) in sign-up mode */
     .sign-up-container {
-      left: 0;
+      left: 42%;
+      width: 58%;
       opacity: 0;
+      transform: translateX(40px);
       z-index: 1;
+      pointer-events: none;
     }
 
+    /* When Sign Up is active: Sign In hides to the left, Sign Up appears on the right */
     .container.right-panel-active .sign-in-container {
-      transform: translateX(100%);
+      opacity: 0;
+      transform: translateX(-40px);
+      z-index: 1;
+      pointer-events: none;
     }
 
     .container.right-panel-active .sign-up-container {
-      transform: translateX(100%);
       opacity: 1;
+      transform: translateX(0);
       z-index: 5;
-      animation: show 0.6s;
-    }
-
-    @keyframes show {
-
-      0%,
-      49.99% {
-        opacity: 0;
-        z-index: 1;
-      }
-
-      50%,
-      100% {
-        opacity: 1;
-        z-index: 5;
-      }
+      pointer-events: all;
     }
 
     form {
-      background: #fff;
+      background: transparent;
       display: flex;
       flex-direction: column;
-      padding: 0 32px;
-      height: 100%;
-      justify-content: center;
+      padding: 28px 38px;
       width: 100%;
       align-items: center;
       text-align: center;
-      gap: 6px;
+      gap: 0;
     }
 
     form h1 {
-      font-size: 1.25rem;
+      font-size: 1.35rem;
       font-weight: 800;
-      color: #1a1a2e;
-      margin-bottom: 2px;
+      color: var(--text-dark);
+      margin-bottom: 14px;
     }
 
-    form span {
-      font-size: 0.72rem;
-      color: #999;
-      letter-spacing: 0.02em;
-    }
-
-    input {
-      background: #f0f2f5;
-      border: 1.5px solid transparent;
-      border-radius: 8px;
-      padding: 8px 12px;
-      width: 100%;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.78rem;
-      color: #333;
-      outline: none;
-      transition: border-color 0.25s, box-shadow 0.25s;
-    }
-
-    input:focus {
-      border-color: #2bbbad;
-      box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.15);
-    }
-
-    button {
-      margin-top: 5px;
-      border-radius: 18px;
-      border: none;
-      padding: 8px 32px;
-      background: linear-gradient(135deg, #2bbbad, #00a896);
-      color: white;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 600;
-      font-size: 0.78rem;
-      cursor: pointer;
-      letter-spacing: 0.05em;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(43, 187, 173, 0.35);
-    }
-
-    .ghost {
-      background: transparent;
-      border: 2px solid white;
-      color: white;
-      margin-top: 10px;
-    }
-
-    .ghost:hover {
-      background: rgba(255, 255, 255, 0.15);
-      box-shadow: none;
-      transform: translateY(-1px);
-    }
-
-    form a {
-      font-size: 0.72rem;
-      color: #2bbbad;
-      text-decoration: none;
-    }
-
-    form a:hover {
-      text-decoration: underline;
-    }
-
+    /* Social icons */
     .social-container {
       display: flex;
       justify-content: center;
       gap: 10px;
-      margin: 2px 0;
+      margin-bottom: 10px;
     }
 
     .social-container a {
-      border: 1.5px solid #ddd;
+      border: 1.5px solid var(--border);
       border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 35px;
-      width: 35px;
+      height: 38px;
+      width: 38px;
       color: #555;
-      font-size: 14px;
+      font-size: 15px;
       text-decoration: none;
       transition: all 0.25s;
     }
 
-    .social-container a:hover.facebook {
-      background: #1877F2;
-      color: white;
-      border-color: #1877F2;
-    }
-
-    .social-container a:hover.github {
-      background: #333;
-      color: white;
-      border-color: #333;
-    }
-
-    .social-container a:hover.linkedin {
-      background: #0A66C2;
-      color: white;
-      border-color: #0A66C2;
-    }
+    .social-container a:hover.facebook { background: #1877F2; color: white; border-color: #1877F2; }
+    .social-container a:hover.github   { background: #333; color: white; border-color: #333; }
+    .social-container a:hover.linkedin { background: #0A66C2; color: white; border-color: #0A66C2; }
 
     .social-icon-facebook { color: #1877F2; }
     .social-icon-github   { color: #333; }
     .social-icon-linkedin { color: #0A66C2; }
 
-    .overlay-container {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: 50%;
-      height: 100%;
-      overflow: hidden;
-      transition: transform 0.6s ease-in-out;
-      z-index: 100;
+    .divider-text {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin: 4px 0 12px;
+      letter-spacing: 0.02em;
     }
 
-    .container.right-panel-active .overlay-container {
-      transform: translateX(-100%);
-    }
-
-    .overlay {
-      background: linear-gradient(135deg, #2bbbad 0%, #0099b4 100%);
-      position: relative;
-      left: -100%;
-      height: 100%;
-      width: 200%;
-      transform: translateX(0);
-      transition: transform 0.6s ease-in-out;
-    }
-
-    .container.right-panel-active .overlay {
-      transform: translateX(50%);
-    }
-
-    .overlay-panel {
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 0 35px;
-      text-align: center;
-      height: 100%;
-      width: 50%;
-      color: white;
-    }
-
-    .overlay-panel h1 {
-      font-size: 1.25rem;
-      font-weight: 800;
-      margin: 8px 0 5px;
-    }
-
-    .overlay-panel p {
-      font-size: 0.78rem;
-      line-height: 1.45;
-      opacity: 0.9;
-    }
-
-    .overlay-left {
-      transform: translateX(-20%);
-      transition: transform 0.6s ease-in-out;
-    }
-
-    .overlay-right {
-      right: 0;
-      transform: translateX(0);
-      transition: transform 0.6s ease-in-out;
-    }
-
-    .container.right-panel-active .overlay-left {
-      transform: translateX(0);
-    }
-
-    .container.right-panel-active .overlay-right {
-      transform: translateX(20%);
-    }
-
-    .logo-fixed {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      width: 100px;
-      height: auto;
-      border-radius: 6px;
-      z-index: 999;
-      pointer-events: none;
-    }
-
-    #signupFields {
+    /* Inputs */
+    .input-group {
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center;
+      margin-bottom: 9px;
     }
 
-    /* ── Forgot Password Modal ── */
+    .input-group input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1.5px solid transparent;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 0.83rem;
+      color: #333;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+    }
+
+    .input-group input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(43,187,173,0.15);
+      background: white;
+    }
+
+    .input-hint {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: left;
+      margin-top: 4px;
+      padding-left: 2px;
+    }
+
+    /* Primary button */
+    .btn-primary {
+      margin-top: 6px;
+      width: 100%;
+      max-width: 200px;
+      border-radius: 24px;
+      border: none;
+      padding: 11px 0;
+      background: var(--teal-gradient);
+      color: white;
+      font-family: 'Times New Roman', Times, serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 14px rgba(43,187,173,0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(43,187,173,0.45);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Tips box */
+    .tips-box {
+      width: 100%;
+      background: #f7f9fb;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: left;
+      margin-top: 12px;
+    }
+
+    .tips-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 7px;
+    }
+
+    .tips-header i {
+      color: var(--teal);
+      font-size: 0.8rem;
+    }
+
+    .tips-box ul {
+      list-style: disc;
+      padding-left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .tips-box ul li {
+      font-size: 0.72rem;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    form a.forgot-link {
+      font-size: 0.73rem;
+      color: var(--teal);
+      text-decoration: none;
+      align-self: flex-end;
+      margin: -4px 0 6px;
+    }
+
+    form a.forgot-link:hover { text-decoration: underline; }
+
+    /* FORGOT PASSWORD MODAL */
     .fp-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      -webkit-backdrop-filter: blur(4px);
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(5px);
       z-index: 9000;
       justify-content: center;
       align-items: center;
       animation: fpFadeIn 0.25s ease;
     }
 
-    .fp-overlay.active {
-      display: flex;
-    }
+    .fp-overlay.active { display: flex; }
 
-    @keyframes fpFadeIn {
-      from {
-        opacity: 0;
-      }
-
-      to {
-        opacity: 1;
-      }
-    }
+    @keyframes fpFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .fp-modal {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
-      padding: 40px 36px 32px;
-      width: 380px;
-      max-width: 95vw;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+      padding: 34px 32px 28px;
+      width: 410px;
+      max-width: 92vw;
       position: relative;
-      animation: fpSlideUp 0.3s cubic-bezier(.34, 1.56, .64, 1);
+      animation: fpSlideUp 0.3s cubic-bezier(.34,1.56,.64,1);
+      text-align: left;
     }
 
     @keyframes fpSlideUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.96);
-      }
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+    .fp-steps-indicator {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 20px;
+    }
+
+    .fp-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .fp-dot.active {
+      background: var(--teal);
+      transform: scale(1.2);
     }
 
     .fp-modal h2 {
-      font-size: 1.3rem;
+      font-size: 1.35rem;
       font-weight: 800;
-      color: #1a1a2e;
+      color: #1e293b;
       margin-bottom: 6px;
+      text-align: left;
     }
 
     .fp-modal p.fp-sub {
-      font-size: 0.78rem;
-      color: #888;
-      margin-bottom: 20px;
-      line-height: 1.5;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-bottom: 18px;
+      line-height: 1.55;
+      text-align: left;
     }
 
     .fp-modal .fp-close {
       position: absolute;
-      top: 14px;
-      right: 18px;
+      top: 18px;
+      right: 20px;
       background: none;
       border: none;
       font-size: 1.25rem;
-      color: #aaa;
+      color: #94a3b8;
       cursor: pointer;
       padding: 4px;
       margin: 0;
@@ -398,49 +517,50 @@
     }
 
     .fp-modal .fp-close:hover {
-      color: #333;
+      color: #334155;
       box-shadow: none;
       transform: none;
     }
 
     .fp-modal input {
-      background: #f0f2f5;
-      border: 1.5px solid transparent;
+      background: #f8fafc;
+      border: 1.5px solid #2bbbad;
       border-radius: 8px;
-      padding: 12px 16px;
+      padding: 12px 14px;
       width: 100%;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.85rem;
-      color: #333;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 0.88rem;
+      color: #334155;
       outline: none;
       margin-bottom: 12px;
       transition: border-color 0.25s, box-shadow 0.25s;
     }
 
     .fp-modal input:focus {
-      border-color: #2bbbad;
-      box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.15);
+      border-color: var(--teal-dark);
+      box-shadow: 0 0 0 3px rgba(43,187,173,0.18);
     }
 
     .fp-btn {
       width: 100%;
-      border-radius: 22px;
+      border-radius: 24px;
       border: none;
-      padding: 12px;
-      background: linear-gradient(135deg, #2bbbad, #00a896);
+      padding: 12px 0;
+      background: var(--teal-gradient);
       color: white;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 600;
-      font-size: 0.85rem;
+      font-family: 'Times New Roman', Times, serif;
+      font-weight: 700;
+      font-size: 0.88rem;
       cursor: pointer;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       transition: transform 0.2s, box-shadow 0.2s;
       margin-top: 4px;
+      box-shadow: 0 4px 14px rgba(43,187,173,0.35);
     }
 
     .fp-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(43, 187, 173, 0.35);
+      box-shadow: 0 8px 22px rgba(43,187,173,0.45);
     }
 
     .fp-btn:disabled {
@@ -450,13 +570,46 @@
       box-shadow: none;
     }
 
-    .fp-step {
-      display: none;
+    .fp-tips {
+      background: #f0f7ff;
+      border: 1px solid #dbeafe;
+      border-radius: 12px;
+      padding: 13px 15px;
+      margin-top: 16px;
     }
 
-    .fp-step.active {
-      display: block;
+    .fp-tips .tips-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #2563eb;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 7px;
     }
+
+    .info-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #dbeafe;
+      color: #2563eb;
+      font-size: 0.7rem;
+      font-weight: 800;
+      font-style: normal;
+    }
+
+    .fp-tips ul li {
+      color: #475569;
+      font-size: 0.74rem;
+      line-height: 1.55;
+    }
+
+    .fp-step { display: none; }
+    .fp-step.active { display: block; }
 
     .fp-msg {
       font-size: 0.78rem;
@@ -466,48 +619,18 @@
       display: none;
       text-align: center;
     }
-
-    .fp-msg.error {
-      background: #ffeaea;
-      color: #c0392b;
-      display: block;
-    }
-
-    .fp-msg.success {
-      background: #e6faf8;
-      color: #00897b;
-      display: block;
-    }
-
-    .fp-steps-indicator {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 22px;
-    }
-
-    .fp-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #ddd;
-      transition: background 0.3s, transform 0.3s;
-    }
-
-    .fp-dot.active {
-      background: #2bbbad;
-      transform: scale(1.3);
-    }
+    .fp-msg.error   { background: #ffeaea; color: #c0392b; display: block; }
+    .fp-msg.success { background: #e6faf8; color: #00897b; display: block; }
 
     .fp-back {
       background: none;
       border: none;
-      color: #2bbbad;
-      font-family: 'Montserrat', sans-serif;
+      color: var(--teal);
+      font-family: 'Times New Roman', Times, serif;
       font-size: 0.76rem;
       cursor: pointer;
       padding: 0;
-      margin: 10px 0 0;
+      margin: 12px 0 0;
       display: block;
       text-align: center;
       width: 100%;
@@ -516,20 +639,9 @@
       letter-spacing: 0;
       font-weight: 600;
     }
+    .fp-back:hover { text-decoration: underline; box-shadow: none; transform: none; }
 
-    .fp-back:hover {
-      text-decoration: underline;
-      box-shadow: none;
-      transform: none;
-    }
-
-    .otp-inputs {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-bottom: 12px;
-    }
-
+    .otp-inputs { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; }
     .otp-inputs input {
       width: 44px;
       height: 52px;
@@ -539,138 +651,184 @@
       padding: 0;
       margin-bottom: 0;
       border-radius: 8px;
-      border: 2px solid #ddd;
-      background: #f0f2f5;
+      border: 2px solid #e2e8f0;
+      background: #f8fafc;
       transition: border-color 0.25s, box-shadow 0.25s;
     }
-
     .otp-inputs input:focus {
-      border-color: #2bbbad;
-      box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.15);
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(43,187,173,0.18);
     }
 
-    .pw-wrap {
-      position: relative;
-      margin-bottom: 12px;
-    }
-
-    .pw-wrap input {
-      margin-bottom: 0;
-      padding-right: 42px;
-    }
-
+    .pw-wrap { position: relative; margin-bottom: 12px; }
+    .pw-wrap input { margin-bottom: 0; padding-right: 42px; }
     .pw-toggle {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: #aaa;
-      cursor: pointer;
-      padding: 0;
-      font-size: 0.95rem;
-      box-shadow: none;
-      margin: 0;
-      line-height: 1;
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: #aaa; cursor: pointer;
+      padding: 0; font-size: 0.95rem; box-shadow: none; margin: 0; line-height: 1;
     }
+    .pw-toggle:hover { color: var(--teal); box-shadow: none; transform: translateY(-50%); }
 
-    .pw-toggle:hover {
-      color: #2bbbad;
-      box-shadow: none;
-      transform: translateY(-50%);
+    @media (max-width: 600px) {
+      .container { display: flex; flex-direction: column; min-height: unset; height: auto; }
+      .overlay-container { position: relative !important; width: 100% !important; min-height: 180px !important; transform: none !important; border-radius: 20px 20px 0 0 !important; }
+      .form-wrapper { position: relative !important; width: 100% !important; height: auto !important; }
+      .form-container { position: relative !important; width: 100% !important; left: 0 !important; right: 0 !important; height: auto !important; transform: none !important; }
+      .sign-up-container { display: none; }
+      .container.right-panel-active .sign-in-container { display: none; }
+      .container.right-panel-active .sign-up-container { display: flex; }
     }
   </style>
 </head>
 
 <body>
 
+  <!-- TOP-RIGHT CONTROLS -->
+  <div class="top-controls">
+    <div class="lang-selector">
+      <span class="lang-flag">&#127468;&#127463;</span>
+      <select id="languageSelect" aria-label="Select language">
+        <option value="en">English</option>
+        <option value="hi">&#2361;&#2367;&#2306;&#2342;&#2368;</option>
+        <option value="kn">&#3221;&#3240;&#3277;&#3240;&#3233;</option>
+      </select>
+      <span class="lang-caret">&#9660;</span>
+    </div>
+    <button class="dark-toggle" id="darkToggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+      <i class="fas fa-moon" id="darkToggleIcon"></i>
+    </button>
+  </div>
+
+  <!-- MAIN CARD -->
   <div class="container" id="container">
 
-    <img src="logo.png" class="logo-fixed" alt="Resume Analyser Logo">
-
-    <!-- SIGN UP -->
-    <div class="form-container sign-up-container">
-      <form id="signUpForm">
-        <h1>Create Account</h1>
-        <div class="social-container">
-          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"
-            class="facebook"><i class="fab fa-facebook-f social-icon-facebook"></i></a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub" class="github"><i
-              class="fab fa-github social-icon-github"></i></a>
-          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"
-            class="linkedin"><i class="fab fa-linkedin-in social-icon-linkedin"></i></a>
-        </div>
-        <span>or use your email for registration</span>
-        <div id="signupFields">
-          <input type="text" id="regName" placeholder="Name" />
-          <input type="email" id="regEmail" placeholder="Email" />
-          <input type="password" id="regPassword" placeholder="Password" />
-          <button type="submit" id="signupBtn">Create Account</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- SIGN IN -->
-    <div class="form-container sign-in-container">
-      <form id="signInForm">
-        <h1>Sign in</h1>
-        <div class="social-container">
-          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"
-            class="facebook"><i class="fab fa-facebook-f social-icon-facebook"></i></a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub" class="github"><i
-              class="fab fa-github social-icon-github"></i></a>
-          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"
-            class="linkedin"><i class="fab fa-linkedin-in social-icon-linkedin"></i></a>
-        </div>
-        <span>or use your account</span>
-        <input type="email" id="loginEmail" placeholder="Email" />
-        <input type="password" id="loginPassword" placeholder="Password" />
-        <a href="#" id="forgotPasswordLink">Forgot your password?</a>
-        <button type="submit">Sign In</button>
-      </form>
-    </div>
-
-    <!-- OVERLAY -->
-    <div class="overlay-container">
-      <div class="overlay">
-        <div class="overlay-panel overlay-left">
-          <h1>Welcome Back!</h1>
-          <p>To keep connected with us please login with your personal info</p>
-          <button class="ghost" id="signIn" type="button">Sign In</button>
-        </div>
-        <div class="overlay-panel overlay-right">
-          <h1>Hello, Friend!</h1>
-          <p>Enter your personal details and start your journey with us</p>
-          <button class="ghost" id="signUp" type="button">Sign Up</button>
-        </div>
+    <!-- RIGHT TEAL PANEL (DEFAULT) -->
+    <div class="overlay-container" id="overlayPanel">
+      <img src="logo.png" class="logo-panel" alt="Resume Analyser Logo">
+      <div class="overlay-panel" id="overlayContent">
+        <h1>Hello, Friend!</h1>
+        <p>Enter your personal details and start your journey with us</p>
+        <button class="btn-ghost" id="signUpTrigger" type="button">Sign Up</button>
       </div>
     </div>
 
+    <!-- RIGHT FORM WRAPPER -->
+    <div class="form-wrapper">
+
+      <!-- SIGN IN FORM -->
+      <div class="form-container sign-in-container" id="signInContainer">
+        <form id="signInForm" autocomplete="on">
+          <h1 data-i18n="login.title">Sign In</h1>
+          <div class="social-container">
+            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook" class="facebook"><i class="fab fa-facebook-f social-icon-facebook"></i></a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub" class="github"><i class="fab fa-github social-icon-github"></i></a>
+            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn" class="linkedin"><i class="fab fa-linkedin-in social-icon-linkedin"></i></a>
+          </div>
+          <p class="divider-text" data-i18n="login.or_use_account">or use your account</p>
+          <div class="input-group">
+            <input type="email" id="loginEmail" placeholder="Email" data-i18n-placeholder="placeholder.email" autocomplete="email" />
+          </div>
+          <div class="input-group">
+            <input type="password" id="loginPassword" placeholder="Password" data-i18n-placeholder="placeholder.password" autocomplete="current-password" />
+          </div>
+          <a href="#" class="forgot-link" id="forgotPasswordLink" data-i18n="login.forgot_password">Forgot your password?</a>
+          <button type="submit" class="btn-primary" data-i18n="login.btn_signin">Sign In</button>
+          <p style="font-size:0.73rem;color:#888;margin-top:14px;">Don't have an account?
+            <a href="#" id="goToSignUp" style="color:var(--teal);font-weight:600;text-decoration:none;">Create one</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- SIGN UP / REGISTER FORM -->
+      <div class="form-container sign-up-container" id="signUpContainer">
+        <form id="signUpForm" autocomplete="off">
+          <h1 data-i18n="register.title">Create Account</h1>
+          <div class="social-container">
+            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook" class="facebook"><i class="fab fa-facebook-f social-icon-facebook"></i></a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub" class="github"><i class="fab fa-github social-icon-github"></i></a>
+            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn" class="linkedin"><i class="fab fa-linkedin-in social-icon-linkedin"></i></a>
+          </div>
+          <p class="divider-text" data-i18n="register.or_use_email">or use your email for registration</p>
+
+          <div id="signupFields" style="width:100%;display:flex;flex-direction:column;align-items:center;">
+            <div class="input-group">
+              <input type="text" id="regName" placeholder="Enter your full name" data-i18n-placeholder="placeholder.name" autocomplete="name" />
+            </div>
+            <div class="input-group">
+              <input type="email" id="regEmail" placeholder="Email address" data-i18n-placeholder="placeholder.email" autocomplete="email" />
+            </div>
+            <div class="input-group">
+              <input type="password" id="regPassword" placeholder="Password" data-i18n-placeholder="placeholder.password" autocomplete="new-password" />
+              <p class="input-hint">Password must contain at least 8 characters, including a number.</p>
+            </div>
+            <button type="submit" id="signupBtn" class="btn-primary" data-i18n="register.btn_create">Send OTP</button>
+
+            <div class="tips-box">
+              <div class="tips-header">
+                <i class="fas fa-info-circle"></i>
+                <span>Tips</span>
+              </div>
+              <ul>
+                <li>Check your terminal or email for the 6-digit OTP code.</li>
+                <li>The code will expire in 10 minutes.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- STEP 2: OTP VERIFICATION -->
+          <div id="signupOtpStep" style="width:100%;display:none;flex-direction:column;align-items:center;">
+            <p style="font-size:0.8rem;color:#475569;margin-bottom:12px;text-align:center;" id="signupOtpHdr">
+              Enter the 6-digit code sent to your email / terminal.
+            </p>
+            <div class="otp-inputs" id="regOtpInputs" style="margin-bottom:12px;">
+              <input type="text" maxlength="1" class="reg-otp-digit" id="regOtp0" inputmode="numeric" pattern="[0-9]">
+              <input type="text" maxlength="1" class="reg-otp-digit" id="regOtp1" inputmode="numeric" pattern="[0-9]">
+              <input type="text" maxlength="1" class="reg-otp-digit" id="regOtp2" inputmode="numeric" pattern="[0-9]">
+              <input type="text" maxlength="1" class="reg-otp-digit" id="regOtp3" inputmode="numeric" pattern="[0-9]">
+              <input type="text" maxlength="1" class="reg-otp-digit" id="regOtp4" inputmode="numeric" pattern="[0-9]">
+              <input type="text" maxlength="1" class="reg-otp-digit" id="regOtp5" inputmode="numeric" pattern="[0-9]">
+            </div>
+            <button type="button" id="verifySignupBtn" class="btn-primary" style="margin-top:4px;">Verify & Create Account</button>
+            <button type="button" class="fp-back" id="signupBackBtn" style="margin-top:10px;">&larr; Change registration details</button>
+          </div>
+
+          <p style="font-size:0.73rem;color:#888;margin-top:12px;">Already have an account?
+            <a href="#" id="goToSignIn" style="color:var(--teal);font-weight:600;text-decoration:none;">Sign in</a>
+          </p>
+        </form>
+      </div>
+
+    </div>
   </div>
 
-  <!-- ── FORGOT PASSWORD MODAL ── -->
+  <!-- FORGOT PASSWORD MODAL -->
   <div class="fp-overlay" id="fpOverlay">
     <div class="fp-modal" id="fpModal">
       <button class="fp-close" id="fpClose" title="Close">&times;</button>
-
-      <!-- Step indicator -->
       <div class="fp-steps-indicator">
         <div class="fp-dot active" id="fpDot1"></div>
         <div class="fp-dot" id="fpDot2"></div>
         <div class="fp-dot" id="fpDot3"></div>
       </div>
-
-      <!-- STEP 1: Enter email -->
       <div class="fp-step active" id="fpStep1">
         <h2>Forgot Password?</h2>
         <p class="fp-sub">Enter the email address linked to your account and we'll send you a reset OTP.</p>
         <input type="email" id="fpEmail" placeholder="Your email address" autocomplete="email" />
         <button class="fp-btn" id="fpSendOtp">Send OTP</button>
         <div class="fp-msg" id="fpMsg1"></div>
-      </div>
 
-      <!-- STEP 2: Enter OTP -->
+        <div class="tips-box fp-tips">
+          <div class="tips-header">
+            <span class="info-badge">i</span>
+            <span>Tips</span>
+          </div>
+          <ul>
+            <li>Check your spam folder if you don't see the code.</li>
+            <li>The code will expire in 10 minutes.</li>
+            <li>You can request a new code if needed.</li>
+          </ul>
+        </div>
+      </div>
       <div class="fp-step" id="fpStep2">
         <h2>Enter OTP</h2>
         <p class="fp-sub" id="fpOtpHint">Enter the 6-digit code sent to your email. It expires in 10 minutes.</p>
@@ -686,8 +844,6 @@
         <div class="fp-msg" id="fpMsg2"></div>
         <button class="fp-back" id="fpBackToEmail">&larr; Change email</button>
       </div>
-
-      <!-- STEP 3: Set new password -->
       <div class="fp-step" id="fpStep3">
         <h2>New Password</h2>
         <p class="fp-sub">Choose a strong new password (at least 6 characters).</p>
@@ -702,77 +858,90 @@
         <button class="fp-btn" id="fpResetPw">Reset Password</button>
         <div class="fp-msg" id="fpMsg3"></div>
       </div>
-
     </div>
   </div>
 
+  <script src="i18n.js"></script>
   <script>
     // PANEL TOGGLE
-    document.getElementById('signUp').addEventListener('click', () => {
-      document.getElementById('container').classList.add("right-panel-active");
-      document.body.classList.add("register-mode");
+    const container = document.getElementById('container');
+    const overlayH1 = document.querySelector('#overlayContent h1');
+    const overlayP  = document.querySelector('#overlayContent p');
+    const triggerBtn = document.getElementById('signUpTrigger');
+
+    let isSignUpMode = false;
+
+    function showSignUp() {
+      isSignUpMode = true;
+      container.classList.add('right-panel-active');
+      overlayH1.textContent = 'Welcome Back!';
+      overlayP.textContent = 'To keep connected with us please login with your personal info';
+      triggerBtn.textContent = 'Sign In';
+    }
+
+    function showSignIn() {
+      isSignUpMode = false;
+      container.classList.remove('right-panel-active');
+      overlayH1.textContent = 'Hello, Friend!';
+      overlayP.textContent = 'Enter your personal details and start your journey with us';
+      triggerBtn.textContent = 'Sign Up';
+    }
+
+    triggerBtn.addEventListener('click', () => {
+      if (isSignUpMode) showSignIn(); else showSignUp();
     });
-    document.getElementById('signIn').addEventListener('click', () => {
-      document.getElementById('container').classList.remove("right-panel-active");
-      document.body.classList.remove("register-mode");
+    document.getElementById('goToSignUp').addEventListener('click', (e) => { e.preventDefault(); showSignUp(); });
+    document.getElementById('goToSignIn').addEventListener('click', (e) => { e.preventDefault(); showSignIn(); });
+
+    // DARK MODE TOGGLE
+    const darkToggle = document.getElementById('darkToggle');
+    const darkIcon   = document.getElementById('darkToggleIcon');
+    let isDark = false;
+    darkToggle.addEventListener('click', () => {
+      isDark = !isDark;
+      document.body.style.filter = isDark ? 'brightness(0.85) saturate(0.8)' : '';
+      darkIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
     });
 
-    // ── FORGOT PASSWORD MODAL LOGIC ──────────────────────────────────────
-    const fpOverlay = document.getElementById('fpOverlay');
-    const fpModal = document.getElementById('fpModal');
-    const fpClose = document.getElementById('fpClose');
+    // FORGOT PASSWORD MODAL
+    const fpOverlay    = document.getElementById('fpOverlay');
     const fpEmailInput = document.getElementById('fpEmail');
     let fpVerifiedEmail = '';
 
     function fpShowStep(n) {
-      [1, 2, 3].forEach(i => {
-        document.getElementById(`fpStep${i}`).classList.toggle('active', i === n);
-        document.getElementById(`fpDot${i}`).classList.toggle('active', i === n);
+      [1,2,3].forEach(i => {
+        document.getElementById('fpStep'+i).classList.toggle('active', i === n);
+        document.getElementById('fpDot'+i).classList.toggle('active', i === n);
       });
       clearFpMsgs();
     }
     function clearFpMsgs() {
-      ['fpMsg1', 'fpMsg2', 'fpMsg3'].forEach(id => {
+      ['fpMsg1','fpMsg2','fpMsg3'].forEach(id => {
         const el = document.getElementById(id);
-        el.textContent = '';
-        el.className = 'fp-msg';
+        el.textContent = ''; el.className = 'fp-msg';
       });
     }
     function fpMsg(id, text, type) {
       const el = document.getElementById(id);
-      el.textContent = text;
-      el.className = `fp-msg ${type}`;
+      el.textContent = text; el.className = 'fp-msg ' + type;
     }
     function openFpModal() {
-      fpOverlay.classList.add('active');
-      fpShowStep(1);
-      fpEmailInput.value = '';
-      clearFpDigits();
+      fpOverlay.classList.add('active'); fpShowStep(1);
+      fpEmailInput.value = ''; clearFpDigits();
       document.getElementById('fpNewPw').value = '';
       document.getElementById('fpConfirmPw').value = '';
       fpVerifiedEmail = '';
       setTimeout(() => fpEmailInput.focus(), 100);
     }
-    function closeFpModal() {
-      fpOverlay.classList.remove('active');
-    }
-    function clearFpDigits() {
-      document.querySelectorAll('.fp-otp-digit').forEach(i => i.value = '');
-    }
-    function getFpOtp() {
-      return Array.from(document.querySelectorAll('.fp-otp-digit')).map(i => i.value).join('');
-    }
+    function closeFpModal() { fpOverlay.classList.remove('active'); }
+    function clearFpDigits() { document.querySelectorAll('.fp-otp-digit').forEach(i => i.value = ''); }
+    function getFpOtp() { return Array.from(document.querySelectorAll('.fp-otp-digit')).map(i => i.value).join(''); }
 
-    // Open/close handlers
-    document.getElementById('forgotPasswordLink').addEventListener('click', e => {
-      e.preventDefault();
-      openFpModal();
-    });
-    fpClose.addEventListener('click', closeFpModal);
+    document.getElementById('forgotPasswordLink').addEventListener('click', e => { e.preventDefault(); openFpModal(); });
+    document.getElementById('fpClose').addEventListener('click', closeFpModal);
     fpOverlay.addEventListener('click', e => { if (e.target === fpOverlay) closeFpModal(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFpModal(); });
 
-    // OTP box: auto-advance on digit input, backspace to go back
     document.querySelectorAll('.fp-otp-digit').forEach((input, idx, all) => {
       input.addEventListener('input', () => {
         input.value = input.value.replace(/[^0-9]/g, '').slice(-1);
@@ -790,7 +959,6 @@
       });
     });
 
-    // Password visibility toggles
     document.getElementById('fpToggle1').addEventListener('click', () => {
       const inp = document.getElementById('fpNewPw');
       const icon = document.querySelector('#fpToggle1 i');
@@ -804,64 +972,44 @@
       icon.className = inp.type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
     });
 
-    // STEP 1: Send OTP
     document.getElementById('fpSendOtp').addEventListener('click', async () => {
       const email = fpEmailInput.value.trim();
       if (!email || !email.includes('@')) { fpMsg('fpMsg1', 'Please enter a valid email address.', 'error'); return; }
       const btn = document.getElementById('fpSendOtp');
-      btn.disabled = true; btn.textContent = 'Sending...';
+      btn.disabled = true; btn.textContent = 'Sending\u2026';
       try {
         const res = await fetch('http://localhost:3000/forgot-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
         });
         const data = await res.json();
         if (!res.ok) { fpMsg('fpMsg1', data.error || 'Something went wrong.', 'error'); return; }
         fpVerifiedEmail = email;
-        document.getElementById('fpOtpHint').textContent =
-          `Enter the 6-digit code sent to ${email}. It expires in 10 minutes.`;
-        fpShowStep(2);
-        setTimeout(() => document.getElementById('fpOtp0').focus(), 100);
-      } catch (err) {
-        fpMsg('fpMsg1', 'Cannot reach server. Is the backend running?', 'error');
-      } finally {
-        btn.disabled = false; btn.textContent = 'Send OTP';
-      }
+        document.getElementById('fpOtpHint').textContent = 'Enter the 6-digit code sent to ' + email + '. It expires in 10 minutes.';
+        fpShowStep(2); setTimeout(() => document.getElementById('fpOtp0').focus(), 100);
+      } catch { fpMsg('fpMsg1', 'Cannot reach server. Is the backend running?', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Send OTP'; }
     });
     fpEmailInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('fpSendOtp').click(); });
 
-    // STEP 2: Verify OTP
     document.getElementById('fpVerifyOtp').addEventListener('click', async () => {
       const otp = getFpOtp();
       if (otp.length !== 6) { fpMsg('fpMsg2', 'Please enter all 6 digits.', 'error'); return; }
       const btn = document.getElementById('fpVerifyOtp');
-      btn.disabled = true; btn.textContent = 'Verifying...';
+      btn.disabled = true; btn.textContent = 'Verifying\u2026';
       try {
-        // Lightweight check: send email+otp to backend with a dummy password
-        // We do a pre-check by calling reset-password with a sentinel flag
         const res = await fetch('http://localhost:3000/verify-reset-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: fpVerifiedEmail, otp })
         });
         const data = await res.json();
         if (!res.ok) { fpMsg('fpMsg2', data.error || 'Invalid OTP.', 'error'); return; }
-        fpShowStep(3);
-        setTimeout(() => document.getElementById('fpNewPw').focus(), 100);
-      } catch (err) {
-        fpMsg('fpMsg2', 'Cannot reach server.', 'error');
-      } finally {
-        btn.disabled = false; btn.textContent = 'Verify OTP';
-      }
+        fpShowStep(3); setTimeout(() => document.getElementById('fpNewPw').focus(), 100);
+      } catch { fpMsg('fpMsg2', 'Cannot reach server.', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Verify OTP'; }
     });
+    document.getElementById('fpBackToEmail').addEventListener('click', () => { clearFpDigits(); fpShowStep(1); });
 
-    document.getElementById('fpBackToEmail').addEventListener('click', () => {
-      clearFpDigits();
-      fpShowStep(1);
-    });
-
-    // STEP 3: Reset password
     document.getElementById('fpResetPw').addEventListener('click', async () => {
       const newPw = document.getElementById('fpNewPw').value.trim();
       const confirmPw = document.getElementById('fpConfirmPw').value.trim();
@@ -869,133 +1017,167 @@
       if (newPw.length < 6) { fpMsg('fpMsg3', 'Password must be at least 6 characters.', 'error'); return; }
       if (newPw !== confirmPw) { fpMsg('fpMsg3', 'Passwords do not match.', 'error'); return; }
       const btn = document.getElementById('fpResetPw');
-      btn.disabled = true; btn.textContent = 'Resetting...';
+      btn.disabled = true; btn.textContent = 'Resetting\u2026';
       try {
         const res = await fetch('http://localhost:3000/reset-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: fpVerifiedEmail, otp, newPassword: newPw })
         });
         const data = await res.json();
         if (!res.ok) { fpMsg('fpMsg3', data.error || 'Reset failed.', 'error'); return; }
-        fpMsg('fpMsg3', '✅ Password reset! Redirecting to sign in…', 'success');
+        fpMsg('fpMsg3', '\u2705 Password reset! Redirecting to sign in\u2026', 'success');
         setTimeout(() => {
-          closeFpModal();
-          document.getElementById('container').classList.remove('right-panel-active');
-          document.body.classList.remove('register-mode');
+          closeFpModal(); showSignIn();
           document.getElementById('loginEmail').value = fpVerifiedEmail;
           document.getElementById('loginPassword').value = '';
           document.getElementById('loginPassword').focus();
         }, 1800);
-      } catch (err) {
-        fpMsg('fpMsg3', 'Cannot reach server.', 'error');
-      } finally {
-        btn.disabled = false; btn.textContent = 'Reset Password';
-      }
+      } catch { fpMsg('fpMsg3', 'Cannot reach server.', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Reset Password'; }
     });
-    // ── END FORGOT PASSWORD LOGIC ─────────────────────────────────────────
 
-    // SIGN UP – direct registration with welcome email notification
+    // SIGN UP OTP DIGIT NAVIGATION
+    let signupEmailPending = '';
+
+    document.querySelectorAll('.reg-otp-digit').forEach((input, idx, all) => {
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/[^0-9]/g, '').slice(-1);
+        if (input.value && idx < all.length - 1) all[idx + 1].focus();
+      });
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !input.value && idx > 0) all[idx - 1].focus();
+      });
+      input.addEventListener('paste', e => {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+        [...pasted].forEach((ch, i) => { if (all[i]) all[i].value = ch; });
+        const next = all[Math.min(pasted.length, 5)];
+        if (next) next.focus();
+      });
+    });
+
+    function getRegOtp() {
+      return Array.from(document.querySelectorAll('.reg-otp-digit')).map(i => i.value).join('');
+    }
+    function clearRegDigits() {
+      document.querySelectorAll('.reg-otp-digit').forEach(i => i.value = '');
+    }
+
+    // SIGN UP - STEP 1: SEND OTP
     document.getElementById('signUpForm').addEventListener('submit', async function (e) {
       e.preventDefault();
-      const name = document.getElementById('regName').value.trim();
-      const email = document.getElementById('regEmail').value.trim();
+      const name     = document.getElementById('regName').value.trim();
+      const email    = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value.trim();
 
-      if (!name || name.length < 2) { showSignupMsg('Enter a valid name.', 'error'); return; }
-      if (!email || !email.includes('@')) { showSignupMsg('Enter a valid email.', 'error'); return; }
-      if (!password || password.length < 6) { showSignupMsg('Password must be at least 6 characters.', 'error'); return; }
+      if (!name || name.length < 2)         { showSignupMsg('Enter a valid name.', 'error'); return; }
+      if (!/^[A-Za-z\s]+$/.test(name))      { showSignupMsg('Name can only contain letters and spaces.', 'error'); return; }
+      if (!email || !email.includes('@'))    { showSignupMsg('Enter a valid email.', 'error'); return; }
+      if (!password || password.length < 8) { showSignupMsg('Password must be at least 8 characters.', 'error'); return; }
+      if (!/\d/.test(password))             { showSignupMsg('Password must include at least one number.', 'error'); return; }
 
       const btn = document.getElementById('signupBtn');
-      btn.disabled = true;
-      btn.textContent = 'Creating account…';
+      btn.disabled = true; btn.textContent = 'Sending OTP\u2026';
+      removeSignupMsg();
 
       try {
-        const response = await fetch('http://localhost:3000/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch('http://localhost:3000/signup-otp', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password })
         });
-
         const data = await response.json();
-        if (!response.ok) {
-          showSignupMsg(data.error || 'Registration failed.', 'error');
-          return;
-        }
+        if (!response.ok) { showSignupMsg(data.error || 'Failed to send OTP.', 'error'); return; }
 
-        // Show success notification and redirect to sign in
-        showSignupMsg('✅ Account created! A welcome email has been sent. Redirecting to sign in…', 'success');
-        document.getElementById('signUpForm').reset();
-        setTimeout(() => {
-          document.getElementById('container').classList.remove('right-panel-active');
-          document.body.classList.remove('register-mode');
-          removeSignupMsg();
-        }, 2800);
-      } catch (err) {
-        showSignupMsg('Error connecting to server. Make sure the backend is running.', 'error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Create Account';
-      }
+        signupEmailPending = email;
+        document.getElementById('signupFields').style.display = 'none';
+        const otpStep = document.getElementById('signupOtpStep');
+        otpStep.style.display = 'flex';
+        document.getElementById('signupOtpHdr').textContent = 'Enter the 6-digit code sent to ' + email + ' (or visible in terminal).';
+        clearRegDigits();
+        setTimeout(() => document.getElementById('regOtp0').focus(), 100);
+      } catch { showSignupMsg('Error connecting to server. Make sure the backend is running.', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Send OTP'; }
     });
 
-    // Signup inline message helpers
-    function showSignupMsg(text, type) {
+    // SIGN UP - STEP 2: VERIFY OTP & CREATE ACCOUNT
+    document.getElementById('verifySignupBtn').addEventListener('click', async function () {
+      const otp = getRegOtp();
+      if (otp.length !== 6) { showSignupMsg('Please enter all 6 OTP digits.', 'error', 'signupOtpStep'); return; }
+
+      const btn = document.getElementById('verifySignupBtn');
+      btn.disabled = true; btn.textContent = 'Verifying\u2026';
+      removeSignupMsg();
+
+      try {
+        const response = await fetch('http://localhost:3000/verify-signup-otp', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: signupEmailPending, otp })
+        });
+        const data = await response.json();
+        if (!response.ok) { showSignupMsg(data.error || 'OTP verification failed.', 'error', 'signupOtpStep'); return; }
+
+        showSignupMsg('\u2705 Account created! Welcome email sent. Redirecting to sign in\u2026', 'success', 'signupOtpStep');
+        document.getElementById('signUpForm').reset();
+        clearRegDigits();
+
+        setTimeout(() => {
+          document.getElementById('signupFields').style.display = 'flex';
+          document.getElementById('signupOtpStep').style.display = 'none';
+          showSignIn();
+          removeSignupMsg();
+          document.getElementById('loginEmail').value = signupEmailPending;
+          document.getElementById('loginPassword').value = '';
+          document.getElementById('loginPassword').focus();
+        }, 2200);
+      } catch { showSignupMsg('Error connecting to server.', 'error', 'signupOtpStep'); }
+      finally { btn.disabled = false; btn.textContent = 'Verify & Create Account'; }
+    });
+
+    document.getElementById('signupBackBtn').addEventListener('click', function () {
+      document.getElementById('signupFields').style.display = 'flex';
+      document.getElementById('signupOtpStep').style.display = 'none';
+      removeSignupMsg();
+    });
+
+    function showSignupMsg(text, type, parentId = 'signupFields') {
       removeSignupMsg();
       const msg = document.createElement('div');
       msg.id = 'signupMsg';
       msg.textContent = text;
-      msg.style.cssText = `
-        font-size: 0.75rem; padding: 9px 14px; border-radius: 8px; width: 100%;
-        text-align: center; margin-top: 2px; line-height: 1.45; font-weight: 500;
-        background: ${type === 'success' ? '#e6faf8' : '#ffeaea'};
-        color: ${type === 'success' ? '#00897b' : '#c0392b'};
-        border: 1px solid ${type === 'success' ? '#b2dfdb' : '#f5c6cb'};
-      `;
-      document.getElementById('signupFields').appendChild(msg);
+      msg.style.cssText = 'font-size:0.75rem;padding:9px 14px;border-radius:8px;width:100%;text-align:center;margin-top:6px;line-height:1.45;font-weight:500;' +
+        'background:' + (type === 'success' ? '#e6faf8' : '#ffeaea') + ';' +
+        'color:' + (type === 'success' ? '#00897b' : '#c0392b') + ';' +
+        'border:1px solid ' + (type === 'success' ? '#b2dfdb' : '#f5c6cb') + ';';
+      const targetParent = document.getElementById(parentId) || document.getElementById('signupFields');
+      targetParent.appendChild(msg);
     }
-    function removeSignupMsg() {
-      const old = document.getElementById('signupMsg');
-      if (old) old.remove();
-    }
+    function removeSignupMsg() { const old = document.getElementById('signupMsg'); if (old) old.remove(); }
 
-    // SIGN IN (MONGODB INTEGRATED)
+    // SIGN IN
     document.getElementById('signInForm').addEventListener('submit', async function (e) {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
+      const email    = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
-
-      if (!email || !password) { alert("Enter email and password."); return; }
-
+      if (!email || !password) { alert('Enter email and password.'); return; }
       try {
-        const response = await fetch("http://localhost:3000/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const response = await fetch('http://localhost:3000/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
-
         const data = await response.json();
-        if (!response.ok) {
-          alert(data.error || "Invalid login credentials.");
-          return;
-        }
-
+        if (!response.ok) { alert(data.error || 'Invalid login credentials.'); return; }
         localStorage.clear();
-        localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("userName", data.name);
-        localStorage.setItem("userEmail", data.email);
-        localStorage.setItem("userRole", data.role || "Senior Software Engineer");
-        localStorage.setItem("userDOB", data.dob || "01-01-2005");
-        localStorage.setItem("profileImage", data.profileImage || "");
-        localStorage.setItem("analysisHistory", JSON.stringify(data.history || []));
-
-        window.location.href = "dashboard.html";
-      } catch (err) {
-        alert("Error connecting to server: " + err.message);
-      }
+        localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('userName', data.name);
+        localStorage.setItem('userEmail', data.email);
+        localStorage.setItem('userRole', data.role || 'Senior Software Engineer');
+        localStorage.setItem('userDOB', data.dob || '01-01-2005');
+        localStorage.setItem('profileImage', data.profileImage || '');
+        localStorage.setItem('analysisHistory', JSON.stringify(data.history || []));
+        window.location.href = 'dashboard.html';
+      } catch (err) { alert('Error connecting to server: ' + err.message); }
     });
   </script>
 
 </body>
-
 </html>

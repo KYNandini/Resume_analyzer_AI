@@ -8,6 +8,7 @@
     <meta name="description"
         content="View your AI-powered resume analysis results with semantic skill matching, missing skills, and personalized improvement suggestions.">
     <!-- Fonts: using system font stack — no internet required -->
+    <script src="vendor/html2pdf.bundle.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -725,7 +726,6 @@
         #missingHeader {
             margin-top: 4px;
         }
-
     </style>
 </head>
 
@@ -736,7 +736,8 @@
         <!-- ─── LEFT PANEL ─────────────────────────────── -->
         <div class="left-panel">
             <div class="header">
-                <button class="back-btn" onclick="window.location.href='dashboard.html'" title="Back to Dashboard" id="backBtn">←</button>
+                <button class="back-btn" onclick="window.location.href='dashboard.html'" title="Back to Dashboard"
+                    id="backBtn">←</button>
                 <div class="header-text">
                     <h1>Analysis Overview</h1>
                     <p>Semantic AI evaluation against job description</p>
@@ -758,7 +759,8 @@
                     <p class="sub" id="matchSub">Calculating...</p>
                 </div>
                 <div class="score-card">
-                    <h3>Missing Skills</h3>
+                    <h3><span data-i18n="text.missing_skills">Missing Skills</span>
+                    </h3>
                     <div class="donut-wrap">
                         <svg viewBox="0 0 84 84">
                             <circle class="donut-bg" cx="42" cy="42" r="34" />
@@ -816,8 +818,20 @@
                 </svg>
                 Analyze Another Resume
             </button>
-            <button class="reupload-btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); margin-top: 10px;" onclick="buildTailoredResume()" id="buildResumeBtn">
+            <button class="reupload-btn"
+                style="background: linear-gradient(135deg, #0d9488, #059669); margin-top: 10px;"
+                onclick="downloadCurrentAnalysisReport()" id="downloadReportBtn">
+                📥 Download Analysis Report (PDF)
+            </button>
+            <button class="reupload-btn"
+                style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); margin-top: 10px;"
+                onclick="buildTailoredResume()" id="buildResumeBtn">
                 ✨ Build Tailored Resume
+            </button>
+            <button class="reupload-btn"
+                style="background: linear-gradient(135deg, #0284c7, #0369a1); margin-top: 10px;"
+                onclick="buildTailoredResume('coverLetter')" id="genCoverLetterBtn">
+                ✉️ Generate Cover Letter
             </button>
         </div>
 
@@ -1034,12 +1048,188 @@
             window.location.href = "dashboard.html";
         }
 
-        // Tailored Resume Logic
-        function buildTailoredResume() {
+        // Tailored Resume & Cover Letter Logic
+        function buildTailoredResume(action) {
+            try {
+                const data = JSON.parse(localStorage.getItem("analysisResult"));
+                if (data) {
+                    const missing = data.missingSkills || data.missing || [];
+                    localStorage.setItem("tailorMissingSkills", JSON.stringify(missing));
+                }
+                const jobDesc = localStorage.getItem("currentJobDesc");
+                if (jobDesc) {
+                    localStorage.setItem("tailorJobDesc", jobDesc);
+                }
+                if (action === 'coverLetter') {
+                    localStorage.setItem("openCoverLetterOnLoad", "true");
+                } else {
+                    localStorage.removeItem("openCoverLetterOnLoad");
+                }
+            } catch (e) {
+                console.error("Error saving tailored resume state:", e);
+            }
             window.location.href = "resume_builder.html";
         }
+
+        // Download Analysis Report in PDF format
+        function downloadCurrentAnalysisReport() {
+            const data = JSON.parse(localStorage.getItem("analysisResult"));
+            if (!data) {
+                alert("No active analysis data found.");
+                return;
+            }
+
+            const fileName = localStorage.getItem("pendingResumeFileName") || "Resume.pdf";
+            const jobTitle = localStorage.getItem("currentJobDesc") || "Target Job Role";
+            const matchPct = data.matchPercent ?? data.score ?? 0;
+            const effPct = data.efficiencyPercent ?? data.atsScore ?? matchPct;
+            const missingPct = data.missingPercent ?? (100 - matchPct);
+            const matched = data.matchingSkills || data.matched || [];
+            const missing = data.missingSkills || data.missing || [];
+            const feedback = data.overallFeedback || (matchPct >= 70 ? "Your skill profile strongly aligns with the core requirements of this role. Minor additions will maximize ATS pass-through." : "Targeted enhancements recommended. Prioritize addressing the missing skills listed below to improve keyword matching.");
+
+            const matchedHtml = matched.map(s => {
+                const name = typeof s === 'string' ? s : (s.skill || s);
+                const cat = typeof s === 'object' ? (s.category || '') : '';
+                return `
+                    <span style="display:inline-block; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:bold; margin:2px;">
+                        ✓ ${name} ${cat ? `<small style="color:#166534; font-weight:normal;">(${cat})</small>` : ''}
+                    </span>
+                `;
+            }).join(" ") || "<p style='color:#64748b; font-size:12px; margin:0;'>No matching skills recorded.</p>";
+
+            const missingHtml = missing.map(s => {
+                const name = typeof s === 'string' ? s : (s.skill || s);
+                const pri = typeof s === 'object' ? (s.priority || 'Medium') : 'Medium';
+                const cat = typeof s === 'object' ? (s.category || 'General') : 'General';
+                const priColor = pri === 'High' ? '#ef4444' : (pri === 'Low' ? '#10b981' : '#f59e0b');
+                const priBg = pri === 'High' ? '#fee2e2' : (pri === 'Low' ? '#f0fdf4' : '#fffbeb');
+                const sugg = typeof s === 'object' ? (s.suggestion || getFallbackSuggestion(name)) : getFallbackSuggestion(name);
+                return `
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; margin-bottom:6px;">
+                        <div style="margin-bottom:3px;">
+                            <strong style="color:#b91c1c; font-size:12px;">⚠ ${name}</strong>
+                            <span style="background:#e2e8f0; color:#475569; font-size:9px; font-weight:bold; padding:1px 5px; border-radius:3px; margin-left:4px;">${cat}</span>
+                            <span style="background:${priBg}; color:${priColor}; font-size:9px; font-weight:bold; padding:1px 6px; border-radius:8px; float:right;">${pri} Priority</span>
+                        </div>
+                        <p style="color:#475569; font-size:11px; margin:0; line-height:1.4;">💡 <strong>Suggestion:</strong> ${sugg}</p>
+                    </div>
+                `;
+            }).join("") || "<p style='color:#15803d; font-size:12px; font-weight:bold; margin:0;'>🎉 Perfect match! No missing skills identified.</p>";
+
+            const cleanFileName = fileName.replace(/\.[^/.]+$/, "");
+            const safePdfName = `${cleanFileName}_Analysis_Report.pdf`;
+            const firstLineJob = jobTitle.split("\n")[0].substring(0, 50) + (jobTitle.length > 50 ? "..." : "");
+
+            const reportHtml = `
+                <div style="font-family: Arial, sans-serif; color: #0f172a; background-color: #ffffff; padding: 20px; box-sizing: border-box; width: 100%;">
+                    <div style="border-bottom: 2px solid #0d9488; padding-bottom: 10px; margin-bottom: 14px;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td>
+                                    <div style="font-size: 20px; font-weight: bold; color: #0f172a;">
+                                        <span style="color: #0d9488;">AI Resume</span> Analyzer
+                                    </div>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                                        Comprehensive ATS Match &amp; Semantic Skill Evaluation Report
+                                    </div>
+                                </td>
+                                <td style="text-align: right;">
+                                    <span style="background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 10px;">
+                                        ✓ ATS VERIFIED REPORT
+                                    </span>
+                                    <div style="margin-top: 4px; font-size: 10px; color: #64748b;">Date: ${new Date().toLocaleDateString()}</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-bottom: 14px;">
+                        <table style="width: 100%; font-size: 11px;">
+                            <tr>
+                                <td style="padding: 3px 0;"><strong style="color: #475569;">📄 Resume File:</strong> <span style="color: #0f172a; font-weight: bold;">${fileName}</span></td>
+                                <td style="padding: 3px 0;"><strong style="color: #475569;">🎯 Target Role:</strong> <span style="color: #0f172a; font-weight: bold;">${firstLineJob.replace(/^Job:\s*/i, "")}</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 3px 0;"><strong style="color: #475569;">💾 Report Type:</strong> <span style="color: #0f172a; font-weight: bold;">Deep Semantic Analysis</span></td>
+                                <td style="padding: 3px 0;"><strong style="color: #475569;">🛡️ Evaluation Engine:</strong> <span style="color: #0d9488; font-weight: bold;">Semantic NLP + ATS Algorithm</span></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <table style="width: 100%; margin-bottom: 14px; border-collapse: separate; border-spacing: 8px 0;">
+                        <tr>
+                            <td style="width: 33.33%; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px; text-align: center;">
+                                <div style="font-size: 10px; font-weight: bold; color: #1e40af; text-transform: uppercase;">Job Match Score</div>
+                                <div style="font-size: 22px; font-weight: bold; color: #2563eb; margin: 3px 0;">${matchPct}%</div>
+                                <div style="font-size: 10px; color: #3b82f6; font-weight: bold;">${matched.length} Skills Matched</div>
+                            </td>
+                            <td style="width: 33.33%; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 10px; text-align: center;">
+                                <div style="font-size: 10px; font-weight: bold; color: #991b1b; text-transform: uppercase;">Missing Skills Gap</div>
+                                <div style="font-size: 22px; font-weight: bold; color: #ef4444; margin: 3px 0;">${missingPct}%</div>
+                                <div style="font-size: 10px; color: #dc2626; font-weight: bold;">${missing.length} Gaps Identified</div>
+                            </td>
+                            <td style="width: 33.33%; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 10px; text-align: center;">
+                                <div style="font-size: 10px; font-weight: bold; color: #166534; text-transform: uppercase;">ATS Readiness Score</div>
+                                <div style="font-size: 22px; font-weight: bold; color: #10b981; margin: 3px 0;">${effPct}%</div>
+                                <div style="font-size: 10px; color: #15803d; font-weight: bold;">${effPct >= 70 ? '✓ ATS Ready' : '⚠ Optimization Needed'}</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="margin-bottom: 14px;">
+                        <div style="font-size: 12px; font-weight: bold; color: #0f172a; margin-bottom: 5px;">
+                            📊 Overall AI Evaluation &amp; Feedback
+                        </div>
+                        <div style="font-size: 11px; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3.5px solid #0d9488; border-radius: 4px; padding: 8px 10px; line-height: 1.45;">
+                            ${feedback}
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 14px;">
+                        <div style="font-size: 12px; font-weight: bold; color: #0f172a; margin-bottom: 5px;">
+                            ✅ Matching Skills Found (${matched.length})
+                        </div>
+                        <div>
+                            ${matchedHtml}
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 14px;">
+                        <div style="font-size: 12px; font-weight: bold; color: #0f172a; margin-bottom: 5px;">
+                            ⚠️ Missing Skills &amp; AI Priority Recommendations (${missing.length})
+                        </div>
+                        <div>
+                            ${missingHtml}
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 8px; margin-top: 14px;">
+                        AI Resume Analyzer • Comprehensive Evaluation Report • Generated on ${new Date().toLocaleDateString()}
+                    </div>
+                </div>
+            `;
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: safePdfName,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            if (typeof html2pdf !== 'undefined') {
+                html2pdf().set(opt).from(reportHtml).save().catch(err => {
+                    console.error("PDF generation failed:", err);
+                    alert("Failed to generate PDF. Please try again.");
+                });
+            } else {
+                alert("PDF generator is loading, please try again in a moment.");
+            }
+        }
     </script>
-    
+
+    <script src="i18n.js"></script>
 </body>
 
 </html>

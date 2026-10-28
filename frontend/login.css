@@ -5,18 +5,22 @@
 }
 
 body {
-	background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url("https://tse4.mm.bing.net/th/id/OIP.jRvweB9Pv9F4wsW_0rXQowHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3") no-repeat center center fixed;
+	background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url("./resume_bg.jpeg") no-repeat center center fixed;
 	background-size: cover;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	height: 100vh;
-	font-family: 'Montserrat', sans-serif;
+	font-family: 'Times New Roman', Times, serif;
 	transition: background-image 0.5s ease-in-out;
 }
 
+button, input, select, textarea {
+	font-family: 'Times New Roman', Times, serif;
+}
+
 body.register-mode {
-	background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url("./register_bg.png") no-repeat center center fixed;
+	background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url("./resume_bg.jpeg") no-repeat center center fixed;
 	background-size: cover;
 }
 

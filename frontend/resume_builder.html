@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tailored Resume Builder - Resume Analyzer AI</title>
     <script src="vendor/marked.min.js"></script>
+    <script src="vendor/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --bg-body: #f8fafc;
@@ -24,28 +24,63 @@
             color: var(--text-dark);
         }
 
-        /* Top Bar */
-        .top-bar {
+        /* Layout Structure */
+        .builder-layout {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--bg-body);
+        }
+
+        /* Left Sidebar: All controls stacked one after one */
+        .builder-sidebar {
+            width: 320px;
+            min-width: 320px;
+            background: #ffffff;
+            border-right: 1px solid var(--border-light);
+            box-shadow: 2px 0 16px rgba(0, 0, 0, 0.03);
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100vh;
             position: sticky;
             top: 0;
-            z-index: 100;
-            background: white;
-            padding: 16px 32px;
+            overflow-y: auto;
+            box-sizing: border-box;
+            z-index: 50;
+        }
+
+        .sidebar-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 16px;
             border-bottom: 1px solid var(--border-light);
         }
 
-        .top-bar-left {
-            display: flex;
+        .sidebar-back-btn {
+            display: inline-flex;
             align-items: center;
-            gap: 16px;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            width: fit-content;
+            padding: 6px 12px;
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
         }
 
-        .top-bar h2 {
-            margin: 0;
+        .sidebar-back-btn:hover {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .sidebar-title {
+            margin: 2px 0 0 0;
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--text-dark);
@@ -54,60 +89,522 @@
             gap: 8px;
         }
 
-        .btn-outline {
-            padding: 8px 16px;
-            border: 1px solid var(--border-light);
-            background: white;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+        /* Sidebar Section & Items */
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .btn-outline:hover {
+        .sidebar-section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+        }
+
+        /* 1. Missing Skills Notice Card */
+        .missing-skills-card {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .pulsing-red-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #dc2626;
+            margin-top: 5px;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 7px rgba(220, 38, 38, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+            }
+        }
+
+        .missing-badge-title {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #dc2626;
+            line-height: 1.3;
+        }
+
+        .missing-badge-desc {
+            margin: 3px 0 0 0;
+            font-size: 0.75rem;
+            color: #991b1b;
+            line-height: 1.35;
+        }
+
+        /* 2. ATS Style Vertical Stack */
+        .template-vertical-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tmpl-btn {
+            width: 100%;
+            text-align: left;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-sizing: border-box;
+        }
+
+        .tmpl-btn:hover {
             background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .tmpl-btn.active {
+            background: #f5f3ff;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
+        }
+
+        .tmpl-btn .tmpl-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .tmpl-btn .tmpl-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tmpl-btn .tmpl-name {
+            font-size: 0.88rem;
+            font-weight: 700;
             color: var(--text-dark);
         }
 
-        .btn-primary {
-            padding: 10px 20px;
-            border: none;
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        .tmpl-btn.active .tmpl-name {
+            color: var(--primary);
         }
 
-        .btn-primary:hover {
-            opacity: 0.9;
+        .tmpl-btn .tmpl-desc {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        /* 3. Actions Vertical Stack */
+        .actions-vertical-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar-btn {
+            width: 100%;
+            padding: 11px 16px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-sizing: border-box;
+            text-decoration: none;
+        }
+
+        .btn-sidebar-outline {
+            background: white;
+            border: 1px solid var(--border-light);
+            color: var(--text-dark);
+        }
+
+        .btn-sidebar-outline:hover:not(:disabled) {
+            background: #f8fafc;
+            border-color: #cbd5e1;
             transform: translateY(-1px);
         }
 
-        .btn-primary:disabled {
-            opacity: 0.7;
+        .btn-sidebar-outline:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            background: #f8fafc;
+        }
+
+        .btn-sidebar-primary {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            border: none;
+            color: white;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-sidebar-primary:hover:not(:disabled) {
+            opacity: 0.93;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-sidebar-primary:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
 
-        /* Container for A4 Sheet */
-        .workspace {
-            padding: 40px 20px;
+        /* Option A: Highlight toggle pill */
+        .highlight-toggle-pill {
+            background: #ffffff;
+            border: 1px solid #fca5a5;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #dc2626;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .highlight-toggle-pill:hover {
+            background: #fee2e2;
+        }
+
+        .highlight-toggle-pill.clean {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        /* Clean Mode: Turn all red missing skills back into standard black */
+        .a4-sheet.clean-mode .missing-skill,
+        .a4-sheet.clean-mode span[style*="red"],
+        .a4-sheet.clean-mode span[style*="dc2626"] {
+            color: #000000 !important;
+            font-weight: 400 !important;
+        }
+
+        /* Inline Click-to-Edit mode */
+        #resumeContent[contenteditable="true"] {
+            outline: 2px dashed #8b5cf6;
+            outline-offset: 6px;
+            border-radius: 4px;
+            cursor: text;
+        }
+
+        .btn-sidebar-outline.active-edit {
+            background: #f3e8ff;
+            border-color: #8b5cf6;
+            color: #6d28d9;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+
+        /* Option B: Cover Letter Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
-            min-height: calc(100vh - 70px);
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 16px;
+            width: 780px;
+            max-width: 92vw;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            animation: modalPop 0.25s ease;
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.96);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .modal-close-btn:hover {
+            color: var(--text-dark);
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .cover-letter-paper {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 28px 32px;
+            font-family: 'Georgia', serif;
+            font-size: 10.5pt;
+            line-height: 1.7;
+            color: #1e293b;
+            white-space: pre-line;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: #f8fafc;
+        }
+
+        /* Toast notification */
+        .toast-notify {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #0f172a;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 2000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast-notify.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Main Workspace Container */
+        .builder-workspace {
+            flex: 1;
+            padding: 30px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-x: auto;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Top Reference Notice Banner */
+        .resume-preview-notice {
+            width: 210mm;
+            max-width: 100%;
+            margin-bottom: 20px;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+            border: 1px solid #bbf7d0;
+            border-left: 5px solid #22c55e;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.08);
+            box-sizing: border-box;
+            animation: fadeInNotice 0.3s ease;
+        }
+
+        @keyframes fadeInNotice {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notice-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .notice-icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #dcfce7;
+            color: #15803d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.25rem;
+        }
+
+        .notice-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .notice-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #14532d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notice-badge {
+            background: #dcfce7;
+            color: #166534;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .notice-desc {
+            font-size: 0.84rem;
+            color: #334155;
+            line-height: 1.45;
+        }
+
+        .notice-close-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notice-close-btn:hover {
+            background: rgba(0, 0, 0, 0.06);
+            color: #0f172a;
+        }
+
+        /* Print Media Styles */
+        @media print {
+            .resume-preview-notice {
+                display: none !important;
+            }
+
+            .builder-sidebar {
+                display: none !important;
+            }
+
+            .builder-layout {
+                display: block !important;
+                background: white !important;
+            }
+
+            .builder-workspace {
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+                background: white !important;
+            }
+
+            .a4-sheet {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                min-height: auto !important;
+                padding: 10mm 15mm !important;
+            }
+
+            body {
+                background: white !important;
+            }
         }
 
         /* A4 Sheet Styles */
@@ -165,154 +662,544 @@
 
         .resume-header {
             text-align: center;
-                border-bottom: 2px solid #000;
-                padding-bottom: 10px;
-                margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .resume-header h1 {
+            font-size: 20pt;
+            margin: 0 0 8px 0;
+            font-weight: 700;
+            color: #000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-contact {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 9.5pt;
+            line-height: 1.5;
+            color: #222;
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        .header-contact .contact-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 6px 12px;
+            width: 100%;
+        }
+
+        .header-contact .contact-item {
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .header-contact .contact-sep {
+            color: #64748b;
+            user-select: none;
+            font-weight: 400;
+            margin: 0 2px;
+        }
+
+        .header-contact a {
+            color: #111827;
+            text-decoration: none;
+            border-bottom: 1px solid transparent !important;
+            transition: color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .header-contact a:hover {
+            color: #2563eb !important;
+            border-bottom: 1px solid #2563eb !important;
+        }
+
+        #resumeContent h2 {
+            font-size: 11.5pt;
+            border-bottom: 2px solid #000;
+            padding-bottom: 3px;
+            margin: 16px 0 8px 0;
+            font-weight: 700;
+            color: #000;
+            text-transform: uppercase;
+        }
+
+        #resumeContent h3 {
+            font-size: 10.5pt;
+            margin: 8px 0 4px 0;
+            font-weight: 600;
+        }
+
+        #resumeContent p {
+            margin: 0 0 8px 0;
+        }
+
+        #resumeContent ul {
+            margin: 0 0 10px 0;
+            padding-left: 20px;
+        }
+
+        #resumeContent li {
+            margin-bottom: 4px;
+        }
+
+        #resumeContent strong {
+            font-weight: 600;
+        }
+
+        #resumeContent a {
+            color: #111;
+            text-decoration: none;
+            border-bottom: 1px solid #999;
+        }
+
+        .skills-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 4px 0 12px 0;
+            font-size: 10pt;
+        }
+
+        .skills-table td {
+            padding: 2.5px 0;
+            vertical-align: top;
+            border: none;
+            line-height: 1.4;
+        }
+
+        .skills-table td:first-child {
+            width: 225px;
+            font-weight: 700;
+            color: #000;
+            white-space: nowrap;
+        }
+
+        /* Education Tabular Form Styles */
+        .education-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 6px 0 14px 0;
+            font-size: 9.5pt;
+        }
+
+        .education-table th,
+        .education-table td {
+            border: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            vertical-align: middle;
+            line-height: 1.4;
+        }
+
+        .education-table th {
+            background-color: #f1f5f9;
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 8.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .education-table td:first-child strong {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .education-table th:nth-child(1) { width: 28%; }
+        .education-table th:nth-child(2) { width: 42%; }
+        .education-table th:nth-child(3) { width: 14%; }
+        .education-table th:nth-child(4) { width: 16%; }
+
+        .education-table td:nth-child(3),
+        .education-table td:nth-child(4) {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .education-table th:nth-child(3),
+        .education-table th:nth-child(4) {
+            text-align: center;
+            white-space: normal;
+            word-break: normal;
+        }
+
+        .a4-sheet.template-classic .education-table th {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background-color: #fdfbf7;
+            border-color: #94a3b8;
+            color: #1e293b;
+            font-variant: small-caps;
+        }
+
+        .a4-sheet.template-classic .education-table td {
+            border-color: #cbd5e1;
+        }
+
+        .a4-sheet.template-compact .education-table {
+            font-size: 8.5pt;
+            margin: 4px 0 10px 0;
+        }
+
+        .a4-sheet.template-compact .education-table th,
+        .a4-sheet.template-compact .education-table td {
+            padding: 3px 6px;
+        }
+
+        .missing-skill,
+        span[style*="dc2626"],
+        span[style*="red"] {
+            color: red !important;
+            font-weight: 700 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .existing-skill {
+            color: #000 !important;
+            font-weight: 400 !important;
+        }
+
+        /* Print Media Query */
+        @media print {
+            body {
+                background: white;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
-            .resume-header h1 {
-                font-size: 24pt;
-                margin: 0 0 10px 0;
-                font-weight: 700;
-                color: #000;
-                text-transform: uppercase;
-                letter-spacing: 1px;
+            .missing-skill,
+            span[style*="dc2626"],
+            span[style*="red"] {
+                color: red !important;
+                font-weight: 700 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
-            .header-contact {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                font-size: 9.5pt;
-                line-height: 1.5;
-                color: #333;
+            .existing-skill {
+                color: #000 !important;
+                font-weight: 400 !important;
             }
 
-            .contact-left {
-                text-align: left;
+            .education-table th,
+            .education-table td {
+                border: 1px solid #94a3b8 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
-            .contact-right {
-                text-align: right;
+            .education-table th {
+                background-color: #f1f5f9 !important;
             }
 
-            #resumeContent h2 {
-                font-size: 14pt;
-                border-bottom: 2px solid #000;
-                padding-bottom: 3px;
-                margin: 20px 0 10px 0;
-                font-weight: 700;
-                color: #000;
-                text-transform: uppercase;
+            .top-bar {
+                display: none !important;
             }
 
-            #resumeContent h3 {
-                font-size: 12pt;
-                margin: 10px 0 5px 0;
-                font-weight: 600;
+            .workspace {
+                padding: 0;
+                display: block;
             }
 
-            #resumeContent p {
-                margin: 0 0 8px 0;
+            .a4-sheet {
+                width: 100%;
+                min-height: auto;
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
             }
 
-            #resumeContent ul {
-                margin: 0 0 10px 0;
-                padding-left: 20px;
+            @page {
+                size: A4;
+                margin: 20mm;
             }
+        }
 
-            #resumeContent li {
-                margin-bottom: 4px;
-            }
 
-            #resumeContent strong {
-                font-weight: 600;
-            }
 
-            #resumeContent a {
-                color: #111;
-                text-decoration: none;
-                border-bottom: 1px solid #999;
-            }
+        /* ── Template Visual Styling ── */
+        /* Modern (Default) */
+        .a4-sheet.template-modern {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+        }
 
-            /* Print Media Query */
-            @media print {
-                body {
-                    background: white;
-                }
+        /* Classic Executive (Ivy-League ATS) */
+        .a4-sheet.template-classic {
+            font-family: 'Georgia', 'Times New Roman', serif;
+        }
 
-                .top-bar {
-                    display: none !important;
-                }
+        .a4-sheet.template-classic h1.resume-name {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-variant: small-caps;
+            letter-spacing: 0.06em;
+            color: #111827;
+        }
 
-                .workspace {
-                    padding: 0;
-                    display: block;
-                }
+        .a4-sheet.template-classic h2 {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-variant: small-caps;
+            letter-spacing: 0.04em;
+            border-bottom: 1.5px solid #111827;
+            padding-bottom: 2px;
+            margin-top: 14px;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+        }
 
-                .a4-sheet {
-                    width: 100%;
-                    min-height: auto;
-                    box-shadow: none;
-                    padding: 0;
-                    margin: 0;
-                }
+        /* Compact 1-Page (Dense ATS) */
+        .a4-sheet.template-compact {
+            padding: 12mm 15mm;
+            font-size: 9pt;
+            line-height: 1.35;
+        }
 
-                @page {
-                    size: A4;
-                    margin: 20mm;
-                }
-            }
+        .a4-sheet.template-compact h1.resume-name {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+        }
+
+        .a4-sheet.template-compact .resume-header {
+            margin-bottom: 8px;
+        }
+
+        .a4-sheet.template-compact h2 {
+            font-size: 0.95rem;
+            margin-top: 9px;
+            margin-bottom: 3px;
+            padding-bottom: 1.5px;
+        }
+
+        .a4-sheet.template-compact p,
+        .a4-sheet.template-compact table {
+            margin-bottom: 3px !important;
+        }
+
+        .a4-sheet.template-compact .skills-table td {
+            padding: 1.5px 0;
+            font-size: 9pt;
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="top-bar">
-        <div class="top-bar-left">
-            <a href="dashboard.html" class="btn-outline">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                Dashboard
-            </a>
-            <h2>✨ Tailored Resume</h2>
-        </div>
-        <div>
-            <button class="btn-primary" id="downloadPdfBtn" onclick="window.print()" disabled>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Download PDF
-            </button>
-        </div>
-    </div>
-
-    <div class="workspace">
-        <div class="a4-sheet">
-            <div class="loading-overlay" id="loadingOverlay">
-                <div class="spinner"></div>
-                <h3 style="margin-bottom: 5px;">Crafting Your Resume...</h3>
-                <p style="color: var(--text-muted); font-size: 0.95rem;">Our AI is rewriting your experience to match
-                    the job description.</p>
-                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 10px;">This usually takes 10-15
-                    seconds.</p>
+    <div class="builder-layout">
+        <!-- Left Sidebar: All controls stacked vertically one after one -->
+        <aside class="builder-sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="sidebar-back-btn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Dashboard
+                </a>
+                <h2 class="sidebar-title">✨ Tailored Resume</h2>
             </div>
 
-            <div id="resumeContent">
-                <!-- Markdown content will be rendered here -->
+            <!-- 1. Missing Skills Notice (In Red) -->
+            <div class="sidebar-section">
+                <div class="missing-skills-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="pulsing-red-dot" id="pulsingDot"></span>
+                            <span class="missing-badge-title">Missing Skills</span>
+                        </div>
+                        <button type="button" class="highlight-toggle-pill" id="toggleHighlightBtn"
+                            onclick="toggleRedHighlights()" title="Toggle red highlights">
+                            <span id="toggleHighlightLabel">🔴 Red Highlights ON</span>
+                        </button>
+                    </div>
+                    <p class="missing-badge-desc" style="margin-top: 6px;">All job requirements included. Turn OFF
+                        before final application for uniform black text.</p>
+                </div>
             </div>
-        </div>
+
+            <!-- 2. ATS Resume Style (One After One) -->
+            <div class="sidebar-section">
+                <label class="sidebar-section-label">ATS Resume Style</label>
+                <div class="template-vertical-stack">
+                    <button type="button" class="tmpl-btn active" id="tmplBtn-modern"
+                        onclick="changeTemplate('modern')">
+                        <span class="tmpl-icon">🎨</span>
+                        <div class="tmpl-info">
+                            <span class="tmpl-name">Modern Clean</span>
+                            <span class="tmpl-desc">Clean sans-serif · High ATS score</span>
+                        </div>
+                    </button>
+                    <button type="button" class="tmpl-btn" id="tmplBtn-classic" onclick="changeTemplate('classic')">
+                        <span class="tmpl-icon">🏛️</span>
+                        <div class="tmpl-info">
+                            <span class="tmpl-name">Classic Executive</span>
+                            <span class="tmpl-desc">Ivy-League serif · Section rules</span>
+                        </div>
+                    </button>
+                    <button type="button" class="tmpl-btn" id="tmplBtn-compact" onclick="changeTemplate('compact')">
+                        <span class="tmpl-icon">📄</span>
+                        <div class="tmpl-info">
+                            <span class="tmpl-name">Compact 1-Page</span>
+                            <span class="tmpl-desc">Tight margins · Dense layout</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Actions & Export (One After One) -->
+            <div class="sidebar-section">
+                <label class="sidebar-section-label">Actions & Export</label>
+                <div class="actions-vertical-stack">
+                    <button class="sidebar-btn btn-sidebar-outline" id="toggleEditBtn" onclick="toggleEditMode()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                        <span id="editBtnLabel">✏️ Click to Edit Content</span>
+                    </button>
+
+                    <button class="sidebar-btn btn-sidebar-outline" id="openCoverLetterBtn"
+                        onclick="openCoverLetterModal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                        </svg>
+                        <span>✉️ Generate Cover Letter</span>
+                    </button>
+
+                    <button class="sidebar-btn btn-sidebar-outline" id="generateLatexBtn" onclick="generateLatex()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <span>Generate as LaTeX</span>
+                    </button>
+
+                    <button class="sidebar-btn btn-sidebar-outline" id="fitPageBtn" onclick="fitToPage()" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 14 10 14 10 20"></polyline>
+                            <polyline points="20 10 14 10 14 4"></polyline>
+                            <line x1="14" y1="10" x2="21" y2="3"></line>
+                            <line x1="3" y1="21" x2="10" y2="14"></line>
+                        </svg>
+                        <span>Fit to 1 Page</span>
+                    </button>
+
+                    <button class="sidebar-btn btn-sidebar-primary" id="downloadPdfBtn" onclick="window.print()"
+                        disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Download PDF</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Main Workspace -->
+        <main class="builder-workspace">
+            <!-- Top Reference Notice Banner -->
+            <div class="resume-preview-notice" id="resumePreviewNotice">
+                <div class="notice-left">
+                    <div class="notice-icon-box">📌</div>
+                    <div class="notice-content">
+                        <div class="notice-title">
+                            Note: This tailored resume is for your reference
+                            <span class="notice-badge">Reference Preview</span>
+                        </div>
+                        <div class="notice-desc">
+                            Here is a live preview showing how your resume will look with matched skills, professional
+                            formatting, and ATS optimization for the target job description.
+                        </div>
+                    </div>
+                </div>
+                <button class="notice-close-btn"
+                    onclick="document.getElementById('resumePreviewNotice').style.display='none'"
+                    title="Dismiss">✕</button>
+            </div>
+
+            <div class="a4-sheet template-modern" id="a4Sheet">
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="spinner"></div>
+                    <h3 style="margin-bottom: 5px;">Crafting Your Resume...</h3>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;">Our AI is rewriting your experience to
+                        match
+                        the job description.</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 10px;">This usually takes 10-15
+                        seconds.</p>
+                </div>
+
+                <div id="resumeContent">
+                    <!-- Markdown content will be rendered here -->
+                </div>
+
+                <div id="resumePdfViewer"
+                    style="display: none; width: 100%; height: 1000px; border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden;">
+                    <embed id="pdfEmbed" src="" type="application/pdf" width="100%" height="100%" />
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
+        let currentTemplate = localStorage.getItem("selectedResumeTemplate") || "modern";
+
+        function changeTemplate(tpl) {
+            currentTemplate = tpl;
+            localStorage.setItem("selectedResumeTemplate", tpl);
+
+            document.querySelectorAll(".tmpl-btn").forEach(b => b.classList.remove("active"));
+            const activeBtn = document.getElementById("tmplBtn-" + tpl);
+            if (activeBtn) activeBtn.classList.add("active");
+
+            const sheet = document.getElementById("a4Sheet");
+            if (sheet) {
+                sheet.classList.remove("template-modern", "template-classic", "template-compact");
+                sheet.classList.add("template-" + tpl);
+            }
+
+            // If PDF embed is visible, refresh LaTeX, otherwise refresh Markdown
+            const pdfViewer = document.getElementById("resumePdfViewer");
+            if (pdfViewer && pdfViewer.style.display !== "none") {
+                generateLatex();
+            } else {
+                generateResume();
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
+            const savedTpl = localStorage.getItem("selectedResumeTemplate") || "modern";
+            currentTemplate = savedTpl;
+            document.querySelectorAll(".tmpl-btn").forEach(b => b.classList.remove("active"));
+            const activeBtn = document.getElementById("tmplBtn-" + savedTpl);
+            if (activeBtn) activeBtn.classList.add("active");
+            const sheet = document.getElementById("a4Sheet");
+            if (sheet) {
+                sheet.classList.remove("template-modern", "template-classic", "template-compact");
+                sheet.classList.add("template-" + savedTpl);
+            }
             generateResume();
+            if (localStorage.getItem("openCoverLetterOnLoad") === "true") {
+                localStorage.removeItem("openCoverLetterOnLoad");
+                setTimeout(() => openCoverLetterModal(), 1000);
+            }
         });
 
         async function generateResume() {
@@ -322,24 +1209,25 @@
 
             try {
                 // Determine whether to use a specific history item, or the form
-                const jobDesc = localStorage.getItem("currentJobDesc");
-
+                let jobDesc = localStorage.getItem("tailorJobDesc") || localStorage.getItem("currentJobDesc");
                 let fileDataUrl = localStorage.getItem("pendingResumeFileDataUrl");
                 let fileName = localStorage.getItem("pendingResumeFileName") || "resume.pdf";
 
-                if (!fileDataUrl) {
-                    let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
-                    const currentHistoryId = localStorage.getItem("currentHistoryId");
+                let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
+                const currentHistoryId = localStorage.getItem("currentHistoryId");
+                let targetItem = history.find(h => h.id === currentHistoryId);
+                if (!targetItem && history.length > 0) {
+                    targetItem = history[0];
+                }
 
-                    let targetItem = history.find(h => h.id === currentHistoryId);
-                    if (!targetItem && history.length > 0) {
-                        targetItem = history[0];
-                    }
-
-                    if (targetItem && targetItem.fileDataUrl) {
-                        fileDataUrl = targetItem.fileDataUrl;
-                        fileName = targetItem.fileName || fileName;
-                    }
+                if (!fileDataUrl && targetItem && targetItem.fileDataUrl) {
+                    fileDataUrl = targetItem.fileDataUrl;
+                    fileName = targetItem.fileName || fileName;
+                }
+                if ((!jobDesc || jobDesc.startsWith("Job: ")) && targetItem && targetItem.fullJobDesc) {
+                    jobDesc = targetItem.fullJobDesc;
+                } else if (!jobDesc && targetItem) {
+                    jobDesc = targetItem.fullJobDesc || targetItem.jobTitle;
                 }
 
                 if (!fileDataUrl) {
@@ -357,7 +1245,47 @@
                 const formData = new FormData();
                 formData.append("resume", blob, fileName);
                 formData.append("jobText", jobDesc);
-                
+                formData.append("template", currentTemplate);
+
+                // Pass missingSkills dynamically from current analysisResult or active history item
+                try {
+                    let missingSkills = [];
+                    // 1. Direct tailorMissingSkills set when clicking "Tailor Resume"
+                    const explicitMissing = localStorage.getItem("tailorMissingSkills");
+                    if (explicitMissing) {
+                        try {
+                            const parsed = JSON.parse(explicitMissing);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                missingSkills = parsed;
+                            }
+                        } catch (_) { }
+                    }
+
+                    // 2. Direct analysisResult
+                    if (!missingSkills || missingSkills.length === 0) {
+                        try {
+                            const analysisResult = JSON.parse(localStorage.getItem("analysisResult"));
+                            if (analysisResult) {
+                                missingSkills = analysisResult.missingSkills || analysisResult.missing || [];
+                            }
+                        } catch (_) { }
+                    }
+
+                    // 3. Fallback to active history item
+                    if (!missingSkills || missingSkills.length === 0) {
+                        if (targetItem && targetItem.data) {
+                            missingSkills = targetItem.data.missingSkills || targetItem.data.missing || [];
+                        }
+                    }
+
+                    console.log("[Tailored Resume] Dynamically extracted missing skills to send:", missingSkills);
+                    if (missingSkills && missingSkills.length > 0) {
+                        formData.append("missingSkills", JSON.stringify(missingSkills));
+                    }
+                } catch (e) {
+                    console.error("Failed to parse missing skills:", e);
+                }
+
                 // Fetch and append user profile preferences
                 const userEmail = localStorage.getItem("userEmail");
                 if (userEmail) {
@@ -398,6 +1326,7 @@
                 // Hide loading, enable download
                 loadingOverlay.style.display = "none";
                 downloadBtn.disabled = false;
+                document.getElementById('fitPageBtn').disabled = false;
 
             } catch (err) {
                 loadingOverlay.innerHTML = `
@@ -409,8 +1338,460 @@
                 `;
             }
         }
+
+        async function generateLatex() {
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            const resumeContent = document.getElementById("resumeContent");
+            const pdfViewer = document.getElementById("resumePdfViewer");
+            const pdfEmbed = document.getElementById("pdfEmbed");
+            const downloadBtn = document.getElementById("downloadPdfBtn");
+            const fitBtn = document.getElementById("fitPageBtn");
+
+            loadingOverlay.style.display = "flex";
+            loadingOverlay.querySelector("h3").innerText = "Generating LaTeX PDF...";
+
+            try {
+                let jobDesc = localStorage.getItem("tailorJobDesc") || localStorage.getItem("currentJobDesc");
+                let fileDataUrl = localStorage.getItem("pendingResumeFileDataUrl");
+                let fileName = localStorage.getItem("pendingResumeFileName") || "resume.pdf";
+
+                let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
+                const currentHistoryId = localStorage.getItem("currentHistoryId");
+                let targetItem = history.find(h => h.id === currentHistoryId);
+                if (!targetItem && history.length > 0) {
+                    targetItem = history[0];
+                }
+
+                if (!fileDataUrl && targetItem && targetItem.fileDataUrl) {
+                    fileDataUrl = targetItem.fileDataUrl;
+                    fileName = targetItem.fileName || fileName;
+                }
+                if ((!jobDesc || jobDesc.startsWith("Job: ")) && targetItem && targetItem.fullJobDesc) {
+                    jobDesc = targetItem.fullJobDesc;
+                } else if (!jobDesc && targetItem) {
+                    jobDesc = targetItem.fullJobDesc || targetItem.jobTitle;
+                }
+
+                if (!fileDataUrl) throw new Error("Resume file data missing.");
+                if (!jobDesc) throw new Error("Job description missing.");
+
+                const fetchRes = await fetch(fileDataUrl);
+                const blob = await fetchRes.blob();
+
+                const formData = new FormData();
+                formData.append("resume", blob, fileName);
+                formData.append("jobText", jobDesc);
+                formData.append("template", currentTemplate);
+
+                // Pass missingSkills dynamically from current analysisResult or active history item
+                try {
+                    let missingSkills = [];
+                    // 1. Direct tailorMissingSkills set when clicking "Tailor Resume"
+                    const explicitMissing = localStorage.getItem("tailorMissingSkills");
+                    if (explicitMissing) {
+                        try {
+                            const parsed = JSON.parse(explicitMissing);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                missingSkills = parsed;
+                            }
+                        } catch (_) { }
+                    }
+
+                    // 2. Direct analysisResult
+                    if (!missingSkills || missingSkills.length === 0) {
+                        try {
+                            const analysisResult = JSON.parse(localStorage.getItem("analysisResult"));
+                            if (analysisResult) {
+                                missingSkills = analysisResult.missingSkills || analysisResult.missing || [];
+                            }
+                        } catch (_) { }
+                    }
+
+                    // 3. Fallback to active history item
+                    if (!missingSkills || missingSkills.length === 0) {
+                        if (targetItem && targetItem.data) {
+                            missingSkills = targetItem.data.missingSkills || targetItem.data.missing || [];
+                        }
+                    }
+
+                    console.log("[Tailored Resume LaTeX] Dynamically extracted missing skills to send:", missingSkills);
+                    if (missingSkills && missingSkills.length > 0) {
+                        formData.append("missingSkills", JSON.stringify(missingSkills));
+                    }
+                } catch (e) {
+                    console.error("Failed to parse missing skills:", e);
+                }
+
+                const userEmail = localStorage.getItem("userEmail");
+                if (userEmail) {
+                    try {
+                        const profRes = await fetch(`http://localhost:3000/get_profile?email=${encodeURIComponent(userEmail)}`);
+                        if (profRes.ok) {
+                            const profData = await profRes.json();
+                            if (profData.shortBio) formData.append("shortBio", profData.shortBio);
+                            if (profData.preferredJobTitle) formData.append("prefTitle", profData.preferredJobTitle);
+                            if (profData.preferredLocation) formData.append("prefLoc", profData.preferredLocation);
+                        }
+                    } catch (e) { console.error(e); }
+                }
+
+                const response = await fetch("http://localhost:3000/build-resume-latex", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || "Failed to generate LaTeX resume");
+                }
+
+                const data = await response.json();
+
+                resumeContent.style.display = "none";
+                pdfViewer.style.display = "block";
+                document.querySelector('.a4-sheet').style.padding = '0'; // Remove padding for full iframe size
+                pdfEmbed.src = data.pdfData;
+
+                fitBtn.style.display = "none";
+                downloadBtn.disabled = false;
+                downloadBtn.onclick = () => {
+                    const a = document.createElement("a");
+                    a.href = data.pdfData;
+                    a.download = "Tailored_Resume.pdf";
+                    a.click();
+                };
+
+                loadingOverlay.style.display = "none";
+
+            } catch (err) {
+                loadingOverlay.innerHTML = `
+                    <div style="color: #ef4444; background: #fef2f2; padding: 20px; border-radius: 12px; border: 1px solid #f87171; max-width: 80%; text-align: center;">
+                        <h3 style="margin-top: 0;">❌ Generation Failed</h3>
+                        <p>${err.message}</p>
+                        <button onclick="location.reload()" class="btn-outline" style="margin-top: 15px;">Retry Markdown</button>
+                    </div>
+                `;
+            }
+        }
+
+        function fitToPage() {
+            const content = document.getElementById('resumeContent');
+
+            // Reset to default sizes first
+            content.style.fontSize = '10.5pt';
+            content.style.lineHeight = '1.5';
+
+            // A4 sheet at 96dpi is roughly 1122px tall. Padding is 20mm (~75px) top/bottom. 
+            // Usable height is about 970px.
+            const targetHeight = 970;
+
+            let fontSize = 10.5;
+            let lineHeight = 1.5;
+
+            // While content is too tall, shrink it incrementally
+            while (content.scrollHeight > targetHeight && fontSize > 6) {
+                fontSize -= 0.2;
+                lineHeight -= 0.02;
+                content.style.fontSize = fontSize + 'pt';
+                content.style.lineHeight = lineHeight;
+            }
+
+            if (fontSize <= 6) {
+                alert("Resume is too long to perfectly fit on one page even when shrunk! You may need to manually condense some bullet points.");
+            }
+        }
+
+        /* ── Option A: Red Highlight Toggle ── */
+        let redHighlightsOn = true;
+        function toggleRedHighlights() {
+            redHighlightsOn = !redHighlightsOn;
+            const sheet = document.getElementById("a4Sheet");
+            const btn = document.getElementById("toggleHighlightBtn");
+            const label = document.getElementById("toggleHighlightLabel");
+            const dot = document.getElementById("pulsingDot");
+
+            if (redHighlightsOn) {
+                sheet.classList.remove("clean-mode");
+                btn.classList.remove("clean");
+                label.innerText = "🔴 Red Highlights ON";
+                if (dot) dot.style.display = "block";
+                showToast("🔴 Highlight mode ON: Missing skills in red");
+            } else {
+                sheet.classList.add("clean-mode");
+                btn.classList.add("clean");
+                label.innerText = "⚪ Clean Mode (Black)";
+                if (dot) dot.style.display = "none";
+                showToast("⚪ Clean mode ON: All text in uniform black");
+            }
+        }
+
+        /* ── Option A: Inline Click-to-Edit ── */
+        let isEditMode = false;
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const content = document.getElementById("resumeContent");
+            const btn = document.getElementById("toggleEditBtn");
+            const label = document.getElementById("editBtnLabel");
+
+            if (isEditMode) {
+                content.setAttribute("contenteditable", "true");
+                btn.classList.add("active-edit");
+                label.innerText = "🔒 Lock / Done Editing";
+                showToast("✏️ Edit Mode ON: Click any text on resume to edit!");
+            } else {
+                content.removeAttribute("contenteditable");
+                btn.classList.remove("active-edit");
+                label.innerText = "✏️ Click to Edit Content";
+                showToast("✅ Edits locked into resume!");
+            }
+        }
+
+        /* ── Option B: Cover Letter Generator ── */
+        let currentCoverLetterText = "";
+
+        async function openCoverLetterModal() {
+            const modal = document.getElementById("coverLetterModal");
+            const loading = document.getElementById("coverLetterLoading");
+            const paper = document.getElementById("coverLetterPaper");
+
+            modal.classList.add("open");
+            loading.style.display = "block";
+            paper.style.display = "none";
+
+            try {
+                let jobDesc = localStorage.getItem("tailorJobDesc") || localStorage.getItem("currentJobDesc");
+                let fileDataUrl = localStorage.getItem("pendingResumeFileDataUrl");
+                let fileName = localStorage.getItem("pendingResumeFileName") || "resume.pdf";
+
+                let history = JSON.parse(localStorage.getItem("analysisHistory")) || [];
+                const currentHistoryId = localStorage.getItem("currentHistoryId");
+                let targetItem = history.find(h => h.id === currentHistoryId) || history[0];
+
+                if (!fileDataUrl && targetItem && targetItem.fileDataUrl) {
+                    fileDataUrl = targetItem.fileDataUrl;
+                    fileName = targetItem.fileName || fileName;
+                }
+                if ((!jobDesc || jobDesc.startsWith("Job: ")) && targetItem && targetItem.fullJobDesc) {
+                    jobDesc = targetItem.fullJobDesc;
+                } else if (!jobDesc && targetItem) {
+                    jobDesc = targetItem.fullJobDesc || targetItem.jobTitle;
+                }
+
+                if (!fileDataUrl) throw new Error("Resume file data missing. Please re-upload resume.");
+                if (!jobDesc) throw new Error("Job description missing.");
+
+                const fetchRes = await fetch(fileDataUrl);
+                const blob = await fetchRes.blob();
+
+                const formData = new FormData();
+                formData.append("resume", blob, fileName);
+                formData.append("jobText", jobDesc);
+
+                const res = await fetch("http://localhost:3000/generate-cover-letter", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || "Failed to generate cover letter");
+                }
+
+                const data = await res.json();
+                currentCoverLetterData = data;
+                currentCoverLetterText = data.coverLetter || "";
+                paper.innerText = currentCoverLetterText;
+                loading.style.display = "none";
+                paper.style.display = "block";
+
+            } catch (err) {
+                loading.innerHTML = `
+                    <div style="color: #ef4444; background: #fef2f2; padding: 15px; border-radius: 8px; border: 1px solid #fecaca; text-align: center;">
+                        <h4 style="margin: 0 0 6px 0;">Generation Failed</h4>
+                        <p style="margin: 0; font-size: 0.9rem;">${err.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function closeCoverLetterModal() {
+            document.getElementById("coverLetterModal").classList.remove("open");
+        }
+
+        function copyCoverLetter() {
+            if (!currentCoverLetterText) return;
+            navigator.clipboard.writeText(currentCoverLetterText).then(() => {
+                showToast("📋 Cover letter copied to clipboard!");
+            });
+        }
+
+        function downloadCoverLetterTxt() {
+            if (!currentCoverLetterText) return;
+            const blob = new Blob([currentCoverLetterText], { type: "text/plain;charset=utf-8" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "Cover_Letter.txt";
+            a.click();
+            showToast("⬇ Downloaded Cover_Letter.txt");
+        }
+
+        async function downloadCoverLetterPdf() {
+            if (!currentCoverLetterText) {
+                showToast("⚠️ Cover letter is not ready yet");
+                return;
+            }
+
+            const btn = document.getElementById("downloadCoverLetterPdfBtn");
+            const originalHtml = btn ? btn.innerHTML : "";
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;margin:0 6px 0 0;vertical-align:middle;"></span> Generating PDF...`;
+            }
+
+            try {
+                let downloaded = false;
+
+                // 1. Try LaTeX compilation via backend for crisp vector PDF
+                try {
+                    const formData = new FormData();
+                    formData.append("coverLetterText", currentCoverLetterText);
+
+                    const resp = await fetch("http://localhost:3000/build-cover-letter-latex", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    if (resp.ok) {
+                        const resData = await resp.json();
+                        if (resData.pdfData) {
+                            const byteCharacters = atob(resData.pdfData);
+                            const byteNumbers = new Array(byteCharacters.length);
+                            for (let i = 0; i < byteCharacters.length; i++) {
+                                byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            }
+                            const byteArray = new Uint8Array(byteNumbers);
+                            const blob = new Blob([byteArray], { type: "application/pdf" });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = "Cover_Letter.pdf";
+                            a.click();
+                            setTimeout(() => URL.revokeObjectURL(url), 2000);
+                            downloaded = true;
+                            showToast("📄 Downloaded Cover_Letter.pdf (LaTeX Vector)");
+                        }
+                    }
+                } catch (e) {
+                    console.warn("LaTeX Cover Letter generation error, using html2pdf fallback:", e);
+                }
+
+                // 2. Client-side html2pdf fallback if LaTeX wasn't available
+                if (!downloaded && typeof html2pdf !== "undefined") {
+                    const element = document.createElement("div");
+                    element.style.padding = "25mm 20mm";
+                    element.style.background = "#ffffff";
+                    element.style.fontFamily = "'Georgia', serif";
+                    element.style.fontSize = "11pt";
+                    element.style.lineHeight = "1.7";
+                    element.style.color = "#1e293b";
+                    element.style.width = "210mm";
+                    element.style.boxSizing = "border-box";
+
+                    const paras = currentCoverLetterText.split(/\n\s*\n/);
+                    element.innerHTML = paras.map(p => {
+                        const clean = p.trim().replace(/\n/g, "<br>");
+                        return `<p style="margin: 0 0 16px 0; text-align: justify;">${clean}</p>`;
+                    }).join("");
+
+                    const opt = {
+                        margin: [15, 15, 15, 15],
+                        filename: 'Cover_Letter.pdf',
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, useCORS: true },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+
+                    await html2pdf().set(opt).from(element).save();
+                    showToast("📄 Downloaded Cover_Letter.pdf");
+                    downloaded = true;
+                }
+
+                if (!downloaded) {
+                    downloadCoverLetterTxt();
+                }
+
+            } catch (err) {
+                console.error("PDF generation error:", err);
+                showToast("❌ Failed to download PDF: " + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById("toastNotification");
+            const toastMsg = document.getElementById("toastMessage");
+            if (!toast || !toastMsg) return;
+            toastMsg.innerText = msg;
+            toast.classList.add("show");
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
     </script>
-    
+
+    <!-- Cover Letter Modal (Option B) -->
+    <div class="modal-overlay" id="coverLetterModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                    </svg>
+                    ATS-Tailored Cover Letter
+                </h3>
+                <button class="modal-close-btn" onclick="closeCoverLetterModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="coverLetterBody">
+                <div style="text-align: center; padding: 40px;" id="coverLetterLoading">
+                    <div class="spinner" style="margin: 0 auto 16px auto;"></div>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;">Crafting your tailored cover letter...</p>
+                </div>
+                <div class="cover-letter-paper" id="coverLetterPaper" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="sidebar-btn btn-sidebar-outline" style="width: auto; padding: 8px 16px;"
+                    onclick="copyCoverLetter()">
+                    📋 Copy Text
+                </button>
+                <button class="sidebar-btn btn-sidebar-outline" style="width: auto; padding: 8px 16px;"
+                    onclick="downloadCoverLetterTxt()">
+                    📄 Download (.txt)
+                </button>
+                <button class="sidebar-btn btn-sidebar-primary" id="downloadCoverLetterPdfBtn"
+                    style="width: auto; padding: 8px 20px; background: #6366f1; color: white;"
+                    onclick="downloadCoverLetterPdf()">
+                    ⬇ Download (PDF)
+                </button>
+                <button class="sidebar-btn btn-sidebar-outline" style="width: auto; padding: 8px 18px;"
+                    onclick="closeCoverLetterModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-notify" id="toastNotification">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script src="i18n.js"></script>
 </body>
 
 </html>

@@ -4,19 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Suggested Job Description</title>
+    <title>Suitable Job Descriptions – AI Resume Analyzer</title>
     <!-- Marked.js for parsing Markdown -->
     <script src="vendor/marked.min.js"></script>
     <style>
         :root {
-            --primary: #0d9488;
-            --primary-dark: #0284c7;
-            --bg-color: #24599e;
-            --card-bg-start: #e0f2fe;
-            --card-bg-end: #bae6fd;
-            --text: #ffffff;
-            --text-dark: #0f172a;
-            --text-muted: #0369a1;
+            --primary-navy: #17375e;
+            --primary-dark: #122b49;
+            --accent-blue: #0284c7;
+            --banner-bg: #dff0fa;
+            --banner-border: #c3e2f5;
+            --heading-blue: #17375e;
+            --text-dark: #17375e;
+            --text-body: #4a5568;
+            --text-subtle: #64748b;
+            --bg-canvas: #edf2f7;
+            --footer-bg: #17375e;
+            --footer-sub: #a0c4eb;
         }
 
         * {
@@ -26,173 +30,461 @@
         }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-color);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px 20px;
-            line-height: 1.6;
-            overflow-y: auto;
-        }
-
-        .container {
-            width: 95%;
-            max-width: 1400px;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
-            color: #0c4a6e;
-            padding: 22px 28px;
-            border-radius: 20px;
-            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.15);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-
-        .glass-card {
-            background: linear-gradient(135deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-            position: relative;
-            overflow: hidden;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-canvas);
             color: var(--text-dark);
-            transition: all 0.2s ease;
+            min-height: 100vh;
+            padding: 24px 16px 60px 16px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .glass-card:hover {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-            border-color: #cbd5e1;
-        }
-
-        .markdown-body {
-            font-size: 0.95rem;
-            color: #1e293b;
-        }
-
-        .markdown-body h1,
-        .markdown-body h2,
-        .markdown-body h3 {
-            color: #0c4a6e;
-            margin-top: 1.5rem;
-            margin-bottom: 0.8rem;
-            border-bottom: 1px solid rgba(12, 74, 110, 0.1);
-            padding-bottom: 0.4rem;
-        }
-
-        .markdown-body h1 {
-            font-size: 1.6rem;
-        }
-
-        .markdown-body h2 {
-            font-size: 1.4rem;
-        }
-
-        .markdown-body h3 {
-            font-size: 1.15rem;
-            color: #0369a1;
-        }
-
-        .markdown-body p {
-            margin-bottom: 1rem;
-        }
-
-        .markdown-body ul,
-        .markdown-body ol {
-            margin-bottom: 1.2rem;
-            padding-left: 2rem;
-        }
-
-        .markdown-body li {
-            margin-bottom: 0.4rem;
-        }
-
-        .markdown-body strong {
-            color: #0c4a6e;
-            font-weight: 700;
-        }
-
-        .markdown-body blockquote {
-            border-left: 4px solid var(--primary);
-            padding-left: 1rem;
-            color: #334155;
-            margin-bottom: 1.5rem;
-            background: rgba(13, 148, 136, 0.05);
-            padding: 1rem;
-            border-radius: 0 8px 8px 0;
-        }
-
-        .actions {
-            margin-top: 30px;
+        /* ─── TOP ACTION BAR ────────────────────────── */
+        .action-bar {
+            max-width: 920px;
+            margin: 0 auto 24px auto;
             display: flex;
-            justify-content: center;
-            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            position: sticky;
+            top: 16px;
+            z-index: 100;
+        }
+
+        .action-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .btn {
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 6px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             border: none;
-            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 8px 20px rgba(13, 148, 136, 0.3);
-            transform: translateY(-1px);
+            text-decoration: none;
         }
 
         .btn-secondary {
             background: #f1f5f9;
-            color: #475569;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            color: #334155;
+            border: 1px solid #cbd5e1;
         }
 
         .btn-secondary:hover {
             background: #e2e8f0;
             color: #0f172a;
-            transform: translateY(-1px);
         }
 
-        @keyframes fadeIn {
+        .btn-primary {
+            background: var(--primary-navy);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(23, 55, 94, 0.25);
+        }
+
+        .btn-success {
+            background: #0284c7;
+            color: #ffffff;
+        }
+
+        .btn-success:hover {
+            background: #0369a1;
+        }
+
+        /* ─── DOMAIN FILTER BAR ───────────────────────── */
+        .domain-filter-bar {
+            max-width: 920px;
+            margin: -10px auto 20px auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            padding: 10px 18px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .domain-filter-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        .domain-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        .domain-pill {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .domain-pill:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        .domain-pill.active {
+            background: var(--primary-navy);
+            border-color: var(--primary-navy);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(23, 55, 94, 0.25);
+        }
+
+        @media print {
+            .domain-filter-bar {
+                display: none !important;
+            }
+        }
+
+        /* ─── REPORT CONTAINER & PAGES ───────────────── */
+        .report-container {
+            max-width: 920px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+        }
+
+        .report-page {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 960px;
+            position: relative;
+        }
+
+        /* ─── PAGE HEADER BAR ────────────────────────── */
+        .page-header {
+            background: var(--primary-navy);
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header-titles h1 {
+            color: #ffffff;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+
+        .page-header-titles p {
+            color: #b0c8e8;
+            font-size: 0.8rem;
+            font-weight: 400;
+            margin-top: 3px;
+        }
+
+        .page-header-logo-badge {
+            background: #ffffff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-header-logo-badge img {
+            height: 28px;
+            width: auto;
+            display: block;
+        }
+
+        /* ─── PAGE BODY CONTENT ──────────────────────── */
+        .page-body {
+            padding: 36px 40px;
+            flex: 1;
+            color: var(--text-body);
+            font-size: 0.94rem;
+            line-height: 1.6;
+        }
+
+        /* ─── BLUE BANNER (PAGE 1) ───────────────────── */
+        .banner-box {
+            background: var(--banner-bg);
+            border: 1px solid var(--banner-border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .banner-box h2 {
+            color: var(--heading-blue);
+            font-size: 1.55rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .banner-box p {
+            color: #4a5568;
+            font-size: 0.88rem;
+            font-weight: 400;
+        }
+
+        /* ─── TYPOGRAPHY & SECTIONS ──────────────────── */
+        .meta-line {
+            font-size: 0.94rem;
+            margin-bottom: 8px;
+            color: var(--text-body);
+        }
+
+        .meta-line strong {
+            color: var(--heading-blue);
+            font-weight: 700;
+        }
+
+        .section-title {
+            color: var(--heading-blue);
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-top: 22px;
+            margin-bottom: 6px;
+        }
+
+        .role-main-title {
+            color: var(--heading-blue);
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .role-actions-inline {
+            display: flex;
+            gap: 8px;
+        }
+
+        .role-btn {
+            font-size: 0.78rem;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #1e293b;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .role-btn:hover {
+            background: #e2e8f0;
+            border-color: #94a3b8;
+        }
+
+        .role-btn-use {
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #0284c7;
+        }
+
+        .role-btn-use:hover {
+            background: #0369a1;
+            border-color: #0369a1;
+        }
+
+        .bullet-list {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 16px;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 18px;
+            margin-bottom: 6px;
+            color: var(--text-body);
+        }
+
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 2px;
+            color: #17375e;
+            font-size: 1.15rem;
+            line-height: 1;
+        }
+
+        .text-paragraph {
+            color: var(--text-body);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        /* ─── PAGE FOOTER BAR ────────────────────────── */
+        .page-footer {
+            background: var(--footer-bg);
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-logo-badge {
+            background: #ffffff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-logo-badge img {
+            height: 20px;
+            width: auto;
+        }
+
+        .footer-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .footer-info-title {
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+
+        .footer-info-sub {
+            color: var(--footer-sub);
+            font-size: 0.74rem;
+            text-decoration: none;
+        }
+
+        .footer-right {
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 400;
+            text-align: right;
+        }
+
+        /* ─── TOAST NOTIFICATION ─────────────────────── */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            z-index: 9999;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
             from {
+                transform: translateY(20px);
                 opacity: 0;
-                transform: translateY(10px);
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ─── PRINT STYLES ───────────────────────────── */
+        @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
             }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            .action-bar, #toast, .role-actions-inline {
+                display: none !important;
+            }
+
+            .report-container {
+                max-width: 100% !important;
+                gap: 0 !important;
+            }
+
+            .report-page {
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                height: 100vh !important;
+                min-height: 100vh !important;
+                margin: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+            }
+
+            .page-header, .page-footer {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .banner-box {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
     </style>
@@ -200,104 +492,394 @@
 
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h1> Suitable Job Descriptions </h1>
-            <p>Based on skills and experience</p>
+    <!-- TOP ACTION BAR -->
+    <div class="action-bar">
+        <div class="action-bar-left">
+            <button onclick="window.location.href='dashboard.html'" class="btn btn-secondary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Dashboard
+            </button>
         </div>
-
-        <div id="jdContainer">
-            <div id="jdContent" class="markdown-body">
-                <div style="text-align: center; padding: 40px;">
-                    <p>Loading your personalized job description...</p>
-                </div>
-            </div>
-
-            <div class="actions">
-                <button onclick="window.location.href='index.html'" class="btn btn-secondary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <button onclick="copyAndClose()" class="btn btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    Copy & Return
-                </button>
-            </div>
+        <div class="action-bar-right">
+            <button onclick="copyAllJDs()" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy All JDs
+            </button>
+            <button onclick="window.print()" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                Print / Save PDF
+            </button>
         </div>
     </div>
 
+    <!-- DOMAIN FILTER BAR -->
+    <div class="domain-filter-bar">
+        <span class="domain-filter-label">Filter by Discipline:</span>
+        <div class="domain-pills">
+            <button class="domain-pill active" onclick="filterDomain('all', this)">🌐 All Roles</button>
+            <button class="domain-pill" onclick="filterDomain('tech', this)">💻 Tech & Software</button>
+            <button class="domain-pill" onclick="filterDomain('finance', this)">📊 Finance & Accounts</button>
+            <button class="domain-pill" onclick="filterDomain('business', this)">💼 Business & Mgmt</button>
+            <button class="domain-pill" onclick="filterDomain('hr', this)">👥 HR & Operations</button>
+            <button class="domain-pill" onclick="filterDomain('marketing', this)">🚀 Digital Marketing</button>
+            <button class="domain-pill" onclick="filterDomain('core_eng', this)">⚙️ Core Engineering</button>
+        </div>
+    </div>
+
+    <!-- REPORT CONTAINER -->
+    <div class="report-container" id="reportPagesContainer">
+        <!-- Rendered dynamically -->
+        <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
+            <p style="color: #64748b; font-size: 1.05rem;">Loading suitable job descriptions...</p>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span id="toastMsg">Action completed</span>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.textContent = msg;
+            toast.style.display = 'flex';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2800);
+        }
+
+        function createPageHeader() {
+            return `
+                <div class="page-header">
+                    <div class="page-header-titles">
+                        <h1>AI RESUME ANALYZER</h1>
+                        <p>Suitable job descriptions based on your entered requirements</p>
+                    </div>
+                    <div class="page-header-logo-badge">
+                        <img src="logo.png" alt="Resume Analyser Logo">
+                    </div>
+                </div>
+            `;
+        }
+
+        function createPageFooter() {
+            return `
+                <div class="page-footer">
+                    <div class="footer-left">
+                        <div class="footer-logo-badge">
+                            <img src="logo.png" alt="Logo">
+                        </div>
+                        <div class="footer-info">
+                            <span class="footer-info-title">Generated by Resume Analyzer AI</span>
+                            <span class="footer-info-sub">resumeanalyzer.g13@gmail.com</span>
+                        </div>
+                    </div>
+                    <div class="footer-right">
+                        Keep your resume updated and aligned with the job description.
+                    </div>
+                </div>
+            `;
+        }
+
+        // Store extracted role texts for copy & use actions
+        const parsedRoles = [];
+
+        function renderReport() {
             const rawJD = localStorage.getItem('suggestedJD');
-            const contentDiv = document.getElementById('jdContent');
+            const container = document.getElementById('reportPagesContainer');
 
-            if (rawJD) {
-                // Configure marked to use GFM
-                marked.setOptions({
-                    gfm: true,
-                    breaks: true
-                });
-
-                // Split by markdown horizontal rules (--- or *** or ___)
-                const jds = rawJD.split(/(?:\n|^)(?:-{3,}|\*{3,}|_{3,})(?:\n|$)/);
-
-                let finalHtml = '';
-
-                jds.forEach((jd, index) => {
-                    if (jd.trim().length > 10) {
-                        finalHtml += `
-                            <div class="glass-card" style="margin-bottom: 30px;">
-                                ${marked.parse(jd.trim())}
-                            </div>
-                        `;
-                    }
-                });
-
-                // If split failed or it was just one big block, wrap it in one card
-                if (finalHtml === '') {
-                    finalHtml = `
-                        <div class="glass-card" style="margin-bottom: 30px;">
-                            ${marked.parse(rawJD)}
-                        </div>
-                    `;
-                }
-
-                contentDiv.innerHTML = finalHtml;
-
-                // (Sparkles removed to match clean UI)
-
-            } else {
-                contentDiv.innerHTML = `
-                    <div class="glass-card">
-                        <div style="text-align: center; padding: 40px; color: #ef4444;">
-                            <h2>No Data Found</h2>
-                            <p>It looks like you opened this page directly. Please generate a job description from the dashboard first.</p>
-                        </div>
-                    </div>`;
+            if (!rawJD || rawJD.trim().length === 0) {
+                container.innerHTML = `
+                    <div class="report-page" style="min-height: 400px; justify-content: center; align-items: center; text-align: center; padding: 40px;">
+                        <h2 style="color: #ef4444; margin-bottom: 10px;">No Job Description Data Found</h2>
+                        <p style="color: #64748b; margin-bottom: 20px;">Please return to the dashboard, upload a resume, and click "✨ Generate Job Description".</p>
+                        <button onclick="window.location.href='dashboard.html'" class="btn btn-primary">Go to Dashboard</button>
+                    </div>
+                `;
+                return;
             }
-        });
 
-        function copyAndClose() {
+            // Split by markdown horizontal rules (---)
+            const pages = rawJD.split(/(?:\n|^)(?:-{3,}|\*{3,}|_{3,})(?:\n|$)/).map(p => p.trim()).filter(p => p.length > 0);
+
+            let htmlContent = '';
+            parsedRoles.length = 0;
+
+            pages.forEach((pageMarkdown, index) => {
+                const isOverview = (index === 0 && pageMarkdown.includes("Suitable Job Descriptions"));
+
+                if (isOverview) {
+                    // Render Page 1 (Overview)
+                    htmlContent += renderOverviewPage(pageMarkdown);
+                } else {
+                    // Render Role Pages (Pages 2+)
+                    const roleIndex = isOverview ? index : index + 1;
+                    parsedRoles.push({ index: roleIndex, markdown: pageMarkdown });
+                    htmlContent += renderRolePage(pageMarkdown, roleIndex);
+                }
+            });
+
+            // If it wasn't split or overview wasn't first, fallback to single page or structured parser
+            if (pages.length === 1 && !pages[0].includes("Suitable Job Descriptions")) {
+                parsedRoles.push({ index: 1, markdown: pages[0] });
+                htmlContent = renderRolePage(pages[0], 1);
+            }
+
+            container.innerHTML = htmlContent;
+        }
+
+        function renderOverviewPage(md) {
+            // Parse detected experience, skills, and priority lines
+            let exp = "Fresher";
+            let skills = "Python, JavaScript, React, Node.js, SQL, Git";
+
+            const expMatch = md.match(/\*\*Detected experience:\*\*\s*([^\n]+)/i);
+            if (expMatch) exp = expMatch[1].trim();
+
+            const skillsMatch = md.match(/\*\*Detected project skills:\*\*\s*([^\n]+)/i);
+            if (skillsMatch) skills = skillsMatch[1].trim();
+
+            return `
+                <div class="report-page" id="page-overview">
+                    ${createPageHeader()}
+                    <div class="page-body">
+                        <div class="banner-box">
+                            <h2>Suitable Job Descriptions</h2>
+                            <p>Based on the entered job description, selected samples, and AI Resume Analyzer requirements</p>
+                        </div>
+
+                        <div class="meta-line">
+                            <strong>Detected experience:</strong> ${escapeHtml(exp)}
+                        </div>
+                        <div class="meta-line">
+                            <strong>Detected project skills:</strong> ${escapeHtml(skills)}
+                        </div>
+
+                        <div class="section-title" style="margin-top: 24px;">How this report helps</div>
+                        <p class="text-paragraph">
+                            These recommendations are tailored for an AI-based Resume Analyzer. Use the highest-ranked role as the primary target, then use the required and preferred skills to improve resume keywords, projects, and interview preparation.
+                        </p>
+
+                        <div class="section-title" style="margin-top: 24px;">Project-focused priorities</div>
+                        <ul class="bullet-list">
+                            <li>Resume and PDF parsing</li>
+                            <li>Semantic job matching and ATS keyword analysis</li>
+                            <li>Python APIs and reliable document-processing workflows</li>
+                            <li>Clear, measurable recommendations for candidates</li>
+                        </ul>
+                    </div>
+                    ${createPageFooter()}
+                </div>
+            `;
+        }
+
+        function renderRolePage(md, roleNumber) {
+            // Extract role title
+            const titleMatch = md.match(/^#\s*(.+)$/m);
+            const rawTitle = titleMatch ? titleMatch[1].trim() : `Role ${roleNumber}`;
+
+            // Parse sections
+            const sections = parseRoleSections(md);
+
+            let bodyHtml = `
+                <div class="role-main-title">
+                    <span>${escapeHtml(rawTitle)}</span>
+                    <div class="role-actions-inline">
+                        <button onclick="copyRole(${roleNumber})" class="role-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                        <button onclick="useRole(${roleNumber})" class="role-btn role-btn-use">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 11 12 14 22 4"></polyline>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                            </svg>
+                            Use in Analyzer
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            sections.forEach(sec => {
+                bodyHtml += `<div class="section-title">${escapeHtml(sec.title)}</div>`;
+                if (sec.isList) {
+                    bodyHtml += `<ul class="bullet-list">`;
+                    sec.items.forEach(item => {
+                        bodyHtml += `<li>${escapeHtml(item)}</li>`;
+                    });
+                    bodyHtml += `</ul>`;
+                } else {
+                    bodyHtml += `<p class="text-paragraph">${escapeHtml(sec.content)}</p>`;
+                }
+            });
+
+            const domain = detectRoleDomain(rawTitle, md);
+            return `
+                <div class="report-page" id="page-role-${roleNumber}" data-domain="${domain}">
+                    ${createPageHeader()}
+                    <div class="page-body">
+                        ${bodyHtml}
+                    </div>
+                    ${createPageFooter()}
+                </div>
+            `;
+        }
+
+        function detectRoleDomain(title, md) {
+            const text = (title + " " + md).toLowerCase();
+            if (text.includes("financial") || text.includes("accountant") || text.includes("taxation") || text.includes("audit") || text.includes("tally") || text.includes("gst") || text.includes("balance sheet")) {
+                return "finance";
+            }
+            if (text.includes("business analyst") || text.includes("product manager") || text.includes("operations") || text.includes("scrum") || text.includes("agile")) {
+                return "business";
+            }
+            if (text.includes("hr ") || text.includes("human resources") || text.includes("recruitment") || text.includes("talent acquisition") || text.includes("people ops")) {
+                return "hr";
+            }
+            if (text.includes("marketing") || text.includes("seo") || text.includes("social media") || text.includes("content strategy")) {
+                return "marketing";
+            }
+            if (text.includes("embedded") || text.includes("iot") || text.includes("circuit") || text.includes("microcontroller") || text.includes("autocad") || text.includes("matlab")) {
+                return "core_eng";
+            }
+            return "tech";
+        }
+
+        function filterDomain(domain, btn) {
+            document.querySelectorAll('.domain-pill').forEach(p => p.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const pages = document.querySelectorAll('.report-page');
+            let matchCount = 0;
+            pages.forEach((page) => {
+                if (page.id === 'page-overview') {
+                    page.style.display = 'flex';
+                    return;
+                }
+                const pDomain = page.getAttribute('data-domain') || 'tech';
+                if (domain === 'all' || pDomain === domain) {
+                    page.style.display = 'flex';
+                    matchCount++;
+                } else {
+                    page.style.display = 'none';
+                }
+            });
+
+            if (domain !== 'all' && matchCount === 0) {
+                showToast(`No recommended roles in this domain for the current profile.`);
+            } else {
+                const label = btn ? btn.textContent.trim() : domain;
+                showToast(`Filter applied: ${label}`);
+            }
+        }
+
+        function parseRoleSections(md) {
+            const lines = md.split('\n');
+            const sections = [];
+            let currentSec = null;
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('# ')) {
+                    // Main title, skip as handled separately
+                    return;
+                }
+                if (trimmed.startsWith('## ')) {
+                    if (currentSec) {
+                        sections.push(currentSec);
+                    }
+                    currentSec = {
+                        title: trimmed.replace(/^##\s*/, '').trim(),
+                        content: '',
+                        isList: false,
+                        items: []
+                    };
+                } else if (currentSec && (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*'))) {
+                    currentSec.isList = true;
+                    const itemText = trimmed.replace(/^[•\-*]\s*/, '').trim();
+                    if (itemText) currentSec.items.push(itemText);
+                } else if (currentSec && trimmed.length > 0) {
+                    if (currentSec.content) {
+                        currentSec.content += ' ' + trimmed;
+                    } else {
+                        currentSec.content = trimmed;
+                    }
+                }
+            });
+
+            if (currentSec) {
+                sections.push(currentSec);
+            }
+
+            return sections;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function copyRole(roleNum) {
+            const role = parsedRoles.find(r => r.index === roleNum);
+            if (role) {
+                // Strip markdown headers symbols for clean plain text if desired, or copy markdown
+                navigator.clipboard.writeText(role.markdown).then(() => {
+                    showToast(`Role ${roleNum} description copied to clipboard!`);
+                });
+            }
+        }
+
+        function useRole(roleNum) {
+            const role = parsedRoles.find(r => r.index === roleNum);
+            if (role) {
+                // Save this specific JD to currentJobDesc and prefill for dashboard
+                localStorage.setItem("currentJobDesc", role.markdown);
+                localStorage.setItem("prefillJobDesc", role.markdown);
+                showToast(`Role ${roleNum} selected! Redirecting to dashboard...`);
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 700);
+            }
+        }
+
+        function copyAllJDs() {
             const rawJD = localStorage.getItem('suggestedJD');
             if (rawJD) {
                 navigator.clipboard.writeText(rawJD).then(() => {
-                    alert("Job description copied to clipboard!");
-                    window.location.href = 'index.html';
+                    showToast("All suitable job descriptions copied!");
                 });
-            } else {
-                window.location.href = 'index.html';
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderReport();
+        });
     </script>
-    
+
+    <script src="i18n.js"></script>
 </body>
 
-</html>
+</html>

@@ -1,0 +1,75 @@
+NANDINI K Y
+ +91 7892891076
+# nandiniky2005@gmail.com
+ï linkedin.com/in/nandini-k-y-61a08b379
+§ github.com/KYNandini
+Kalkere, Alur(T)
+Hassan, Karnataka
+India - 573213
+Career Objective
+Motivated and detail-oriented Computer Science student seeking opportunities to apply program-
+ming, problem-solving, and software development skills in a challenging environment while continuously
+learning new technologies.
+Education
+B.E in Computer Science Engineering
+2023 – 2027
+Government Engineering College, Mosalehosalli
+CGPA: 8.68/10
+PUC / 12th Standard(PCMB)
+2021 – 2023
+Girls PU College,Alur
+89.5%
+SSLC
+2020- 2021
+Governmwnt High School, Kamathi Kudige
+92%
+Technical Skills
+ Programming Languages: Basics of C,Basics of C++, Basics of Java, Python
+ Web Technologies: HTML, CSS, JavaScript, PHP
+ Database: MySQL, MongoDB
+ Tools: Git, VS Code, XAMPP, LaTeX
+Projects
+College event Management System
+2025
+Developed a smart system platform to manage the registrations and result anouncements of the college
+events
+Weather API
+2026
+Web application for monitoring and visualizing weather data with real-time API integration.
+Chatbot using NLP
+2026
+This is a simple AI chatbot built using Natural Language Processing (NLP) libraries NLTK and SpaCy.
+The chatbot can answer basic user queries through keyword matching and text preprocessing.
+Internship / Experience
+Python Programming Intern – codtech Solutions(Online)
+2026
+Worked on python modules, and strengthen my python skill,grain real-world project experience
+Event Coordinator – Government Engineering College ,Mosalehosalli
+2025
+Drawing compitation organized by Kannada sangha and Solo Singing organized by Makarotsava.
+Certifications
+ Youth Emplioyment Program – TCS Empowers
+ Hackathon participation -Rajeev Institute of Technology
+ Python Internship-Codtech It Solutions
+
+ PoweBI Workshop
+ NSPC(National Students Paryavaran Compitition) 2025
+ Microsoft AI journey with free AI tools-Microsoft Education
+Acheivements
+ Chess champion in 2025 in our college.
+ Attending theAwareness Programme on IPR
+ Attending the Training Program conducted by Edunet Foundation in collaboration with Microsoft.
+ Earned 20 badges in Microsoft Build 2026
+Languages
+English, Kannada, Hindi
+Hobbies
+ Playing Chess
+ Painting
+ Badminton
+ Language Learning
+Declaration
+I hereby declare that the above information is true to the best of my knowledge.
+Date:
+Signature
+Place: Karnataka
+Your Name

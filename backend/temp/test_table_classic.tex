@@ -1,0 +1,83 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[
+    top=0.45in,
+    bottom=0.45in,
+    left=0.52in,
+    right=0.52in
+]{geometry}
+
+\usepackage{mathptmx}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage{amssymb}
+\usepackage{xcolor}
+
+\setlength{\parindent}{0pt}
+
+\setlist[itemize]{
+    leftmargin=0.22in,
+    itemsep=1.5pt,
+    topsep=1.5pt,
+    partopsep=0pt,
+    parsep=0pt
+}
+
+\titleformat{\section}
+{\large\scshape\raggedright}
+{}
+{0em}
+{}
+[\titlerule]
+
+\titlespacing{\section}{0pt}{9pt}{4pt}
+
+\begin{document}
+
+% ================= HEADER =================
+\begin{center}
+{\LARGE \textsc{\textbf{ROHAN VERMA}}} \\ \vspace{3pt}
+Bangalore, India \quad $|$ \quad +91 9876543210 \quad $|$ \quad \href{mailto:rohan.verma@email.com}{rohan.verma@email.com} \\
+\href{https://linkedin.com/in/rohanverma}{linkedin.com/in/rohanverma}
+\end{center}
+
+% ================= SUMMARY =================
+\section*{Professional Summary}
+Aspiring Full Stack Developer skilled in modern web technologies and problem-solving, eager to contribute to dynamic software development teams.
+
+% ================= EDUCATION =================
+\section*{Education}
+{\small
+\renewcommand{\arraystretch}{1.18}
+\noindent\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{1.6in}|>{\raggedright\arraybackslash}X|>{\centering\arraybackslash}p{0.85in}|>{\centering\arraybackslash}p{0.85in}|}
+\hline
+\textbf{Course / Degree} & \textbf{Institution / University} & \textbf{Year of Passing} & \textbf{Percentage / CGPA} \\ \hline
+\textbf{B.Tech in Computer Science and Engineering} & R.V. College of Engineering, Bangalore & 2020 -- 2024 & CGPA: 8.8 \\ \hline
+\textbf{Higher Secondary (Class XII)} & Delhi Public School & 2020 & 95.2 Percentile \\ \hline
+\end{tabularx}
+}\vspace{4pt}
+
+
+% ================= SKILLS =================
+\section*{Core Skills \& Competencies}
+\begin{tabular}{@{}p{2.3in}p{4.5in}@{}}
+\textbf{Programming Languages:} & JavaScript, Python, R \\
+\textbf{Frontend Frameworks / Libraries:} & React.js \\
+\textbf{Databases:} & SQL \\
+\textbf{AI / Machine Learning:} & PyTorch, Artificial Intelligence \\
+\textbf{DevOps / Cloud:} & Docker, \textcolor{red}{Kubernetes}, \textcolor{red}{AWS} \\
+\end{tabular}
+
+
+
+% ================= PROJECTS =================
+\section*{Key Projects}
+\noindent \textbf{Smart Health AI | Python, PyTorch} \\
+Developed an automated diagnosis assistance tool. \vspace{4pt}
+
+
+% ================= CERTIFICATIONS =================
+
+\end{document}
