@@ -922,19 +922,24 @@
             document.getElementById("missingPct").innerText = missingPct + "%";
             document.getElementById("effPct").innerText = effPct + "%";
             document.getElementById("matchSub").innerText = matched.length + " of " + (matched.length + missing.length) + " skills";
-            document.getElementById("missingSub").innerText = missing.length + " missing";
+            document.getElementById("missingSub").innerText = (matchPct >= 95 && missing.length === 0) ? "3% to perfect skills" : (missing.length + " missing");
             document.getElementById("effSub").innerText = effPct >= 80 ? "Excellent match" : effPct >= 50 ? "Fair match" : "Needs work";
             document.getElementById("matchCountHeader").innerText = matched.length;
-            document.getElementById("missingCountHeader").innerText = missing.length;
+            document.getElementById("missingCountHeader").innerText = (matchPct >= 95 && missing.length === 0) ? "3%" : missing.length;
 
             // ── Feedback ──
-            document.getElementById("feedbackTitle").innerText = data.overallFeedback
-                ? (matchPct >= 70 ? "Great alignment!" : matchPct >= 40 ? "Fair match found." : "Needs improvement.")
-                : (matchPct >= 70 ? "Excellent alignment! ATS-ready." : "Resume needs targeted enhancement.");
-            document.getElementById("feedbackBody").innerText = data.overallFeedback ||
-                (matchPct >= 70
-                    ? "Your skill profile strongly matches the core requirements."
-                    : "Prioritize adding the missing skills to your resume.");
+            if (matchPct >= 95) {
+                document.getElementById("feedbackTitle").innerText = "Outstanding 97% Match!";
+                document.getElementById("feedbackBody").innerText = "You have matched all core requirements! To conquer the remaining 3%, focus on perfecting the skills mentioned and demonstrating verifiable real-world experience, production metrics, and system design depth.";
+            } else {
+                document.getElementById("feedbackTitle").innerText = data.overallFeedback
+                    ? (matchPct >= 70 ? "Great alignment!" : matchPct >= 40 ? "Fair match found." : "Needs improvement.")
+                    : (matchPct >= 70 ? "Excellent alignment! ATS-ready." : "Resume needs targeted enhancement.");
+                document.getElementById("feedbackBody").innerText = data.overallFeedback ||
+                    (matchPct >= 70
+                        ? "Your skill profile strongly matches the core requirements."
+                        : "Prioritize adding the missing skills to your resume.");
+            }
 
             // ── Category Breakdown ──
             if (data.categoryBreakdown && Object.keys(data.categoryBreakdown).length > 0) {
@@ -966,7 +971,6 @@
                 matchList.innerHTML = "<p class='placeholder'>No matching skills found in resume.</p>";
             } else {
                 matched.forEach((item, i) => {
-                    // Support both old string format and new object format
                     const skill = typeof item === "string" ? item : item.skill || item;
                     const category = typeof item === "object" ? (item.category || "General") : "General";
                     const confidence = typeof item === "object" ? (item.confidence || 100) : 100;
@@ -987,13 +991,31 @@
                 });
             }
 
-            // ── Missing Skills ──
+            // ── Missing Skills & 97% Perfection Guide ──
             const missingList = document.getElementById("missingList");
             missingList.innerHTML = "";
-            if (missing.length === 0) {
+
+            if (matchPct >= 95) {
+                missingList.innerHTML += `
+                <div class="perfection-advice-card" style="background: linear-gradient(135deg, #f0fdfa 0%, #e6fffa 100%); border: 1.5px solid #0d9488; border-radius: 14px; padding: 18px 20px; margin-bottom: 18px; box-shadow: 0 4px 15px rgba(13,148,136,0.1);">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                        <span style="font-size:1.8rem;">🎯</span>
+                        <div>
+                            <h4 style="color:#0f766e;margin:0;font-size:1.05rem;font-weight:800;">Instructions to Perfect the Remaining 3%</h4>
+                            <span style="font-size:0.8rem;color:#0d9488;font-weight:600;">You scored 97%! Here is how to conquer the final 3%:</span>
+                        </div>
+                    </div>
+                    <ul style="color:#1e293b;font-size:0.88rem;line-height:1.65;margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;">
+                        <li><strong>1. Perfect the Skills Mentioned:</strong> Go beyond fundamental syntax. Deepen your mastery of internal mechanics, architectural trade-offs, concurrency, and performance optimization for each skill listed.</li>
+                        <li><strong>2. Hold Real-World Production Experience:</strong> Recruiters prioritize battle-tested experience. Back up your skills with measurable production metrics (e.g., <em>"reduced API response latency by 45%"</em>, <em>"handled 50k+ daily active users"</em>, <em>"automated CI/CD test coverage to 92%"</em>).</li>
+                        <li><strong>3. Showcase Engineering Proof:</strong> Link active GitHub repositories demonstrating clean modular code, unit tests (pytest/jest), detailed README documentation, and deployed live demos.</li>
+                    </ul>
+                </div>`;
+            }
+
+            if (missing.length === 0 && matchPct < 95) {
                 missingList.innerHTML = "<p class='placeholder' style='color:#10b981;font-weight:700;'>🎉 Perfect match! No missing skills identified.</p>";
-            } else {
-                // Sort: High priority first
+            } else if (missing.length > 0) {
                 const sorted = [...missing].sort((a, b) => {
                     const rank = { High: 0, Medium: 1, Low: 2 };
                     const pa = typeof a === "object" ? (a.priority || "Medium") : "Medium";

@@ -690,7 +690,9 @@ def analyze():
 
     # Overall feedback
     match_pct = result["matchPercent"]
-    if match_pct >= 80:
+    if match_pct >= 95:
+        result["overallFeedback"] = "Outstanding 97% match! To conquer the remaining 3%, focus on perfecting the skills mentioned and showcasing verifiable real-world experience, production-scale impact, and architectural mastery."
+    elif match_pct >= 80:
         result["overallFeedback"] = "Excellent match! Your resume is ATS-optimized and closely aligned to this role."
     elif match_pct >= 60:
         result["overallFeedback"] = "Good alignment. Adding a few missing skills will significantly boost your ATS score."
