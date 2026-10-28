@@ -1060,5 +1060,6 @@ if __name__ == "__main__":
     from analyzer import get_nlp, get_sbert
     get_nlp()
     get_sbert()
-    print("Models loaded! Server starting on http://0.0.0.0:3000")
-    app.run(host="0.0.0.0", port=3000, debug=False)
+    port = int(os.environ.get("PORT", 3000))
+    print(f"Models loaded! Server starting on http://0.0.0.0:{port}")
+    app.run(host="0.0.0.0", port=port, debug=False)
