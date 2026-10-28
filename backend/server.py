@@ -290,7 +290,7 @@ def signup_otp():
 
     threading.Thread(target=send_signup_otp_email, args=(email, name, otp)).start()
     return jsonify({
-        "message": f"OTP generated. Please check your backend terminal for the verification code."
+        "message": f"Verification code sent to {email}. Please enter it to complete registration."
     }), 200
 
 
@@ -892,7 +892,7 @@ def forgot_password():
     sender_pass = os.getenv("EMAIL_PASS")
 
     if not is_online():
-        return jsonify({"message": "OTP generated. Please check your backend terminal for the verification code."}), 200
+        return jsonify({"message": "If this email is registered, a verification code has been sent."}), 200
 
     def send_reset_otp():
         try:

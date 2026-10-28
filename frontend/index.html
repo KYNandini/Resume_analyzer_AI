@@ -914,7 +914,7 @@
                 <span>Tips</span>
               </div>
               <ul>
-                <li>Check your terminal or email for the 6-digit OTP code.</li>
+                <li>Check your email for the 6-digit verification code.</li>
                 <li>The code will expire in 10 minutes.</li>
               </ul>
             </div>
@@ -923,7 +923,7 @@
           <!-- STEP 2: OTP VERIFICATION -->
           <div id="signupOtpStep" style="width:100%;display:none;flex-direction:column;align-items:center;">
             <p style="font-size:0.8rem;color:#475569;margin-bottom:12px;text-align:center;" id="signupOtpHdr">
-              Enter the 6-digit code sent to your email / terminal.
+              Enter the 6-digit verification code sent to your email.
             </p>
             <div class="otp-inputs" id="regOtpInputs" style="margin-bottom:12px;">
               <input type="text" maxlength="1" class="reg-otp-digit" id="regOtp0" inputmode="numeric" pattern="[0-9]">
@@ -1241,7 +1241,7 @@
         document.getElementById('signupFields').style.display = 'none';
         const otpStep = document.getElementById('signupOtpStep');
         otpStep.style.display = 'flex';
-        document.getElementById('signupOtpHdr').innerHTML = 'Enter the 6-digit verification code for <b>' + email + '</b><br><span style="color:#00a896;font-size:0.8rem;font-weight:600;">(Check your backend terminal for the OTP)</span>';
+        document.getElementById('signupOtpHdr').innerHTML = 'Enter the 6-digit verification code sent to <b>' + email + '</b>';
         clearRegDigits();
         setTimeout(() => document.getElementById('regOtp0').focus(), 100);
       } catch { showSignupMsg('Error connecting to server. Make sure the backend is running.', 'error'); }
