@@ -341,10 +341,10 @@ try:
     client.server_info()
     db = client["resumeanalyzer"]
     remote_users = db["users"]
-    remote_resumes = db["resumes"]
-    print("✓ Connected to MongoDB Atlas!", flush=True)
+    db_dest = "Local MongoDB Compass (localhost:27017)" if ("localhost" in mongo_uri or "127.0.0.1" in mongo_uri) else "MongoDB Atlas"
+    print(f"✓ Connected to {db_dest} database 'resumeanalyzer'!", flush=True)
 except Exception as e:
-    print(f"ℹ️ Cloud MongoDB unreachable ({e}). Running in 100% OFFLINE local database mode!", flush=True)
+    print(f"ℹ️ MongoDB connection error ({e}). Running in 100% OFFLINE local JSON database mode!", flush=True)
 
 users_collection = DatabaseWrapper(remote_users, offline_users)
 resumes_collection = DatabaseWrapper(remote_resumes, offline_resumes)
